@@ -4,12 +4,13 @@
 #include "common.h"
 #include "sound.h"
 
-#define KEY_ESC 27
-
-#define BPM 120
-#define USECS_PER_MINUTE (1000000 * 60)
+const int DEFAULT_BPM = 120;
 
 bool metronome_on = false;
+int  current_bpm;
+
+int current_usecs_per_beat;
+
 
 void toggle_metronome() {
     metronome_on = metronome_on ? false : true;
@@ -18,6 +19,15 @@ void toggle_metronome() {
     } else {
         mvprintw(24, 0, "Metronome disabled ");
     }
+}
+
+void set_bpm(int value) {
+    current_bpm = value;
+    current_usecs_per_beat = USECS_PER_MINUTE / current_bpm;
+}
+
+void tap_tempo() {
+    // TODO
 }
 
 int main(int argc, char* argv[])
@@ -29,6 +39,8 @@ int main(int argc, char* argv[])
     noecho();
     nodelay(stdscr, TRUE);
     keypad(stdscr, TRUE);
+
+    set_bpm(DEFAULT_BPM);
 
     printw("FMTribe");
 
@@ -50,7 +62,7 @@ int main(int argc, char* argv[])
         }
 
         uclock_t now = uclock();
-        if (now >= prev + (USECS_PER_MINUTE / BPM)) {
+        if (now >= prev + current_usecs_per_beat) {
             if (metronome_on) {
                 play_tick();
                 printw("o");
