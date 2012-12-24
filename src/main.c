@@ -8,8 +8,9 @@ const int DEFAULT_BPM = 120;
 
 bool metronome_on = false;
 int  current_bpm;
+int  current_usecs_per_beat;
 
-int current_usecs_per_beat;
+uclock_t prev_tap = NULL;
 
 
 void toggle_metronome() {
@@ -23,12 +24,22 @@ void toggle_metronome() {
 
 void set_bpm(int value) {
     current_bpm = value;
-    current_usecs_per_beat = USECS_PER_MINUTE / current_bpm;
+    current_usecs_per_beat = USECS_PER_MINUTE / value;
+}
+
+void set_bpm_from_usecs_per_beat(uclock_t usecs) {
+    current_bpm = usecs * USECS_PER_MINUTE;
+    current_usecs_per_beat = usecs;
 }
 
 void tap_tempo() {
-    // TODO
+    uclock_t now = uclock();
+    if (prev_tap) {
+        set_bpm_from_usecs_per_beat(now - prev_tap);
+    }
+    prev_tap = now;
 }
+
 
 int main(int argc, char* argv[])
 {
@@ -58,6 +69,9 @@ int main(int argc, char* argv[])
             break;
           case KEY_F(9):
             toggle_metronome();
+            break;
+          case KEY_F(10):
+            tap_tempo();
             break;
         }
 
