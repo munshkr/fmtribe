@@ -5,11 +5,11 @@ void write(const int reg, const int value) {
 
     // Set requeste register into address port
     outb(ADDR_PORT, reg);
-    msleep(4);
+    msleep(10);
 
     // Write value into data port
     outb(DATA_PORT, value);
-    msleep(24);
+    msleep(60);
 }
 
 void reset_sound() {
@@ -42,7 +42,7 @@ void reset_sound() {
     }
 }
 
-void play_tick() {
+void init_tick() {
     write(0x20, 0x01);  // Set the modulator's multiple to 1
     write(0x40, 0x10);  // Set the modulator's level to about 40 dB
     write(0x60, 0xf0);  // Modulator attack: quick; decay: long
@@ -52,7 +52,10 @@ void play_tick() {
     write(0x43, 0x00);  // Set the carrier to maximum volume (about 47 dB)
     write(0x63, 0xf0);  // Carrier attack: quick; decay: long
     write(0x83, 0x77);  // Carrier sustain: medium; release: medium
+}
+
+void play_tick() {
     write(0xb0, 0x31);  // Turn the voice on; set the octave and freq MSB
-    msleep(500);
+    msleep(1000);
     write(0xb0, 0x11);  // Turn the voice off
 }
