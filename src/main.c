@@ -6,9 +6,9 @@
 
 const int DEFAULT_BPM = 120;
 
-bool metronome_on = false;
-int  current_bpm;
-int  current_usecs_per_beat;
+bool  metronome_on = false;
+float current_bpm;
+int   current_usecs_per_beat;
 
 uclock_t prev_tap = NULL;
 
@@ -22,7 +22,7 @@ void toggle_metronome() {
     }
 }
 
-void set_bpm(int value) {
+void set_bpm(const float value) {
     current_bpm = value;
     current_usecs_per_beat = USECS_PER_MINUTE / value;
 }
