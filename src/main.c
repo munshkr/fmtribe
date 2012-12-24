@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
         uclock_t now = uclock();
         if (now >= prev + (USECS_PER_MINUTE / BPM)) {
             printw(".");
+            play_tick();
             prev = now;
         }
     }

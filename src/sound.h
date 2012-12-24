@@ -7,6 +7,8 @@
 #define DATA_PORT 0x389
 
 void write(const int reg, const int value);
-void reset_sound(void);
+void reset_sound();
+
+void play_tick();
 
 #endif // __SOUND_H__
