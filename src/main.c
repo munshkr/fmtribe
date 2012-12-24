@@ -6,6 +6,8 @@
 
 int main(int argc, char* argv[])
 {
+    reset_sound();
+
     initscr();
     raw();
     noecho();
@@ -24,6 +26,8 @@ int main(int argc, char* argv[])
 
     refresh();
     endwin();
+
+    reset_sound();
 
     return EXIT_SUCCESS;
 }
