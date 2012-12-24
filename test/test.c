@@ -6,6 +6,7 @@
  * Tested with djgpp and DOSBox
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -93,5 +94,6 @@ int main(int argc, char** argv) {
 
     reset_sound();
     printf("end\n");
-    return 0;
+
+    return EXIT_SUCCESS;
 }
