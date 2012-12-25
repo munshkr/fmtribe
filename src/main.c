@@ -1,3 +1,6 @@
+#include <conio.h>
+#include <keys.h>
+
 #include "common.h"
 #include "sound.h"
 #include "vga.h"
@@ -16,11 +19,14 @@
 
 
 const int DEFAULT_BPM = 120;
-const char STEP_KEYS[] = "qwertyuiasdfghjk";
+
+const char STEP_KEYS[]       = "qwertyuiasdfghjk";
+const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
 
 bool  metronome_on = false;
 float current_bpm;
 int   current_usecs_per_beat;
+bool  dirty = true;
 
 uclock_t prev_tap = NULL;
 
@@ -94,36 +100,37 @@ int main(int argc, char* argv[])
 
     set_bpm(DEFAULT_BPM);
 
-    // TODO Draw step-sequencer board
     render_board();
 
-    int ch;
     bool is_running = true;
     uclock_t prev = uclock();
     init_tick();
 
     while (is_running) {
-        ch = getch();
+        if (kbhit()) {
+            int key = getkey();
 
-        switch (ch) {
-          case 27:
-            is_running = false;
-            break;
-          case 'm':
-            toggle_metronome();
-            break;
-          case 'n':
-            tap_tempo();
-            break;
-          case 'z':
-            clear_seq();
-            break;
-        }
+            switch (key) {
+              case K_Escape:
+                is_running = false;
+                break;
+              case K_Shift_F9:
+                toggle_metronome();
+                break;
+              case K_F9:
+                tap_tempo();
+                break;
+              case K_Delete:
+                clear_seq();
+                break;
+            }
 
-        int i;
-        for (i = 0; i < 16; i++) {
-            if (ch == STEP_KEYS[i]) {
-                seq[i / BOARD_COLS][i % BOARD_COLS] = not(seq[i / BOARD_COLS][i % BOARD_COLS]);
+            int i;
+            for (i = 0; i < 16; i++) {
+                if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
+                    seq[i / BOARD_COLS][i % BOARD_COLS] = not(seq[i / BOARD_COLS][i % BOARD_COLS]);
+                    dirty = true;
+                }
             }
         }
 
@@ -138,7 +145,10 @@ int main(int argc, char* argv[])
             prev = now;
         }
 
-        render();
+        if (dirty) {
+            render();
+            dirty = false;
+        }
     }
 
     set_mode(TEXT_MODE);
