@@ -5,6 +5,9 @@
 #include "sound.h"
 #include "vga.h"
 
+#define CHANNELS 8
+#define STEPS    16
+
 #define BOARD_SQUARE_SIZE 25
 #define BOARD_SQUARE_PADDING 10
 #define BOARD_ROWS 2
@@ -13,24 +16,32 @@
 #define BOARD_WIDTH  ((BOARD_SQUARE_SIZE * BOARD_COLS) + (BOARD_SQUARE_PADDING * (BOARD_COLS - 1)))
 #define BOARD_HEIGHT ((BOARD_SQUARE_SIZE * BOARD_ROWS) + (BOARD_SQUARE_PADDING * (BOARD_ROWS - 1)))
 #define BOARD_SIZE   (BOARD_WIDTH * BOARD_HEIGHT)
-
 #define BOARD_LEFT   ((SCREEN_WIDTH  / 2) - (BOARD_WIDTH  / 2))
 #define BOARD_TOP    ((SCREEN_HEIGHT / 2) - (BOARD_HEIGHT / 2))
+
+#define CHANNEL_SELECTOR_WIDTH  15
+#define CHANNEL_SELECTOR_HEIGHT 6
+#define CHANNEL_SELECTOR_TOP    (BOARD_TOP - CHANNEL_SELECTOR_HEIGHT - 10)
+#define CHANNEL_SELECTOR_LEFT   BOARD_LEFT
 
 
 const int DEFAULT_BPM = 120;
 
 const char STEP_KEYS[]       = "qwertyuiasdfghjk";
 const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
+const char CHANNEL_KEYS[]    = "12345678";
+
+const byte CHANNEL_COLORS[CHANNELS] = { 8, 9, 10, 11, 12, 13, 14, 15 };
 
 bool  metronome_on = false;
 float current_bpm;
 int   current_usecs_per_beat;
 bool  dirty = true;
+int   current_channel = 0;
 
 uclock_t prev_tap = NULL;
 
-bool seq[BOARD_ROWS][BOARD_COLS] = {};
+bool seq[CHANNELS][BOARD_ROWS][BOARD_COLS] = {};
 
 
 void toggle_metronome() {
@@ -60,9 +71,20 @@ void tap_tempo() {
     prev_tap = now;
 }
 
-void clear_seq()
+void clear_seq(int channel) {
+    int i, j;
+    for (i = 0; i < BOARD_ROWS; i++) {
+        for (j = 0; j < BOARD_COLS; j++) {
+            seq[channel][i][j] = 0;
+        }
+    }
+    dirty = true;
+}
+
+void clear_seq_all()
 {
-    memset(seq, 0, BOARD_ROWS * BOARD_COLS * sizeof(bool));
+    memset(seq, 0, CHANNELS * BOARD_ROWS * BOARD_COLS * sizeof(bool));
+    dirty = true;
 }
 
 void render_board()
@@ -72,10 +94,10 @@ void render_board()
     for (i = 0; i < BOARD_ROWS; i++) {
         int left = BOARD_LEFT;
         for (j = 0; j < BOARD_COLS; j++) {
-            if (seq[i][j]) {
-                square_fill(left, top, BOARD_SQUARE_SIZE, 10);
+            if (seq[current_channel][i][j]) {
+                square_fill(left, top, BOARD_SQUARE_SIZE, CHANNEL_COLORS[current_channel]);
             } else {
-                square(left, top, BOARD_SQUARE_SIZE, 10);
+                square(left, top, BOARD_SQUARE_SIZE, CHANNEL_COLORS[current_channel]);
             }
             left += (BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING);
         }
@@ -83,10 +105,29 @@ void render_board()
     }
 }
 
+void render_channel_selector()
+{
+    const int top = CHANNEL_SELECTOR_TOP;
+    const int bottom = top + CHANNEL_SELECTOR_HEIGHT;
+    int left = CHANNEL_SELECTOR_LEFT;
+    int right = left + CHANNEL_SELECTOR_WIDTH;
+
+    int i;
+    for (i = 0; i < CHANNELS; i++) {
+        if (i == current_channel) {
+            rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
+        } else {
+            rect(left, top, right, bottom, CHANNEL_COLORS[i]);
+        }
+        left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
+        right = left + CHANNEL_SELECTOR_WIDTH;
+    }
+}
+
 void render()
 {
     clear_screen();
-    //render_channel_selector();
+    render_channel_selector();
     render_board();
 }
 
@@ -121,15 +162,26 @@ int main(int argc, char* argv[])
                 tap_tempo();
                 break;
               case K_Delete:
-                clear_seq();
+                clear_seq(current_channel);
+                break;
+              case K_Control_Delete:
+                clear_seq_all();
                 break;
             }
 
             int i;
-            for (i = 0; i < 16; i++) {
+            for (i = 0; i < STEPS; i++) {
                 if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                    seq[i / BOARD_COLS][i % BOARD_COLS] = not(seq[i / BOARD_COLS][i % BOARD_COLS]);
+                    seq[current_channel][i / BOARD_COLS][i % BOARD_COLS] = not(seq[current_channel][i / BOARD_COLS][i % BOARD_COLS]);
                     dirty = true;
+                }
+            }
+
+            for (i = 0; i < CHANNELS; i++) {
+                if (key == CHANNEL_KEYS[i]) {
+                    current_channel = i;
+                    dirty = true;
+                    break;
                 }
             }
         }
