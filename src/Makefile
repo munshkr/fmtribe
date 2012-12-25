@@ -1,7 +1,6 @@
 BIN := fm.exe
 SOURCES := main.c common.c vga.c sound.c
 OBJS := $(SOURCES:.c=.o)
-LIBS := -lpdcur~1
 
 all: $(BIN)
 

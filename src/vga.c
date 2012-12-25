@@ -19,6 +19,11 @@ void set_mode(byte mode)
     int86(VIDEO_INT, &regs, &regs);
 }
 
+void clear_screen()
+{
+    memset(VGA, 0, SCREEN_SIZE);
+}
+
 __inline void putp(int x, int y, byte color)
 {
     VGA[(y << 8) + (y << 6) + x] = color;
@@ -118,3 +123,10 @@ void rect_fill(int left, int top, int right, int bottom, byte color)
     }
 }
 
+__inline void square(int left, int top, int size, byte color) {
+    rect(left, top, left + size, top + size, color);
+}
+
+__inline void square_fill(int left, int top, int size, byte color) {
+    rect_fill(left, top, left + size, top + size, color);
+}

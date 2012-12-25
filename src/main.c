@@ -1,10 +1,22 @@
-#include <stdlib.h>
-#include <curses.h>
-
 #include "common.h"
 #include "sound.h"
+#include "vga.h"
+
+#define BOARD_SQUARE_SIZE 25
+#define BOARD_SQUARE_PADDING 10
+#define BOARD_ROWS 2
+#define BOARD_COLS 8
+
+#define BOARD_WIDTH  ((BOARD_SQUARE_SIZE * BOARD_COLS) + (BOARD_SQUARE_PADDING * (BOARD_COLS - 1)))
+#define BOARD_HEIGHT ((BOARD_SQUARE_SIZE * BOARD_ROWS) + (BOARD_SQUARE_PADDING * (BOARD_ROWS - 1)))
+#define BOARD_SIZE   (BOARD_WIDTH * BOARD_HEIGHT)
+
+#define BOARD_LEFT   ((SCREEN_WIDTH  / 2) - (BOARD_WIDTH  / 2))
+#define BOARD_TOP    ((SCREEN_HEIGHT / 2) - (BOARD_HEIGHT / 2))
+
 
 const int DEFAULT_BPM = 120;
+const char STEP_KEYS[] = "qwertyuiasdfghjk";
 
 bool  metronome_on = false;
 float current_bpm;
@@ -12,13 +24,15 @@ int   current_usecs_per_beat;
 
 uclock_t prev_tap = NULL;
 
+bool seq[BOARD_ROWS][BOARD_COLS] = {};
+
 
 void toggle_metronome() {
     metronome_on = metronome_on ? false : true;
     if (metronome_on) {
-        mvprintw(24, 0, "Metronome enabled ");
+        //printf("Metronome enabled ");
     } else {
-        mvprintw(24, 0, "Metronome disabled ");
+        //printf("Metronome disabled ");
     }
 }
 
@@ -40,20 +54,50 @@ void tap_tempo() {
     prev_tap = now;
 }
 
+void clear_seq()
+{
+    memset(seq, 0, BOARD_ROWS * BOARD_COLS * sizeof(bool));
+}
+
+void render_board()
+{
+    int i, j;
+    int top = BOARD_TOP;
+    for (i = 0; i < BOARD_ROWS; i++) {
+        int left = BOARD_LEFT;
+        for (j = 0; j < BOARD_COLS; j++) {
+            if (seq[i][j]) {
+                square_fill(left, top, BOARD_SQUARE_SIZE, 10);
+            } else {
+                square(left, top, BOARD_SQUARE_SIZE, 10);
+            }
+            left += (BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING);
+        }
+        top += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;
+    }
+}
+
+void render()
+{
+    clear_screen();
+    //render_channel_selector();
+    render_board();
+}
+
 
 int main(int argc, char* argv[])
 {
     reset_sound();
 
-    initscr();
-    cbreak();
-    noecho();
-    nodelay(stdscr, TRUE);
-    keypad(stdscr, TRUE);
+    init_vga();
+    set_mode(VIDEO_MODE);
 
     set_bpm(DEFAULT_BPM);
 
-    printw("FMTribe");
+    //printf("FMTribe");
+
+    // TODO Draw step-sequencer board
+    render_board();
 
     int ch;
     bool is_running = true;
@@ -62,9 +106,10 @@ int main(int argc, char* argv[])
 
     while (is_running) {
         ch = getch();
+
         switch (ch) {
-          case KEY_ESC:
-            printw(" Exit");
+          case 27:
+            //printf(" Exit");
             is_running = false;
             break;
           case KEY_F(9):
@@ -73,23 +118,33 @@ int main(int argc, char* argv[])
           case KEY_F(10):
             tap_tempo();
             break;
+          case 127:
+            clear_seq();
+            break;
+        }
+
+        int i;
+        for (i = 0; i < 16; i++) {
+            if (ch == STEP_KEYS[i]) {
+                seq[i / BOARD_COLS][i % BOARD_COLS] = not(seq[i / BOARD_COLS][i % BOARD_COLS]);
+            }
         }
 
         uclock_t now = uclock();
         if (now >= prev + current_usecs_per_beat) {
             if (metronome_on) {
                 play_tick();
-                printw("o");
+                //printf("o");
             } else {
-                printw(".");
+                //printf(".");
             }
             prev = now;
         }
+
+        render();
     }
 
-    refresh();
-    endwin();
-
+    set_mode(TEXT_MODE);
     reset_sound();
 
     return EXIT_SUCCESS;
