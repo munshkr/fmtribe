@@ -11,8 +11,8 @@ typedef char* string;
 #define KEY_ESC 27
 #define USECS_PER_MINUTE (1000000 * 60)
 
-void outb(const int port, const char data);
-int inb(const int port);
+__inline void outb(const int port, const char data);
+__inline int inb(const int port);
 
 void msleep(const int microsecs);
 
