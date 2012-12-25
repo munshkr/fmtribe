@@ -87,6 +87,20 @@ void clear_seq_all()
     dirty = true;
 }
 
+void select_prev_channel() {
+    if (current_channel > 0) {
+        current_channel--;
+        dirty = true;
+    }
+}
+
+void select_next_channel() {
+    if (current_channel < CHANNELS - 1) {
+        current_channel++;
+        dirty = true;
+    }
+}
+
 void render_board()
 {
     int i, j;
@@ -166,6 +180,12 @@ int main(int argc, char* argv[])
                 break;
               case K_Control_Delete:
                 clear_seq_all();
+                break;
+              case K_Left:
+                select_prev_channel();
+                break;
+              case K_Right:
+                select_next_channel();
                 break;
             }
 
