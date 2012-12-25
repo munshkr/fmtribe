@@ -4,6 +4,10 @@
 #include <time.h>
 
 typedef char* string;
+typedef unsigned char  byte;
+typedef unsigned short word;
+
+#define sgn(x) (x > 0 ? 1 : (x < 0 ? (-1) : 0))
 
 #define true  1
 #define false 0
