@@ -1,5 +1,5 @@
-BIN := test.exe
-SOURCES := test.c
+BIN := fm.exe
+SOURCES := fm.c
 OBJS := $(SOURCES:.c=.o)
 #LIBS := -lcurses
 
@@ -8,7 +8,7 @@ all: $(BIN)
 clean:
 	rm -f $(BIN) $(OBJS)
 
-test.exe: $(OBJS)
+fm.exe: $(OBJS)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LFLAGS) $(LIBS)
 
 .c.o:
