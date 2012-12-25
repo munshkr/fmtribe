@@ -41,11 +41,12 @@ int   current_channel = 0;
 
 uclock_t prev_tap = NULL;
 
-bool seq[CHANNELS][BOARD_ROWS][BOARD_COLS] = {};
+bool seq[CHANNELS][STEPS] = {};
 
 
-void toggle_metronome() {
-    metronome_on = metronome_on ? false : true;
+void toggle_metronome()
+{
+    metronome_on = not(metronome_on);
     if (metronome_on) {
         //printf("Metronome enabled ");
     } else {
@@ -53,17 +54,20 @@ void toggle_metronome() {
     }
 }
 
-void set_bpm(const float value) {
+void set_bpm(const float value)
+{
     current_bpm = value;
     current_usecs_per_beat = USECS_PER_MINUTE / value;
 }
 
-void set_bpm_from_usecs_per_beat(uclock_t usecs) {
+void set_bpm_from_usecs_per_beat(uclock_t usecs)
+{
     current_bpm = usecs * USECS_PER_MINUTE;
     current_usecs_per_beat = usecs;
 }
 
-void tap_tempo() {
+void tap_tempo()
+{
     uclock_t now = uclock();
     if (prev_tap) {
         set_bpm_from_usecs_per_beat(now - prev_tap);
@@ -71,19 +75,15 @@ void tap_tempo() {
     prev_tap = now;
 }
 
-void clear_seq(int channel) {
-    int i, j;
-    for (i = 0; i < BOARD_ROWS; i++) {
-        for (j = 0; j < BOARD_COLS; j++) {
-            seq[channel][i][j] = 0;
-        }
-    }
+void clear_seq(int channel)
+{
+    memset(seq[channel], 0, STEPS * sizeof(bool));
     dirty = true;
 }
 
 void clear_seq_all()
 {
-    memset(seq, 0, CHANNELS * BOARD_ROWS * BOARD_COLS * sizeof(bool));
+    memset(seq, 0, CHANNELS * STEPS * sizeof(bool));
     dirty = true;
 }
 
@@ -94,7 +94,7 @@ void render_board()
     for (i = 0; i < BOARD_ROWS; i++) {
         int left = BOARD_LEFT;
         for (j = 0; j < BOARD_COLS; j++) {
-            if (seq[current_channel][i][j]) {
+            if (seq[current_channel][(i * BOARD_COLS) + j]) {
                 square_fill(left, top, BOARD_SQUARE_SIZE, CHANNEL_COLORS[current_channel]);
             } else {
                 square(left, top, BOARD_SQUARE_SIZE, CHANNEL_COLORS[current_channel]);
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
             int i;
             for (i = 0; i < STEPS; i++) {
                 if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                    seq[current_channel][i / BOARD_COLS][i % BOARD_COLS] = not(seq[current_channel][i / BOARD_COLS][i % BOARD_COLS]);
+                    seq[current_channel][i] = not(seq[current_channel][i]);
                     dirty = true;
                 }
             }
