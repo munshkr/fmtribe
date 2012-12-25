@@ -94,8 +94,6 @@ int main(int argc, char* argv[])
 
     set_bpm(DEFAULT_BPM);
 
-    //printf("FMTribe");
-
     // TODO Draw step-sequencer board
     render_board();
 
@@ -109,16 +107,15 @@ int main(int argc, char* argv[])
 
         switch (ch) {
           case 27:
-            //printf(" Exit");
             is_running = false;
             break;
-          case KEY_F(9):
+          case 'm':
             toggle_metronome();
             break;
-          case KEY_F(10):
+          case 'n':
             tap_tempo();
             break;
-          case 127:
+          case 'z':
             clear_seq();
             break;
         }
