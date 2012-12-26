@@ -31,18 +31,36 @@ const char STEP_KEYS[]       = "qwertyuiasdfghjk";
 const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
 const char CHANNEL_KEYS[]    = "12345678";
 
-const byte CHANNEL_COLORS[CHANNELS] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+const byte CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+const byte CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+
+bool  dirty = true;
+
+uclock_t current_usecs_per_step = 0;
+float    current_bpm;
+int      current_channel = 0;
+int      current_step = 0;
 
 bool  metronome_on = false;
-float current_bpm;
-int   current_usecs_per_beat;
-bool  dirty = true;
-int   current_channel = 0;
 
 uclock_t prev_tap = NULL;
 
 bool seq[CHANNELS][STEPS] = {};
 
+
+void tick()
+{
+    current_step++;
+    if (current_step == STEPS) {
+        current_step = 0;
+    }
+    if (metronome_on) {
+        if (current_step % 4 == 0) {
+            play_tick();
+        }
+    }
+    dirty = true;
+}
 
 void toggle_metronome()
 {
@@ -57,13 +75,13 @@ void toggle_metronome()
 void set_bpm(const float value)
 {
     current_bpm = value;
-    current_usecs_per_beat = USECS_PER_MINUTE / value;
+    current_usecs_per_step = (USECS_PER_MINUTE / value) / 4;
 }
 
 void set_bpm_from_usecs_per_beat(uclock_t usecs)
 {
     current_bpm = usecs * USECS_PER_MINUTE;
-    current_usecs_per_beat = usecs;
+    current_usecs_per_step = usecs / 4;
 }
 
 void tap_tempo()
@@ -103,17 +121,32 @@ void select_next_channel() {
 
 void render_board()
 {
-    int i, j;
+    int color = CHANNEL_COLORS[current_channel];
     int top = BOARD_TOP;
+    int i, j, z = 0;
     for (i = 0; i < BOARD_ROWS; i++) {
         int left = BOARD_LEFT;
         for (j = 0; j < BOARD_COLS; j++) {
-            if (seq[current_channel][(i * BOARD_COLS) + j]) {
-                square_fill(left, top, BOARD_SQUARE_SIZE, CHANNEL_COLORS[current_channel]);
-            } else {
-                square(left, top, BOARD_SQUARE_SIZE, CHANNEL_COLORS[current_channel]);
+            // if it is about to render the square for the current step,
+            // use a different color.
+            if (z == current_step) {
+                color = CHANNEL_COLORS_B[current_channel];
             }
+
+            // render a filled square if the step is toggled
+            if (seq[current_channel][(i * BOARD_COLS) + j]) {
+                square_fill(left, top, BOARD_SQUARE_SIZE, color);
+            } else {
+                square(left, top, BOARD_SQUARE_SIZE, color);
+            }
+
+            // restore color
+            if (z == current_step) {
+                color = CHANNEL_COLORS[current_channel];
+            }
+
             left += (BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING);
+            z++;
         }
         top += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;
     }
@@ -207,13 +240,8 @@ int main(int argc, char* argv[])
         }
 
         uclock_t now = uclock();
-        if (now >= prev + current_usecs_per_beat) {
-            if (metronome_on) {
-                play_tick();
-                //printf("o");
-            } else {
-                //printf(".");
-            }
+        if (now >= prev + current_usecs_per_step) {
+            tick();
             prev = now;
         }
 
