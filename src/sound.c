@@ -37,7 +37,7 @@ void reset_sound() {
 
     write(0xbd, 0);
 
-    for (i = 0; i <= 5; ++i) {
+    for (i = 0; i <= 0x15; ++i) {
         write(0xe0 + i, 0);
     }
 }
