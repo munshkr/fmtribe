@@ -9,6 +9,6 @@
 void write(const int reg, const int value);
 void reset_sound();
 
-void play_tick();
+void play_metronome();
 
 #endif // __SOUND_H__

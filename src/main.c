@@ -54,12 +54,20 @@ void tick()
     if (current_step == STEPS) {
         current_step = 0;
     }
+    dirty = true;
+
     if (metronome_on) {
         if (current_step % 4 == 0) {
-            play_tick();
+            play_metronome();
         }
     }
-    dirty = true;
+
+    int c;
+    for (c = 0; c < CHANNELS; c++) {
+        if (seq[c][current_step]) {
+            // TODO play channel sound
+        }
+    }
 }
 
 void toggle_metronome()
@@ -192,7 +200,6 @@ int main(int argc, char* argv[])
 
     bool is_running = true;
     uclock_t prev = uclock();
-    init_tick();
 
     while (is_running) {
         if (kbhit()) {
