@@ -179,9 +179,27 @@ void render_channel_selector()
     }
 }
 
+void render_hits()
+{
+    const int top = CHANNEL_SELECTOR_TOP - (CHANNEL_SELECTOR_HEIGHT / 2) - 3;
+    const int bottom = top + (CHANNEL_SELECTOR_HEIGHT / 2);
+    int left = CHANNEL_SELECTOR_LEFT;
+    int right = left + CHANNEL_SELECTOR_WIDTH;
+
+    int i;
+    for (i = 0; i < CHANNELS; i++) {
+        if (seq[i][current_step]) {
+            rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
+        }
+        left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
+        right = left + CHANNEL_SELECTOR_WIDTH;
+    }
+}
+
 void render()
 {
     clear_screen();
+    render_hits();
     render_channel_selector();
     render_board();
 }
