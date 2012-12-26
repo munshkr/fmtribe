@@ -58,7 +58,7 @@ void tick()
 
     if (metronome_on) {
         if (current_step % 4 == 0) {
-            play_metronome();
+            sound_play_metronome_tick();
         }
     }
 
@@ -207,7 +207,7 @@ void render()
 
 int main(int argc, char* argv[])
 {
-    reset_sound();
+    sound_reset();
 
     init_vga();
     set_mode(VIDEO_MODE);
@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
     }
 
     set_mode(TEXT_MODE);
-    reset_sound();
+    sound_reset();
 
     return EXIT_SUCCESS;
 }

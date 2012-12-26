@@ -19,9 +19,6 @@ typedef unsigned short word;
 #define sgn(x) (x > 0 ? 1 : (x < 0 ? (-1) : 0))
 #define not(x) (x ? false : true)
 
-__inline void outb(const int port, const char data);
-__inline int inb(const int port);
-
 void msleep(const int microsecs);
 
 #endif // __COMMON_H__
