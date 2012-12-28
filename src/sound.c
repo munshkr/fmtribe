@@ -72,20 +72,20 @@ void sound_reset() {
 }
 
 void sound_play_metronome_tick() {
-    sound_write(0x20, 0x01);  // Set the modulator's multiple to 1
-    sound_write(0x40, 0x10);  // Set the modulator's level to about 40 dB
-    sound_write(0x60, 0xf0);  // Modulator attack: quick; decay: long
-    sound_write(0x80, 0x77);  // Modulator sustain: medium; release: medium
+    sound_write(CH(1) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the modulator's multiple to 1
+    sound_write(CH(1) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x10);  // Set the modulator's level to about 40 dB
+    sound_write(CH(1) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Modulator attack: quick; decay: long
+    sound_write(CH(1) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Modulator sustain: medium; release: medium
 
-    sound_write(0x23, 0x01);  // Set the carrier's multiple to 1
-    sound_write(0x43, 0x00);  // Set the carrier to maximum volume (about 47 dB)
-    sound_write(0x63, 0xf0);  // Carrier attack: quick; decay: long
-    sound_write(0x83, 0x77);  // Carrier sustain: medium; release: medium
+    sound_write(CH(1) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the carrier's multiple to 1
+    sound_write(CH(1) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);  // Set the carrier to maximum volume (about 47 dB)
+    sound_write(CH(1) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Carrier attack: quick; decay: long
+    sound_write(CH(1) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Carrier sustain: medium; release: medium
 
-    sound_write(0xa0, 0x98);  // Set voice frequency's LSB (it'll be a D#)
+    sound_write(FREQ_LOW(1), 0x98);  // Set voice frequency's LSB (it'll be a D#)
 
-    sound_write(0xb0, 0x31);  // Turn the voice on; set the octave and freq MSB
+    sound_write(FREQ_HIGH_KEYON_OCTAVE(1), 0x31);  // Turn the voice on; set the octave and freq MSB
     msleep(1000);
 
-    sound_write(0xb0, 0x11);  // Turn the voice off
+    sound_write(FREQ_HIGH_KEYON_OCTAVE(1), 0x11);  // Turn the voice off
 }
