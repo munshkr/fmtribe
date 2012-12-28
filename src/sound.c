@@ -3,25 +3,12 @@
 #define ADDR_PORT 0x388
 #define DATA_PORT 0x389
 
-#define OP1_CH1 0x00
-#define OP1_CH2 0x01
-#define OP1_CH3 0x02
-#define OP1_CH4 0x08
-#define OP1_CH5 0x09
-#define OP1_CH6 0x0A
-#define OP1_CH7 0x10
-#define OP1_CH8 0x11
-#define OP1_CH9 0x12
+#define OP1 0x00
+#define OP2 0x03
 
-#define OP2_CH1 0x03
-#define OP2_CH2 0x04
-#define OP2_CH3 0x05
-#define OP2_CH4 0x0B
-#define OP2_CH5 0x0C
-#define OP2_CH6 0x0D
-#define OP2_CH7 0x13
-#define OP2_CH8 0x14
-#define OP2_CH9 0x15
+#define CH(n) (n >= 1 && n <= 3 ? (n - 1) : \
+              (n >= 4 && n <= 6 ? (n + 4) : \
+              (n >= 7 && n <= 9 ? (n + 9) : 0)))
 
 #define TEST_LSI_ENABLE_WAVEFORM            0x01
 #define TIMER1_DATA                         0x02
@@ -30,16 +17,17 @@
 #define SPEECH_MODE_KBD_SPLIT_NOTE          0x08
 
 // Base address for operator-channel set of registers
-// e.g: ATTACK_RATE_DECAY_RATE__BASE + OP1_CH4
+// e.g: ATTACK_RATE_DECAY_RATE__BASE + CH(4) + OP1
+//
 #define AM_VIB_EG_KSR_MULT__BASE            0x20
 #define KEY_SCALING_OPERATOR_LEVELS__BASE   0x40
 #define ATTACK_RATE_DECAY_RATE__BASE        0x60
 #define SUSTAIN_LEVEL_RELEASE_RATE__BASE    0x80
 #define WAVE_SELECT__BASE                   0xE0
 
-#define FREQ_LOW(c)                         (0xA0 + c)
-#define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c)
-#define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c)
+#define FREQ_LOW(c)                         (0xA0 + c - 1)
+#define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c - 1)
+#define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c - 1)
 
 #define AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL  0xBD
 
