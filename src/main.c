@@ -34,14 +34,16 @@ const char CHANNEL_KEYS[]    = "12345678";
 const byte CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
 const byte CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
-bool  dirty = true;
+bool dirty = true;
+bool pause_after_current_step = false;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
 int      current_channel = 0;
 int      current_step = 0;
 
-bool  metronome_on = false;
+bool playing = false;
+bool metronome_on = false;
 
 uclock_t prev_tap = NULL;
 
@@ -230,6 +232,13 @@ int main(int argc, char* argv[])
               case K_Escape:
                 is_running = false;
                 break;
+              case K_F5:
+                if (playing) {
+                    pause_after_current_step = true;
+                } else {
+                    playing = true;
+                }
+                break;
               case K_Shift_F9:
                 toggle_metronome();
                 break;
@@ -267,10 +276,17 @@ int main(int argc, char* argv[])
             }
         }
 
-        uclock_t now = uclock();
-        if (now >= prev + current_usecs_per_step) {
-            tick();
-            prev = now;
+        if (playing) {
+            uclock_t now = uclock();
+            if (now >= prev + current_usecs_per_step) {
+                if (pause_after_current_step) {
+                    pause_after_current_step = false;
+                    playing = false;
+                } else {
+                    tick();
+                }
+                prev = now;
+            }
         }
 
         if (dirty) {
