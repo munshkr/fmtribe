@@ -6,9 +6,6 @@
 
 #include "common.h"
 
-#define ADDR_PORT 0x388
-#define DATA_PORT 0x389
-
 __inline void sound_write(const int reg, const int value);
 void sound_reset();
 

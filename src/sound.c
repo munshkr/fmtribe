@@ -1,5 +1,49 @@
 #include "sound.h"
 
+#define ADDR_PORT 0x388
+#define DATA_PORT 0x389
+
+#define OP1_CH1 0x00
+#define OP1_CH2 0x01
+#define OP1_CH3 0x02
+#define OP1_CH4 0x08
+#define OP1_CH5 0x09
+#define OP1_CH6 0x0A
+#define OP1_CH7 0x10
+#define OP1_CH8 0x11
+#define OP1_CH9 0x12
+
+#define OP2_CH1 0x03
+#define OP2_CH2 0x04
+#define OP2_CH3 0x05
+#define OP2_CH4 0x0B
+#define OP2_CH5 0x0C
+#define OP2_CH6 0x0D
+#define OP2_CH7 0x13
+#define OP2_CH8 0x14
+#define OP2_CH9 0x15
+
+#define TEST_LSI_ENABLE_WAVEFORM            0x01
+#define TIMER1_DATA                         0x02
+#define TIMER2_DATA                         0x03
+#define TIMER_CONTROL_FLAGS                 0x04
+#define SPEECH_MODE_KBD_SPLIT_NOTE          0x08
+
+// Base address for operator-channel set of registers
+// e.g: ATTACK_RATE_DECAY_RATE__BASE + OP1_CH4
+#define AM_VIB_EG_KSR_MULT__BASE            0x20
+#define KEY_SCALING_OPERATOR_LEVELS__BASE   0x40
+#define ATTACK_RATE_DECAY_RATE__BASE        0x60
+#define SUSTAIN_LEVEL_RELEASE_RATE__BASE    0x80
+#define WAVE_SELECT__BASE                   0xE0
+
+#define FREQ_LOW(c)                         (0xA0 + c)
+#define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c)
+#define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c)
+
+#define AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL  0xBD
+
+
 __inline void sound_write(const int reg, const int value) {
     // set requested register into address port
     outp(ADDR_PORT, reg);
@@ -44,13 +88,16 @@ void sound_play_metronome_tick() {
     sound_write(0x40, 0x10);  // Set the modulator's level to about 40 dB
     sound_write(0x60, 0xf0);  // Modulator attack: quick; decay: long
     sound_write(0x80, 0x77);  // Modulator sustain: medium; release: medium
-    sound_write(0xa0, 0x98);  // Set voice frequency's LSB (it'll be a D#)
+
     sound_write(0x23, 0x01);  // Set the carrier's multiple to 1
     sound_write(0x43, 0x00);  // Set the carrier to maximum volume (about 47 dB)
     sound_write(0x63, 0xf0);  // Carrier attack: quick; decay: long
     sound_write(0x83, 0x77);  // Carrier sustain: medium; release: medium
 
+    sound_write(0xa0, 0x98);  // Set voice frequency's LSB (it'll be a D#)
+
     sound_write(0xb0, 0x31);  // Turn the voice on; set the octave and freq MSB
     msleep(1000);
+
     sound_write(0xb0, 0x11);  // Turn the voice off
 }
