@@ -36,6 +36,7 @@ const byte CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x
 
 bool dirty = true;
 bool pause_after_current_step = false;
+bool stop_after_current_bar = false;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -54,12 +55,6 @@ unsigned short notes[] = { NOTE_Cs, NOTE_D, NOTE_Ds, NOTE_E, NOTE_F, NOTE_Fs, NO
 
 void tick()
 {
-    current_step++;
-    if (current_step == STEPS) {
-        current_step = 0;
-    }
-    dirty = true;
-
     if (metronome_on) {
         if (current_step % 4 == 0) {
             sound_play_metronome_tick(9, NOTE_E);
@@ -73,6 +68,16 @@ void tick()
             sound_play_metronome_tick(c + 1, notes[c]);
         }
     }
+
+    current_step++;
+    if (current_step == STEPS) {
+        current_step = 0;
+        if (stop_after_current_bar) {
+            playing = false;
+            stop_after_current_bar = false;
+        }
+    }
+    dirty = true;
 }
 
 void toggle_metronome()
@@ -237,6 +242,11 @@ int main(int argc, char* argv[])
                     pause_after_current_step = true;
                 } else {
                     playing = true;
+                }
+                break;
+              case K_F7:
+                if (playing && !pause_after_current_step) {
+                    stop_after_current_bar = true;
                 }
                 break;
               case K_Shift_F9:
