@@ -47,6 +47,8 @@ uclock_t prev_tap = NULL;
 
 bool seq[CHANNELS][STEPS] = {};
 
+unsigned short notes[] = { NOTE_Cs, NOTE_D, NOTE_Ds, NOTE_E, NOTE_F, NOTE_Fs, NOTE_G, NOTE_Gs, NOTE_A, NOTE_As, NOTE_B, NOTE_C };
+
 
 void tick()
 {
@@ -58,7 +60,7 @@ void tick()
 
     if (metronome_on) {
         if (current_step % 4 == 0) {
-            sound_play_metronome_tick();
+            sound_play_metronome_tick(9, NOTE_E);
         }
     }
 
@@ -66,6 +68,7 @@ void tick()
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             // TODO play channel sound
+            sound_play_metronome_tick(c + 1, notes[c]);
         }
     }
 }
