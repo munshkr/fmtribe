@@ -1,0 +1,100 @@
+A2i FiLE FORMAT DESCRiPTiON
+===========================
+
+ Offset Length   Type
+
+ 000000      7   (char)   ID string '_a2ins_'
+ 000007      2   (word)   16-bit cyclic redundancy check value
+ 000009      1   (byte)   file format version
+
+
+file format version 1,2,3 or 4
+------------------------------
+
+ 00000a      1   (byte)   length of data block {%len}
+ 00000b   %len   (byte)   data block
+
+ --EOF-
+
+ structure of data block after decompression:
+
+ Offset Length   Type
+
+ 000000      1   (byte)   AM/Vibrato/EG   (modulator)
+ 000001      1   (byte)   ...             (carrier)
+ 000002      1   (byte)   KSL/Volume      (modulator)
+ 000003      1   (byte)   ...             (carrier)
+ 000004      1   (byte)   Attack/Decay    (modulator)
+ 000005      1   (byte)   ...             (carrier)
+ 000006      1   (byte)   Sustain/Release (modulator)
+ 000007      1   (byte)   ...             (carrier)
+ 000008      1   (byte)   WaveForm        (modulator)
+ 000009      1   (byte)   ...             (carrier)
+ 00000a      1   (byte)   Feedback/FM
+ 00000b      1   (byte)   miscellaneous (unused)
+ 00000c      1   (byte)   fine-tune (signed)
+ 00000d     23   (string) instrument name [22 characters]
+
+
+file format version 5,6,7 or 8
+------------------------------
+
+ 00000a      1   (byte)   length of data block {%len}
+ 00000b   %len   (byte)   data block
+
+ --EOF-
+
+ structure of data block after decompression:
+
+ Offset Length   Type
+
+ 000000      1   (byte)   AM/Vibrato/EG   (modulator)
+ 000001      1   (byte)   ...             (carrier)
+ 000002      1   (byte)   KSL/Volume      (modulator)
+ 000003      1   (byte)   ...             (carrier)
+ 000004      1   (byte)   Attack/Decay    (modulator)
+ 000005      1   (byte)   ...             (carrier)
+ 000006      1   (byte)   Sustain/Release (modulator)
+ 000007      1   (byte)   ...             (carrier)
+ 000008      1   (byte)   WaveForm        (modulator)
+ 000009      1   (byte)   ...             (carrier)
+ 00000a      1   (byte)   Feedback/FM
+ 00000b      1   (byte)   panning (0=center,1=left,2=right)
+ 00000c      1   (byte)   fine-tune (signed)
+ 00000d     23   (string) instrument name [22 characters]
+
+
+file format version 9
+---------------------
+
+ 00000a      2   (word)   length of data block {%len}
+ 00000c   %len   (byte)   data block
+
+ --EOF-
+
+ structure of data block after decompression:
+
+ Offset Length   Type
+
+ 000000      1   (byte)   AM/Vibrato/EG   (modulator)
+ 000001      1   (byte)   ...             (carrier)
+ 000002      1   (byte)   KSL/Volume      (modulator)
+ 000003      1   (byte)   ...             (carrier)
+ 000004      1   (byte)   Attack/Decay    (modulator)
+ 000005      1   (byte)   ...             (carrier)
+ 000006      1   (byte)   Sustain/Release (modulator)
+ 000007      1   (byte)   ...             (carrier)
+ 000008      1   (byte)   WaveForm        (modulator)
+ 000009      1   (byte)   ...             (carrier)
+ 00000a      1   (byte)   Feedback/FM
+ 00000b      1   (byte)   panning (0=center,1=left,2=right)
+ 00000c      1   (byte)   fine-tune (signed)
+ 00000d      1   (byte)   voice type:
+
+                          /-----------------------------------\
+                          | 0   | melodic                     |
+                          | 1-5 | percussion (BD,SD,TT,TC,HH) |
+                          \-----------------------------------/
+
+ 00000e     33   (string) instrument name [32 characters]
+
