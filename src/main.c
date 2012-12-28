@@ -245,8 +245,16 @@ int main(int argc, char* argv[])
                 }
                 break;
               case K_F7:
-                if (playing && !pause_after_current_step) {
-                    stop_after_current_bar = true;
+                if (playing) {
+                    // on second F7, stop immediately, by pausing after current
+                    // step and resetting current_step.
+                    if (stop_after_current_bar) {
+                        stop_after_current_bar = false;
+                        pause_after_current_step = true;
+                        current_step = 0;
+                    } else {
+                        stop_after_current_bar = true;
+                    }
                 }
                 break;
               case K_Shift_F9:
@@ -292,6 +300,7 @@ int main(int argc, char* argv[])
                 if (pause_after_current_step) {
                     pause_after_current_step = false;
                     playing = false;
+                    dirty = true;
                 } else {
                     tick();
                 }
