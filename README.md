@@ -7,12 +7,14 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 ## Usage ##
 
 * `Esc`: Exit
-* `F5`: Play
+* `F5`: Play / pause
 * `F7`: Stop after bar (2 times, stop immeadiately)
 * `F9`: Tap tempo
 * `Ctrl` + `F9`: Toggle metronome
 * `Left`: Move left in the channel selector
 * `Right`: Move right in the channel selector
+* `Del`: Clear pattern for current channel
+* `Ctrl` + `Del`: Clear pattern for all channels
 
 ### Step sequencer ###
 
