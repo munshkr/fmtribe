@@ -57,7 +57,7 @@ void tick()
 {
     if (metronome_on) {
         if (current_step % 4 == 0) {
-            sound_play_metronome_tick(9, NOTE_E);
+            sound_play_metronome_tick(9, 1, NOTE_E);
         }
     }
 
@@ -65,7 +65,11 @@ void tick()
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             // TODO play channel sound
-            sound_play_metronome_tick(c + 1, notes[c]);
+            if (c == 0) {
+                sound_play_kick1(c + 1, 3, notes[0]);
+            } else {
+                sound_play_metronome_tick(c + 1, 4, notes[c]);
+            }
         }
     }
 

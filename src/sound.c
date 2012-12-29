@@ -1,7 +1,9 @@
 #include "sound.h"
 
-#define ADDR_PORT 0x388
-#define DATA_PORT 0x389
+#define BASE_PORT   0x388
+#define ADDR_PORT   BASE_PORT
+#define DATA_PORT   (BASE_PORT + 1)
+#define DATA_PORT_B (BASE_PORT + 3)
 
 #define OP1 0x00
 #define OP2 0x03
@@ -23,7 +25,7 @@
 #define KEY_SCALING_OPERATOR_LEVELS__BASE   0x40
 #define ATTACK_RATE_DECAY_RATE__BASE        0x60
 #define SUSTAIN_LEVEL_RELEASE_RATE__BASE    0x80
-#define WAVE_SELECT__BASE                   0xE0
+#define WAVEFORM_SELECT__BASE               0xE0
 
 #define FREQ_LOW(c)                         (0xA0 + c - 1)
 #define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c - 1)
@@ -32,7 +34,7 @@
 #define AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL  0xBD
 
 
-__inline void sound_write(const int reg, const int value) {
+__inline void setr(const int reg, const int value) {
     // set requested register into address port
     outp(ADDR_PORT, reg);
     msleep(10);
@@ -41,51 +43,109 @@ __inline void sound_write(const int reg, const int value) {
     msleep(60);
 }
 
+__inline void setr_b(const int reg, const int value) {
+    outp(ADDR_PORT, reg);
+    msleep(10);
+    outp(DATA_PORT_B, value);
+    msleep(60);
+}
+
 void sound_reset() {
     // reset sound by setting *all* registers to 0
 
     int i, j;
 
-    sound_write(1, 0);
-    sound_write(2, 0);
-    sound_write(3, 0);
-    sound_write(4, 0);
-    sound_write(8, 0);
+    setr(1, 0);
+    setr(2, 0);
+    setr(3, 0);
+    setr(4, 0);
+    setr(8, 0);
 
     for (i = 0; i < 4; ++i) {
         for (j = 0; j <= 0x15; ++j) {
-            sound_write(0x20 + (0x20 * i) + j, 0);
+            setr(0x20 + (0x20 * i) + j, 0);
         }
     }
 
     for (i = 0; i < 3; ++i) {
         for (j = 0; j <= 8; ++j) {
-            sound_write(0xa0 + (0x10 * i) + j, 0);
+            setr(0xa0 + (0x10 * i) + j, 0);
         }
     }
 
-    sound_write(0xbd, 0);
+    setr(0xbd, 0);
 
     for (i = 0; i <= 0x15; ++i) {
-        sound_write(0xe0 + i, 0);
+        setr(0xe0 + i, 0);
     }
+
+    // enable OPL3
+    setr_b(0x05, 1);
 }
 
-void sound_play_metronome_tick(unsigned int c, unsigned short fnum) {
-    sound_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the modulator's multiple to 1
-    sound_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x10);  // Set the modulator's level to about 40 dB
-    sound_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Modulator attack: quick; decay: long
-    sound_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Modulator sustain: medium; release: medium
+void sound_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum)
+{
+    setr(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the modulator's multiple to 1
+    setr(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x10);  // Set the modulator's level to about 40 dB
+    setr(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Modulator attack: quick; decay: long
+    setr(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Modulator sustain: medium; release: medium
 
-    sound_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the carrier's multiple to 1
-    sound_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);  // Set the carrier to maximum volume (about 47 dB)
-    sound_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Carrier attack: quick; decay: long
-    sound_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Carrier sustain: medium; release: medium
+    setr(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the carrier's multiple to 1
+    setr(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);  // Set the carrier to maximum volume (about 47 dB)
+    setr(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Carrier attack: quick; decay: long
+    setr(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Carrier sustain: medium; release: medium
 
-    sound_write(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
-    sound_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x30 | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
+    setr(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
 
-    msleep(1000);
+    msleep(2000);
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice off
+}
 
-    sound_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x10 | ((fnum >> 8) & 3));  // Turn the voice off
+void sound_play_bass1(unsigned int c, unsigned int octave, unsigned short fnum)
+{
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice off
+
+    setr(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x00);
+    setr(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);
+    setr(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xa4);
+    setr(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0xa1);
+    setr(CH(c) + OP1 + WAVEFORM_SELECT__BASE, 0x00);
+
+    setr(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x40);
+    setr(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x03);
+    setr(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xa4);
+    setr(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x06);
+    setr(CH(c) + OP2 + WAVEFORM_SELECT__BASE, 0x05);
+
+    //setr(FEEDBACK_STRENGTH_CONN_TYPE(c),
+    setr(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
+
+    //msleep(1000);
+    //setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x10 | ((fnum >> 8) & 3));  // Turn the voice off
+}
+
+void sound_play_kick1(unsigned int c, unsigned int octave, unsigned short fnum)
+{
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice off
+
+    setr(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x00);
+    setr(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);
+    setr(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xd6);
+    setr(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x4f);
+    setr(CH(c) + OP1 + WAVEFORM_SELECT__BASE, 0x00);
+
+    setr(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x00);
+    setr(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x0b);
+    setr(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xa8);
+    setr(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x4c);
+    setr(CH(c) + OP2 + WAVEFORM_SELECT__BASE, 0x00);
+
+    //setr(FEEDBACK_STRENGTH_CONN_TYPE(c),
+    setr(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
+
+    //msleep(1000);
+    //setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x10 | ((fnum >> 8) & 3));  // Turn the voice off
 }
