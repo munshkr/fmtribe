@@ -23,19 +23,19 @@ typedef enum { Center, Left, Right } fm_panning_t;
 typedef enum { Melodic, BD, SD, TT, TC, HH } fm_voice_type_t;
 
 typedef struct {
-    unsigned char   m__am_vib_eg;
-    unsigned char   c__am_vib_eg;
-    unsigned char   m__ksl_volume;
-    unsigned char   c__ksl_volume;
-    unsigned char   m__attack_decay;
-    unsigned char   c__attack_decay;
-    unsigned char   m__sustain_release;
-    unsigned char   c__sustain_release;
-    unsigned char   m__waveform;
-    unsigned char   c__waveform;
-    unsigned char   feedback_fm;
-    signed char     fine_tune;
-    fm_panning_t    panning;
+    uint8_t m__am_vib_eg;
+    uint8_t c__am_vib_eg;
+    uint8_t m__ksl_volume;
+    uint8_t c__ksl_volume;
+    uint8_t m__attack_decay;
+    uint8_t c__attack_decay;
+    uint8_t m__sustain_release;
+    uint8_t c__sustain_release;
+    uint8_t m__waveform;
+    uint8_t c__waveform;
+    uint8_t feedback_fm;
+    int8_t fine_tune;
+    fm_panning_t panning;
     fm_voice_type_t voice_type;
 } fm_instr_t;
 
