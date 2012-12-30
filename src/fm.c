@@ -8,9 +8,9 @@
 #define OP1 0x00
 #define OP2 0x03
 
-#define CH(n) (n >= 1 && n <= 3 ? (n - 1) : \
-              (n >= 4 && n <= 6 ? (n + 4) : \
-              (n >= 7 && n <= 9 ? (n + 9) : 0)))
+#define CH(n) (n >= 0 && n <= 2 ? n : \
+              (n >= 3 && n <= 5 ? (n + 3) : \
+              (n >= 6 && n <= 8 ? (n + 8) : 0)))
 
 #define TEST_LSI_ENABLE_WAVEFORM            0x01
 #define TIMER1_DATA                         0x02
@@ -29,9 +29,9 @@
 #define WAVEFORM_SELECT__BASE               0xE0
 
 // Register for Channels
-#define FREQ_LOW(c)                         (0xA0 + c - 1)
-#define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c - 1)
-#define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c - 1)
+#define FREQ_LOW(c)                         (0xA0 + c)
+#define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c)
+#define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c)
 
 
 

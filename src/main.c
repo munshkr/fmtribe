@@ -76,17 +76,17 @@ void play_step()
         if (current_step % 4 == 0) {
             // FIXME replace metronome instrument for one that has no release,
             // to avoid sleeping.
-            fm_key_on(9, 1, NOTE_E);
-            msleep(20000);
-            fm_key_off(9);
+            fm_key_on(8, 3, NOTE_E);
+            msleep(2000);
+            fm_key_off(8);
         }
     }
 
     int c;
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
-            fm_key_off(c + 1);
-            fm_key_on(c + 1, 2, NOTE_C);
+            fm_key_off(c);
+            fm_key_on(c, 2, NOTE_C);
         }
     }
 }
@@ -232,8 +232,8 @@ int main(int argc, char* argv[])
     fm_reset();
     fm_init();
 
-    fm_set_instrument(9, &tick1);
-    fm_set_instrument(1, &bass1);
+    fm_set_instrument(8, &tick1);
+    fm_set_instrument(0, &bass1);
 
     init_vga();
     set_mode(VIDEO_MODE);
