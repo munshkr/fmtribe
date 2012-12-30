@@ -53,33 +53,10 @@ __inline void fm_write_b(const int reg, const int value) {
 
 void fm_reset() {
     // reset sound by setting *all* registers to 0
-
-    int i, j;
-
-    fm_write(1, 0);
-    fm_write(2, 0);
-    fm_write(3, 0);
-    fm_write(4, 0);
-    fm_write(8, 0);
-
-    for (i = 0; i < 4; ++i) {
-        for (j = 0; j <= 0x15; ++j) {
-            fm_write(0x20 + (0x20 * i) + j, 0);
-        }
+    int i;
+    for (i = 0; i < 0xf5; i++) {
+        fm_write(i, 0);
     }
-
-    for (i = 0; i < 3; ++i) {
-        for (j = 0; j <= 8; ++j) {
-            fm_write(0xa0 + (0x10 * i) + j, 0);
-        }
-    }
-
-    fm_write(0xbd, 0);
-
-    for (i = 0; i <= 0x15; ++i) {
-        fm_write(0xe0 + i, 0);
-    }
-
 }
 
 void fm_init()
