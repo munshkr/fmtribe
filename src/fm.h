@@ -21,25 +21,28 @@
 
 typedef enum { Center, Left, Right } fm_panning_t;
 typedef enum { Melodic, BD, SD, TT, TC, HH } fm_voice_type_t;
+
 typedef struct {
-    unsigned char m__am_vib_eg;
-    unsigned char c__am_vib_eg;
-    unsigned char m__ksl_volume;
-    unsigned char c__ksl_volume;
-    unsigned char m__attack_decay;
-    unsigned char c__attack_decay;
-    unsigned char m__sustain_release;
-    unsigned char c__sustain_release;
-    unsigned char m__waveform;
-    unsigned char c__waveform;
-    unsigned char feedback_fm;
-    fm_panning_t     panning;
-    signed char   fine_tune;
-    fm_voice_type_t  voice_type;
+    unsigned char   m__am_vib_eg;
+    unsigned char   c__am_vib_eg;
+    unsigned char   m__ksl_volume;
+    unsigned char   c__ksl_volume;
+    unsigned char   m__attack_decay;
+    unsigned char   c__attack_decay;
+    unsigned char   m__sustain_release;
+    unsigned char   c__sustain_release;
+    unsigned char   m__waveform;
+    unsigned char   c__waveform;
+    unsigned char   feedback_fm;
+    signed char     fine_tune;
+    fm_panning_t    panning;
+    fm_voice_type_t voice_type;
 } fm_instr_t;
 
 void fm_reset();
-void fm_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum);
-void fm_play_bass1(unsigned int c, unsigned int octave, unsigned short fnum);
+void fm_init();
+void fm_set_instrument(const unsigned int channel, const fm_instr_t* instr);
+void fm_key_on(const unsigned int channel, const uint8_t octave, const uint16_t fnum);
+void fm_key_off(const unsigned int channel);
 
 #endif // __FM_H__

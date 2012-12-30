@@ -86,73 +86,36 @@ void fm_init()
 {
     // enable OPL3
     fm_write_b(0x05, 1);
+    // enable waveform select
     fm_write(TEST_LSI_ENABLE_WAVEFORM, 0x20);
+
     fm_write(AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL, 0x00);
 }
 
-void fm_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum)
+void fm_set_instrument(const unsigned int c, const fm_instr_t* instr)
 {
-    fm_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the modulator's multiple to 1
-    fm_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x10);  // Set the modulator's level to about 40 dB
-    fm_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Modulator attack: quick; decay: long
-    fm_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Modulator sustain: medium; release: medium
+    fm_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, instr->c__am_vib_eg);
+    fm_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, instr->c__ksl_volume);
+    fm_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, instr->c__attack_decay);
+    fm_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, instr->c__sustain_release);
+    fm_write(CH(c) + OP1 + WAVEFORM_SELECT__BASE, instr->c__waveform);
 
-    fm_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the carrier's multiple to 1
-    fm_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);  // Set the carrier to maximum volume (about 47 dB)
-    fm_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xf0);  // Carrier attack: quick; decay: long
-    fm_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x77);  // Carrier sustain: medium; release: medium
+    fm_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, instr->m__am_vib_eg);
+    fm_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, instr->m__ksl_volume);
+    fm_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, instr->m__attack_decay);
+    fm_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, instr->m__sustain_release);
+    fm_write(CH(c) + OP2 + WAVEFORM_SELECT__BASE, instr->m__waveform);
 
-    fm_write(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
-
-    msleep(2000);
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice off
+    fm_write(FEEDBACK_STRENGTH_CONN_TYPE(c), 0x30 | instr->feedback_fm);
 }
 
-void fm_play_bass1(unsigned int c, unsigned int octave, unsigned short fnum)
+void fm_key_on(const unsigned int c, const uint8_t octave, const uint16_t fnum)
 {
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice off
-
-    fm_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x00);
-    fm_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);
-    fm_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xa4);
-    fm_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0xa1);
-    fm_write(CH(c) + OP1 + WAVEFORM_SELECT__BASE, 0x00);
-
-    fm_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x40);
-    fm_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x03);
-    fm_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xa4);
-    fm_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x06);
-    fm_write(CH(c) + OP2 + WAVEFORM_SELECT__BASE, 0x05);
-
-    fm_write(FEEDBACK_STRENGTH_CONN_TYPE(c), 0x30);
     fm_write(FREQ_LOW(c), fnum & 0xff);
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on
-
-    //msleep(1000);
-    //fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x10 | ((fnum >> 8) & 3));  // Turn the voice off
+    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));
 }
 
-void fm_play_kick1(unsigned int c, unsigned int octave, unsigned short fnum)
+void fm_key_off(const unsigned int c)
 {
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice off
-
-    fm_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x00);
-    fm_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x00);
-    fm_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, 0xd6);
-    fm_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x4f);
-    fm_write(CH(c) + OP1 + WAVEFORM_SELECT__BASE, 0x00);
-
-    fm_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, 0x00);
-    fm_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, 0x0b);
-    fm_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, 0xa8);
-    fm_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x4c);
-    fm_write(CH(c) + OP2 + WAVEFORM_SELECT__BASE, 0x00);
-
-    //fm_write(FEEDBACK_STRENGTH_CONN_TYPE(c),
-    fm_write(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
-
-    //msleep(1000);
-    //fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x10 | ((fnum >> 8) & 3));  // Turn the voice off
+    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0);
 }

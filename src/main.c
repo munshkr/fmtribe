@@ -6,6 +6,7 @@
 #include "common.h"
 #include "fm.h"
 #include "vga.h"
+#include "instr.h"
 
 #define CHANNELS 8
 #define STEPS    16
@@ -54,6 +55,9 @@ bool seq[CHANNELS][STEPS] = {};
 
 unsigned short notes[] = { NOTE_Cs, NOTE_D, NOTE_Ds, NOTE_E, NOTE_F, NOTE_Fs, NOTE_G, NOTE_Gs, NOTE_A, NOTE_As, NOTE_B, NOTE_C };
 
+extern fm_instr_t tick1;
+extern fm_instr_t bass1;
+
 
 void tick()
 {
@@ -72,19 +76,19 @@ void play_step()
 {
     if (metronome_on) {
         if (current_step % 4 == 0) {
-            fm_play_metronome_tick(9, 1, NOTE_E);
+            // FIXME replace metronome instrument for one that has no release,
+            // to avoid sleeping.
+            fm_key_on(9, 1, NOTE_E);
+            msleep(20000);
+            fm_key_off(9);
         }
     }
 
     int c;
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
-            // TODO play channel sound
-            if (c == 0) {
-                fm_play_kick1(c + 1, 3, notes[0]);
-            } else {
-                fm_play_metronome_tick(c + 1, 4, notes[c]);
-            }
+            fm_key_off(c + 1);
+            fm_key_on(c + 1, 2, notes[0]);
         }
     }
 }
@@ -229,6 +233,9 @@ int main(int argc, char* argv[])
 {
     fm_reset();
     fm_init();
+
+    fm_set_instrument(9, &tick1);
+    fm_set_instrument(1, &bass1);
 
     init_vga();
     set_mode(VIDEO_MODE);
