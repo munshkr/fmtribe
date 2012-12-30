@@ -1,6 +1,15 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/nearptr.h>
+#include <dos.h>
+
 #include "vga.h"
 
+#define VIDEO_INT  0x10
+
 byte *VGA = NULL;
+
 
 void init_vga()
 {

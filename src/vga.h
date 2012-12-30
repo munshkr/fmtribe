@@ -1,15 +1,8 @@
 #ifndef __VGA_H__
 #define __VGA_H__
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/nearptr.h>
-#include <dos.h>
-
 #include "common.h"
 
-#define VIDEO_INT  0x10
 #define VIDEO_MODE 0x13
 #define TEXT_MODE  0x03
 
