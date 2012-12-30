@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <conio.h>
 #include <keys.h>
 #include <string.h>
@@ -32,8 +33,8 @@ const char STEP_KEYS[]       = "qwertyuiasdfghjk";
 const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
 const char CHANNEL_KEYS[]    = "12345678";
 
-const byte CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
-const byte CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+const uint8_t CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
 bool dirty = true;
 bool pause_after_current_step = false;

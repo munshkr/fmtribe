@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/nearptr.h>
@@ -10,8 +11,8 @@
 #define INPUT_STATUS_1  0x03da
 #define VRETRACE        0x08
 
-byte *VGA = NULL;
-byte buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
+uint8_t *VGA = NULL;
+uint8_t buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 
 void init_vga()
@@ -21,10 +22,10 @@ void init_vga()
         exit(-1);
     }
     // FIXME if a malloc is called, this should be recalculated!
-    VGA = (byte*) 0xA0000 + __djgpp_conventional_base;
+    VGA = (uint8_t*) 0xA0000 + __djgpp_conventional_base;
 }
 
-void set_mode(byte mode)
+void set_mode(uint8_t mode)
 {
     union REGS regs;
     regs.h.ah = 0;
@@ -44,12 +45,12 @@ void clear()
     memset(buffer, 0, SCREEN_SIZE);
 }
 
-__inline void putp(int x, int y, byte color)
+__inline void putp(int x, int y, uint8_t color)
 {
     buffer[(y << 8) + (y << 6) + x] = color;
 }
 
-void line(int x1, int y1, int x2, int y2, byte color)
+void line(int x1, int y1, int x2, int y2, uint8_t color)
 {
     int i, dx, dy, sdx, sdy, dxabs, dyabs, x, y, px, py;
 
@@ -90,9 +91,9 @@ void line(int x1, int y1, int x2, int y2, byte color)
     }
 }
 
-void rect(int left, int top, int right, int bottom, byte color)
+void rect(int left, int top, int right, int bottom, uint8_t color)
 {
-    word top_offset, bottom_offset, i, temp;
+    uint16_t top_offset, bottom_offset, i, temp;
 
     if (top > bottom) {
         temp = top;
@@ -119,9 +120,9 @@ void rect(int left, int top, int right, int bottom, byte color)
     }
 }
 
-void rect_fill(int left, int top, int right, int bottom, byte color)
+void rect_fill(int left, int top, int right, int bottom, uint8_t color)
 {
-    word top_offset, bottom_offset, i, temp, width;
+    uint16_t top_offset, bottom_offset, i, temp, width;
 
     if (top > bottom) {
         temp = top;
@@ -143,10 +144,10 @@ void rect_fill(int left, int top, int right, int bottom, byte color)
     }
 }
 
-__inline void square(int left, int top, int size, byte color) {
+__inline void square(int left, int top, int size, uint8_t color) {
     rect(left, top, left + size, top + size, color);
 }
 
-__inline void square_fill(int left, int top, int size, byte color) {
+__inline void square_fill(int left, int top, int size, uint8_t color) {
     rect_fill(left, top, left + size, top + size, color);
 }

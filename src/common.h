@@ -2,14 +2,12 @@
 #define __COMMON_H__
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 
 typedef char* string;
-typedef uint8_t  byte;
-typedef uint16_t word;
 
 #define KEY_ESC 27
 #define USECS_PER_MINUTE (1000000 * 60)
