@@ -6,9 +6,12 @@
 
 #include "vga.h"
 
-#define VIDEO_INT  0x10
+#define VIDEO_INT       0x10
+#define INPUT_STATUS_1  0x03da
+#define VRETRACE        0x08
 
 byte *VGA = NULL;
+byte buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 
 void init_vga()
@@ -17,6 +20,7 @@ void init_vga()
         printf("Could get access to first 640K of memory.\n");
         exit(-1);
     }
+    // FIXME if a malloc is called, this should be recalculated!
     VGA = (byte*) 0xA0000 + __djgpp_conventional_base;
 }
 
@@ -28,14 +32,21 @@ void set_mode(byte mode)
     int86(VIDEO_INT, &regs, &regs);
 }
 
-void clear_screen()
+void update()
 {
-    memset(VGA, 0, SCREEN_SIZE);
+    while ((inp(INPUT_STATUS_1) & VRETRACE));
+    while (!(inp(INPUT_STATUS_1) & VRETRACE));
+    memcpy(VGA, buffer, SCREEN_WIDTH * SCREEN_HEIGHT);
+}
+
+void clear()
+{
+    memset(buffer, 0, SCREEN_SIZE);
 }
 
 __inline void putp(int x, int y, byte color)
 {
-    VGA[(y << 8) + (y << 6) + x] = color;
+    buffer[(y << 8) + (y << 6) + x] = color;
 }
 
 void line(int x1, int y1, int x2, int y2, byte color)
@@ -98,13 +109,13 @@ void rect(int left, int top, int right, int bottom, byte color)
     bottom_offset = (bottom << 8) + (bottom << 6);
 
     for (i = left; i <= right; i++) {
-        VGA[top_offset + i] = color;
-        VGA[bottom_offset + i] = color;
+        buffer[top_offset + i] = color;
+        buffer[bottom_offset + i] = color;
     }
 
     for (i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
-        VGA[left + i] = color;
-        VGA[right + i] = color;
+        buffer[left + i] = color;
+        buffer[right + i] = color;
     }
 }
 
@@ -128,7 +139,7 @@ void rect_fill(int left, int top, int right, int bottom, byte color)
     width = right - left + 1;
 
     for (i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
-        memset(&VGA[i], color, width);
+        memset(&buffer[i], color, width);
     }
 }
 

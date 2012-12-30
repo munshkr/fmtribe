@@ -14,7 +14,9 @@
 void init_vga();
 void set_mode(byte mode);
 
-void clear_screen();
+void update();
+
+void clear();
 
 void line(int x1, int y1, int x2, int y2, byte color);
 

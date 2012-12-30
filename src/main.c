@@ -1,5 +1,6 @@
 #include <conio.h>
 #include <keys.h>
+#include <string.h>
 
 #include "common.h"
 #include "sound.h"
@@ -212,10 +213,11 @@ void render_hits()
 
 void render()
 {
-    clear_screen();
+    clear();
     render_hits();
     render_channel_selector();
     render_board();
+    update();
 }
 
 
