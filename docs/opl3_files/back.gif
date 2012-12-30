@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>Dokument nenalezen</title>
+<!-- begin include -->
+<link rel="stylesheet" href="/common/style/style.css" type="text/css">
+<!--[if lte IE 6]>
+   <link rel="stylesheet" type="text/css" href="/common/style/ie.css">
+<![endif]-->
+<link rel="stylesheet" href="/common/style/print.css" type="text/css" media="print">
+<meta name="googlebot" content="noarchive">
+<script type="text/javascript">
+<!--
+function noenter()
+{
+  return !(window.event && window.event.keyCode == 13);
+}
+
+// -->
+</script>
+<base target="_top">
+<!-- end  -->
+</head>
+<body>
+
+<!-- begin set -->
+<!-- end  -->
+<!-- begin include -->
+<div id="page" class="deep lowhead crumb en">
+<div class="container">
+<!--noindex-->
+<div id="header">
+<div class="left"></div>
+<div class="main">
+<a href="http://www.fit.vutbr.cz/.en"><img src="/common/style/images/logo_fit_small.png" height="40" width="40" alt="Logo FIT"><span>Faculty of Information Technology</span></a>
+</div>
+<div class="right"></div>
+</div>
+<div id="toolbox">
+<p>
+<!-- begin if -->
+<!-- end -->
+  <!-- begin if -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin else -->
+<!-- end -->
+  <!-- begin set -->
+<!-- end -->
+  <!-- begin endif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin if -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin else -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin endif -->
+<!-- end -->
+<!-- begin else -->
+<!-- end -->
+<!-- begin if -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin else -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin endif -->
+<!-- end -->
+<!-- begin endif -->
+<!-- end -->
+<!-- begin echo -->
+<a class='lang' title='Èeská verze' href='/missing.html.cs'><!-- end --><span>Èeská verze</span></a>
+<a class="encoding" title="Switch encoding" rel="nofollow" href="/cgi-bin/codepage"><span>Encoding</span></a>
+<a class="hidden" href="#contentbox">Skip main menu</a>
+<a class="hidden" href="#content">Skip to body</a>
+</p>
+<form style=nopad action="/search.php" method="get">
+<p>
+<label for="search">Search:</label>
+<input id="search" size=20 type="text" name="q">
+<input type="hidden" name="form" value="extended">
+<input type="hidden" name="sp" value="1">
+<input type="hidden" name="lang" value="en">
+<input class="submit" type="image" src="/common/style/images/search.png" alt="Search">
+</p>
+</form>
+</div>
+<div id="menuline">
+<div class="left"></div>
+<div class="main">
+<h1 class="hidden">You are in section</h1>
+<ul><li><a href="/">Faculty</a></li>
+<!-- begin if -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin else -->
+<!-- end -->
+<!-- begin set -->
+<!-- end -->
+<!-- begin endif -->
+<!-- end -->
+<!-- begin if -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin if -->
+<!-- end -->
+<!-- begin endif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin elif -->
+<!-- end -->
+<!-- begin endif -->
+<!-- end -->
+</ul>
+</div>
+<div class="right"></div>
+</div>
+
+<!--/noindex-->
+<div id="main">
+<div class="content">
+<table id="contenttable"><tr><td>
+<!-- end  -->
+<br>
+<h1>Dokument nenalezen/Page not found</H1>
+<p>
+<b>URI:</b> <!-- begin echo -->
+/images/back.gif<!-- end -->
+<p>Pro hledání dokumentù pou¾ijte <a href="/search.php">Hledat</a>.
+Pro hledání zamìstnancù a studentù mù¾ete pou¾ít také <a href="/staff/search.php">Hledání osob</a>.
+
+<p>You can use <a href="/search.php">Search</a> to search for a document
+or  <a href="/staff/search.php">Search person</a> to search for an
+employee or a student.
+
+<!-- begin include -->
+</td></tr></table>
+</div>
+</div>
+
+<div id="footer">
+<div class="content"><!--noindex--><address>&copy; Faculty of Information Technology, BUT, Bo¾etìchova&nbsp;2, 612 66 Brno, Czech Republic<br>Tel.: +420 54114 1144, Fax: +420 54114 1270<br>
+<!-- begin if -->
+<!-- end -->
+<!-- begin echo -->
+<!-- end -->
+<!-- begin else -->
+<!-- end -->
+E-mail: <a href="mailto:info@fit.vutbr.cz">info@fit.vutbr.cz</a>,
+Web: <a href="http://www.fit.vutbr.cz/">http://www.fit.vutbr.cz/</a><br>
+<!-- begin endif -->
+<!-- end -->
+<!-- begin if -->
+<!-- end  -->
+Last modification: 
+<!-- begin echo -->
+28. øíjna 2010<!-- end -->
+<!-- begin endif -->
+<!-- end  -->
+</address><!--/noindex-->
+</div>
+</div>
+
+</div>
+</div>
+<!-- end -->
+</body>
+</html>
+

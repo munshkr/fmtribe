@@ -1,0 +1,1485 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 3.0//EN//">
+<!-- saved from url=(0045)http://www.fit.vutbr.cz/~arnost/opl/opl3.html -->
+<html version="3"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-2">
+  <title>OPL3 Programmer's Guide</title>
+  
+  <meta name="Author" content="Vladimir Arnost">
+  <meta name="Description" content="OPL3 FM Synthesiser Description">
+<style type="text/css"></style></head>
+<body text="#FFFFFF" bgcolor="#000080" link="#FFFF00" vlink="#00FFFF" alink="FF8000">
+<h1 align="center">
+Programmer's Guide to Yamaha YMF 262/OPL3 FM Music Synthesizer
+</h1>
+
+<p align="center">
+<br>
+HTML Version 1.12 Last Updated Nov-23-2000<br>
+(based on plaintext Version 1.00 Nov-24-1994)
+<br>
+Written by Vladimir Arnost, QA-Software<br>
+e-mail:  <a href="mailto:arnost@dcse.fee.vutbr.cz">arnost@dcse.fee.vutbr.cz</a>
+<br>
+<br>
+<br>
+<em>This manual can be distributed freely if not modified.</em><br>
+</p>
+
+
+<hr>
+<h2>
+Disclaimer
+</h2>
+<blockquote>
+I assume no responsibility for any damages arising out of
+use or inability to use this text. No warranty is provided
+about correctness of any information in this file. You are
+on your own.<br>
+</blockquote>
+
+
+<hr>
+<h2>
+Table of Contents
+</h2>
+<ul>
+<li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter1">Introduction</a>
+<br>
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter2">Description of the Synthesizer</a>
+  <ul>
+  <li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter2-1">Some basic facts</a>
+  </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter2-2">Synthesis modes</a>
+  </li></ul>
+<br>
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter3">Programming the Synthesizer</a>
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter4">Register Map</a>
+  <ul>
+  <li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter4-1">Examples</a>
+  </li></ul>
+<br>
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter5">OPL3 Register Reference</a>
+  <ul>
+  <li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter5-1">Status Register</a>
+  </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter5-2">Data Registers</a>
+    <ul>
+    <li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg01">01</a>: Test Register / Waveform Select Enable
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg02">02</a>: Timer 1 Count
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg03">03</a>: Timer 2 Count
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg004">004</a>: IRQ-Reset / Mask / Start
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg104">104</a>: Four-Operator Enable
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg105">105</a>: OPL3 Mode Enable
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg08">08</a>: CSW / NOTE-SEL
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg20">20-35</a>: Tremolo / Vibrato / Sustain / KSR /
+Frequency Multiplication Factor
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg40">40-55</a>: Key Scale Level / Output Level
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg60">60-75</a>: Attack Rate / Decay Rate
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg80">80-95</a>: Sustain Level / Release Rate
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regA0">A0-A8</a>: Frequency Number
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regB0">B0-B8</a>: Key On / Block Number / F-Number(hi bits)
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regBD">BD</a>: Tremolo Depth / Vibrato Depth /
+Percussion Mode / BD/SD/TT/CY/HH On
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regC0">C0-C8</a>: FeedBack Modulation Factor / Synthesis Type
+    </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regE0">E0-F5</a>: Waveform Select
+    </li></ul>
+  </li></ul>
+<br>
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#appendixes">Appendixes</a>
+  <ul>
+  <li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#appendixA">Examples</a>
+  </li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#appendixB">Detection Methods</a>
+  </li></ul>
+<br>
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#references">References</a>
+</li></ul>
+
+
+<hr>
+<a name="chapter1"></a>
+<h2>
+1. Introduction
+</h2>
+<p>
+The chip I am going to describe is getting more and more common, but
+programming information is still scarce, so I have decided to fill in this
+gap. All information contained in this file is a result of my experience in
+Adlib programming, research (read: reverse engineering) and finally of my
+effort to write down everything necessary to understand and use this piece
+of hardware. No official sources (i.e. development kits, books about this
+topic, etc.) were available to me except:
+</p><p>
+
+</p><ul>
+<li><a href="http://www.fit.vutbr.cz/~arnost/opl/adlibdoc.arj">Adlib Programming Guide</a> - by Tero Totto, and
+</li><li><a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#pcgpe">The PC Games Programmers Encyclopedia V1.0</a>
+</li></ul>
+
+The information below is a combination of known features of Adlib (alias
+Yamaha YM 3812/OPL2) and my own uncountable experiments and failures, which
+brought out a lot of important details you have to know about the chip.
+<p>
+As far as I know, there are four major sound cards based on OPL3 chip:
+</p><p>
+
+</p><ul>
+<li>Sound Blaster Pro II (not Sound Blaster Pro I) and many clones
+</li><li>Sound Blaster 16 and AWE32
+</li><li>Adlib Gold
+</li><li>Pro Audio Spectrum Plus/16
+</li></ul>
+
+I currently have a Sound Blaster Pro II-compatible card only, so all the
+programming info I provide will be based on this card. (The other cards
+are quite similar, however. They are just wired at different I/O-port
+addresses.)
+<p></p>
+
+<p></p><blockquote>
+<b>Note:</b>
+      I assume some knowledge of FM music programming (mainly Adlib FM
+      synthesizer) in this manual. If you are new to this topic I recommend
+      you try Adlib first before going higher. Anyway, OPL3 is a direct
+      descendant of OPL2 (what a surprise), so most features of OPL2 are
+      also present on OPL3.
+</blockquote>
+<p></p>
+
+
+<hr>
+<a name="chapter2"></a>
+<h2>
+2. Description of the Synthesizer
+</h2>
+<a name="chapter2-1"></a>
+<h3>
+2.1 Some basic facts
+</h3>
+<p>
+My card's user manual says: 
+<cite>"[this card contains] ... a stereo music FM synthesizer with 20
+channels consisting of four (4) operators each ... "</cite>.
+I thought: <cite>"Wow -- that's together eighty operators. This must be a
+GOOD sound-card."</cite>
+I was wrong. Just another advertising lie.
+</p><p>
+So let's clear some facts. First, OPL3 has only thirty-six (36) operators
+which can be combined in several ways:<br>
+
+</p><ul>
+<li>18 FM channels (36 operators), or
+</li><li>15 FM channels (30 ops) and 5 percussion instruments (6 ops),
+    giving us 20 channels altogether, or
+</li><li>up to 6 four-operator FM channels (max 24 ops), the rest again being
+    divided into two-operator FM channels and drums.
+</li></ul>
+
+From the table above you can see that not all channels can be used in four-
+operator (4-OP) mode -- only a part of the synthesizer is really capable of
+making 4-OP sounds -- the rest uses traditional two-operator (2-OP)
+mode.<br>
+<br>
+Second, the manual states this card is capable of "stereo" music. Yes, the
+quotes are necessary, because the stereo capabilities are very limited.
+You are given ability to control output going to left or right channel by
+turning it on and off. That's all. So the sound can flow from very left side,
+center and very right side. No sound panning, no special stereo effects. 
+:-( <br>
+<br>
+Well, flaming apart, back to the main topic.<br>
+<p></p>
+
+<p>
+<a name="chapter2-2"></a>
+</p><h3>
+2.2 Synthesis modes
+</h3>
+The OPL3 chip is capable of making sounds in several ways:<br>
+
+<ol>
+<li><h4>Two-operator Additive Synthesis</h4>
+
+   Output of both operators is simply added. It is the simplest way to
+   make any sound, and it works on both OPL2 and OPL3. The diagram
+   should make it clear.<br>
+<p></p>
+<pre>	+------------+
+	|            |
+	| Operator 1 +--------+
+	|            |        |
+	+------------+        |
+			      +--------&gt; Output
+	+------------+        |
+	|            |        |
+	| Operator 2 +--------+
+	|            |
+	+------------+
+</pre>
+
+<p>
+</p></li><li><h4>Two-operator Frequency Modulation (FM) Synthesis</h4>
+
+   Output from the first operator (Modulator) is sent to the input of the
+   second one (Carrier) and is used to modulate (alter) frequency of the
+   second operator. Only the second operator produces sound. Most of
+   interesting sounds are made this way. This also works on OPL2.
+   Hope the picture helps.
+<p></p>
+<pre>	+------------+         +------------+
+	|            |         |            |
+	| Operator 1 +--------&gt;| Operator 2 +--------&gt; Output
+	|(Modulator) |         | (Carrier)  |
+	+------------+         +------------+
+</pre>
+<p>
+
+</p></li><li><h4>Four-operator "Mess" Modulation Synthesis</h4>
+
+   All of OPL3's 4-OP configurations are combinations of the above two modes
+   of synthesis. OPL3 combines these two modes in four ways. I have no words
+   to describe these four ways. Only the pictures can show their principle.
+<p>
+  </p><ol>
+  <li><h5>FM-FM Mode</h5>
+<pre>	+-------+      +-------+      +-------+      +-------+
+	|       |      |       |      |       |      |       |
+	| Op. 1 +-----&gt;| Op. 2 +-----&gt;| Op. 3 +-----&gt;| Op. 4 +-----&gt; Output
+	|       |      |       |      |       |      |       |
+	+-------+      +-------+      +-------+      +-------+
+</pre>
+<p>
+
+  </p></li><li><h5>AM-FM Mode</h5>
+<p></p>
+<pre>	+-------+
+	|       |
+	| Op. 1 +-----------------------------------+
+	|       |                                   |
+	+-------+                                   |
+						    |
+	+-------+      +-------+      +-------+     |
+	|       |      |       |      |       |     |
+	| Op. 2 +-----&gt;| Op. 3 +-----&gt;| Op. 4 +-----+-----&gt; Output
+	|       |      |       |      |       |
+	+-------+      +-------+      +-------+
+</pre>
+<p>
+
+  </p></li><li><h5>FM-AM Mode</h5>
+<p></p>
+<pre>	+-------+      +-------+
+	|       |      |       |
+	| Op. 1 +-----&gt;| Op. 2 +-----+
+	|       |      |       |     |
+	+-------+      +-------+     |
+				     +-----&gt; Output
+	+-------+      +-------+     |
+	|       |      |       |     |
+	| Op. 3 +-----&gt;| Op. 4 +-----+
+	|       |      |       |
+	+-------+      +-------+
+</pre>
+<p>
+
+  </p></li><li><h5>AM-AM Mode</h5>
+<p></p>
+<pre>	+-------+
+	|       |
+	| Op. 1 +--------------------+
+	|       |                    |
+	+-------+                    |
+				     |
+	+-------+      +-------+     |
+	|       |      |       |     |
+	| Op. 2 +-----&gt;| Op. 3 +-----+-----&gt; Output
+	|       |      |       |     |
+	+-------+      +-------+     |
+				     |
+	+-------+                    |
+	|       |                    |
+	| Op. 4 +--------------------+
+	|       |
+	+-------+
+</pre>
+  </li></ol>
+
+<p>
+   Nice, aren't they?<br>
+<br>
+   The only way I think this can be written is a math formula.
+   Symbol + (plus) means additive synthesis, and * (asterisk) means
+   frequency modulation (<samp>Op1 * Op2</samp> means operator 1 modulates
+   operator 2, not vice versa). Here they are:<br>
+</p><p>
+<table border="0">
+<tbody><tr><td><ol>
+<li>FM-FM Mode: 
+</li><li>AM-FM Mode: 
+</li><li>FM-AM Mode: 
+</li><li>AM-AM Mode: 
+</li></ol></td>
+<td>
+<samp>(Op1 * Op2 * Op3 * Op4) ----&gt; Output</samp><br>
+<samp>Op1 + (Op2 * Op3 * Op4) ----&gt; Output</samp><br>
+<samp>(Op1 * Op2) + (Op3 * Op4) --&gt; Output</samp><br>
+<samp>Op1 + (Op2 * Op3) + Op4 ----&gt; Output</samp><br>
+</td></tr>
+</tbody></table>
+<br>
+
+</p><blockquote>
+<b>Note 1:</b>
+   Actually, modes FM-AM and AM-AM are redundant, because they can be
+   replaced by any pair of 2-OP channels operating at the same frequency.<br>
+   In FM-AM mode, the operator assignment would be straightforward:
+   (Op1, Op2) and (Op3, Op4), both running in FM mode.<br>
+   In the case of AM-AM Mode, a small rearrangement of operators would be 
+   necessary: (Op1, Op4) in AM mode and (Op2, Op3) in FM mode.<br>
+<br>
+<b>Note 2:</b>
+   This document uses <b>AM</b> as a shorthand form of <em>Additive Synthesis</em>.
+   Actually this is not any kind of modulation, just a simple addition of two
+   signals. The AM shorthand was chosen as an <em>"obvious"</em> opposite of FM
+   (as seen on your radio receiver). Please note that the OPL2/3 chips are
+   unable to automatically perform any kind Amplitude Modulation other than
+   tremolo effect.<br>
+</blockquote>
+<p></p>
+
+</li><li><h4>Percussion Mode</h4>
+<p>
+   In this mode 6 operators are used to produce five different percussion
+   instruments:
+</p>
+<ul>
+<li>Bass Drum (2 operators)
+</li><li>Snare Drum (1 operator)
+</li><li>Tom-Tom (1 operator)
+</li><li>Cymbal (1 operator)
+</li><li>Hi-Hat (1 operator)
+</li></ul>
+<p>
+   Because these instruments occupy only three melodic channels, only
+   Bass Drum, Snare Drum and Tom-Tom frequencies can be set. Cymbal and
+   Hi-Hat frequencies are fixed.
+</p><p>
+   This mode is identical with that of OPL2. For more details see ADLIB.DOC.
+</p></li></ol>
+<p></p>
+
+
+<hr>
+<a name="chapter3"></a>
+<h2>
+3. Programming the Synthesizer
+</h2>
+
+<p>
+OPL3 may be found at the following addresses:
+</p>
+
+<ul><table border="1">
+<tbody><tr align="CENTER">
+<td colspan="2">
+<dd><b><font size="+1">OPL3 Base Port Assignment</font></b></dd>
+</td>
+</tr>
+
+<tr align="LEFT">
+<td align="CENTER">220h or 240h (selectable)<br>and 388h</td>
+<td align="LEFT">Sound Blaster Pro II, 16, 32, AWE32/64 and Live,<br>
+ESS 688, etc.</td>
+</tr>
+
+<tr align="LEFT">
+<td align="CENTER">388h</td>
+<td align="LEFT">Adlib Gold, Windows Sound System</td>
+</tr>
+
+<tr align="LEFT">
+<td align="CENTER">388h ?</td>
+<td align="LEFT">Pro Audio Spectrum Plus/16<br>
+(could anyone provide some more info?)</td>
+</tr>
+</tbody></table></ul>
+
+<p>
+The base address of the synthesizer will be called "base".
+</p><p>
+The chip occupies four I/O addresses:
+</p>
+
+<ul><table border="1">
+<tbody><tr>
+<td><tt>base+0 </tt></td>
+<td>Primary index register (write), Status register (read)</td>
+</tr>
+
+<tr>
+<td><tt>base+1</tt></td>
+<td>Primary data register (write-only)</td>
+</tr>
+
+<tr>
+<td><tt>base+2</tt></td>
+<td>Secondary index register (write)</td>
+</tr>
+
+<tr>
+<td><tt>base+3</tt></td>
+<td>Secondary data register (write-only)</td>
+</tr>
+</tbody></table></ul>
+
+<p>
+The index registers are used to select internal registers and data registers
+are used to write to them. Status register returns the state of two timers
+built in the chip.
+OPL3 contains two sets of registers. The Primary set maps to channels 0-8
+(operators 0-17) and the secondary maps to channels 9-17 (operators 18-35).
+The reason for this is simple: all these registers wouldn't fit into single
+register set.
+</p><p>
+Unlike Adlib (OPL2), OPL3 doesn't need delay between register writes.
+With OPL2 you had to wait 3.3 us after index register write and another
+23 us after data register write. On the contrary OPL3 doesn't need
+(almost) any delay after index register write and only 0.28 us after data
+register write. This means you can neglect the delays and considerably 
+speed up your music driver. But using reasonable delays will certainly do
+no harm.
+</p><p>
+The data registers can't be read (they are write-only) on both OPL2 and OPL3.
+</p>
+
+
+<hr>
+<a name="chapter4"></a>
+<h2>
+4. Register Map
+</h2>
+
+<p>
+The registers are grouped in the same manner as in the OPL2 chip. Programs
+using both OPL2 and OPL3 chips may use the same code provided that their
+direct I/O interface is well written. The only thing you have to change is
+operator-to-register mapping, which must accomodate the fact that registers
+are spread between two register sets.
+</p><p>
+(The register map is nearly the same so I dared to copy it from ADLIB.DOC.)
+</p><p>
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter5-1">Status Register</a> (base+0):
+</p>
+
+<table border="1">
+<tbody><tr align="CENTER" bgcolor="#404080">
+<th width="80" height="32">D7</th>
+<th width="80">D6</th>
+<th width="80">D5</th>
+<th width="80">D4</th>
+<th width="80">D3</th>
+<th width="80">D2</th>
+<th width="80">D1</th>
+<th width="80">D0</th>
+</tr>
+
+<tr align="CENTER">
+<td>IRQFlag</td>
+<td>T1Flag</td>
+<td>T2Flag</td>
+</tr>
+</tbody></table>
+
+<p>Empty fields are considered reserved and should not be used or relied
+upon their value.</p>
+
+<br>
+<p>
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#chapter5-2">Data Registers</a> (base+1, base+3):
+</p>
+
+<table border="1">
+<tbody><tr align="CENTER" bgcolor="#404080">
+<th width="80" height="32">Register</th>
+<th width="80">D7</th>
+<th width="80">D6</th>
+<th width="80">D5</th>
+<th width="80">D4</th>
+<th width="80">D3</th>
+<th width="80">D2</th>
+<th width="80">D1</th>
+<th width="80">D0</th>
+</tr>
+
+<tr align="CENTER">
+<td>01</td>
+<td colspan="2"></td>
+<td>WSEnable</td>
+<td colspan="5">Test Register</td>
+</tr>
+
+<tr align="CENTER">
+<td>02</td>
+<td colspan="8">Timer 1 Count (80 usec resolution)</td>
+</tr>
+
+<tr align="CENTER">
+<td>03</td>
+<td colspan="8">Timer 2 Count (320 usec resolution)</td>
+</tr>
+
+<tr align="CENTER">
+<td>04*</td>
+<td>IRQReset</td>
+<td>T1 Mask</td>
+<td>T2 Mask</td>
+<td colspan="3"></td>
+<td>T2 Start</td>
+<td>T1 Start</td>
+</tr>
+
+<tr align="CENTER">
+<td>04**</td>
+<td colspan="2"></td>
+<td>4-OP B-E</td>
+<td>4-OP A-D</td>
+<td>4-OP 9-C</td>
+<td>4-OP 2-5</td>
+<td>4-OP 1-4</td>
+<td>4-OP 0-3</td>
+</tr>
+
+<tr align="CENTER">
+<td>05**</td>
+<td colspan="7"></td>
+<td>OPL3</td>
+</tr>
+
+<tr align="CENTER">
+<td>08</td>
+<td>CSW</td>
+<td>Note-Sel</td>
+<td colspan="6"></td>
+</tr>
+
+<tr align="CENTER">
+<td>20-35</td>
+<td>Tremolo</td>
+<td>Vibrato</td>
+<td>Sustain</td>
+<td>KSR</td>
+<td colspan="4">Frequency Multiplication Factor</td>
+</tr>
+
+<tr align="CENTER">
+<td>40-55</td>
+<td colspan="2">Key Scale Level</td>
+<td colspan="6">Output Level (Attenuation)</td>
+</tr>
+
+<tr align="CENTER">
+<td>60-75</td>
+<td colspan="4">Attack Rate</td>
+<td colspan="4">Decay Rate</td>
+</tr>
+
+<tr align="CENTER">
+<td>80-95</td>
+<td colspan="4">Sustain Level</td>
+<td colspan="4">Release Rate</td>
+</tr>
+
+<tr align="CENTER">
+<td>A0-A8</td>
+<td colspan="8">Frequency Number (Lower 8 bits)</td>
+</tr>
+
+<tr align="CENTER">
+<td>B0-B8</td>
+<td colspan="2"></td>
+<td>Key-On</td>
+<td colspan="3">Block Number</td>
+<td colspan="2">F-Number (high bits)</td>
+</tr>
+
+<tr align="CENTER">
+<td>BD</td>
+<td>Trem Dep</td>
+<td>Vibr Dep</td>
+<td>PercMode</td>
+<td>BD On</td>
+<td>SD On</td>
+<td>TT On</td>
+<td>CY On</td>
+<td>HH On</td>
+</tr>
+
+<tr align="CENTER">
+<td>C0-C8</td>
+<td colspan="2"></td>
+<td>Right</td>
+<td>Left</td>
+<td colspan="3">FeedBack Modulation Factor</td>
+<td>SynthType</td>
+</tr>
+
+<tr align="CENTER">
+<td>E0-F5</td>
+<td colspan="5"></td>
+<td colspan="3">Waveform Select</td>
+</tr>
+</tbody></table>
+
+<p>
+
+<table border="0">
+<tbody><tr><td>Notes:</td><td></td></tr>
+<tr><td>&nbsp;* </td><td>This register exists only at port base+1</td></tr>
+<tr><td>&nbsp;**</td><td>This register exists only at port base+3</td></tr>
+</tbody></table>
+<br>
+
+</p><p>
+For register bases
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regA0">A0</a>,
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regB0">B0</a> and
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regC0">C0</a>
+there is one register per output channel.
+The primary register set holds the first nine channels (0-8) and the secondary
+holds last nine channels (9-17).
+</p><p>
+For bases 
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg20">20</a>,
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg40">40</a>,
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg60">60</a>,
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg80">80</a> and
+<a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regE0">E0</a>
+there are two registers per channel. Each
+register maps to one operator. Unfortunately the operator's register numbers
+are not continuous. The following table shows which operator maps to which
+register set and offset (in hex).
+</p>
+
+<table border="1">
+<tbody><tr align="CENTER" bgcolor="#404080">
+<th width="80" height="32">Op.</th>
+<th width="120">Set/Offset</th>
+<th width="80">Op.</th>
+<th width="120">Set/Offset</th>
+</tr>
+<tr align="CENTER"><td> 0</td><td>0/00</td><td>18</td><td>1/00</td></tr>
+<tr align="CENTER"><td> 1</td><td>0/01</td><td>19</td><td>1/01</td></tr>
+<tr align="CENTER"><td> 2</td><td>0/02</td><td>20</td><td>1/02</td></tr>
+<tr align="CENTER"><td> 3</td><td>0/03</td><td>21</td><td>1/03</td></tr>
+<tr align="CENTER"><td> 4</td><td>0/04</td><td>22</td><td>1/04</td></tr>
+<tr align="CENTER"><td> 5</td><td>0/05</td><td>23</td><td>1/05</td></tr>
+<tr align="CENTER"><td> 6</td><td>0/08</td><td>24</td><td>1/08</td></tr>
+<tr align="CENTER"><td> 7</td><td>0/09</td><td>25</td><td>1/09</td></tr>
+<tr align="CENTER"><td> 8</td><td>0/0A</td><td>26</td><td>1/0A</td></tr>
+<tr align="CENTER"><td> 9</td><td>0/0B</td><td>27</td><td>1/0B</td></tr>
+<tr align="CENTER"><td>10</td><td>0/0C</td><td>28</td><td>1/0C</td></tr>
+<tr align="CENTER"><td>11</td><td>0/0D</td><td>29</td><td>1/0D</td></tr>
+<tr align="CENTER"><td>12</td><td>0/10</td><td>30</td><td>1/10</td></tr>
+<tr align="CENTER"><td>13</td><td>0/11</td><td>31</td><td>1/11</td></tr>
+<tr align="CENTER"><td>14</td><td>0/12</td><td>32</td><td>1/12</td></tr>
+<tr align="CENTER"><td>15</td><td>0/13</td><td>33</td><td>1/13</td></tr>
+<tr align="CENTER"><td>16</td><td>0/14</td><td>34</td><td>1/14</td></tr>
+<tr align="CENTER"><td>17</td><td>0/15</td><td>35</td><td>1/15</td></tr>
+</tbody></table>
+
+<p>
+The following tables summarize which operators form a channel in various modes:
+</p><p>
+</p><h4>1. Two-operator Melodic Mode</h4>
+<pre>+------------+--------------------------------------------------------------+
+| Channel    | 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17 |
++------------+--------------------------------------------------------------+
+| Operator 1 | 0  1  2  6  7  8  12 13 14 18 19  20  24  25  26  30  31  32 |
+| Operator 2 | 3  4  5  9  10 11 15 16 17 21 22  23  27  28  29  33  34  35 |
++------------+--------------------------------------------------------------+
+</pre>
+<h4>2. Two-operator Melodic and Percussion Mode</h4>
+<pre>+------------+--------------------------------------------------------------+
+| Channel    | 0  1  2  3  4  5  BD SD TT CY HH  9  10 11 12 13 14 15 16 17 |
++------------+--------------------------------------------------------------+
+| Operator 1 | 0  1  2  6  7  8  12 16 14 17 13  18 19 20 24 25 26 30 31 32 |
+| Operator 2 | 3  4  5  9  10 11 15              21 22 23 27 28 29 33 34 35 |
++------------+--------------------------------------------------------------+
+</pre>
+<h4>3. Four-operator Melodic Mode</h4>
+<pre>+------------+---------------------------------------------------+
+| Channel    | 0   1   2    6   7   8    9   10  11   15  16  17 |
++------------+---------------------------------------------------+
+| Operator 1 | 0   1   2    12  13  14   18  19  20   30  31  32 |
+| Operator 2 | 3   4   5    15  16  17   21  22  23   33  34  35 |
+| Operator 3 | 6   7   8                 24  25  26              |
+| Operator 4 | 9   10  11                27  28  29              |
++------------+---------------------------------------------------+
+</pre>
+<p>
+   Channels 3, 4, 5 and 12, 13, 14 can't be used separately because their
+   operators became part of channels 0, 1, 2 and 9, 10, 11 respectively.
+   For instance a four-operator channel 1 consists of two two-operator
+   channels number 1 and 4. (The second 2-OP channel number is always the
+   first 2-OP channel number plus three.)
+</p><p>
+   OPL3 allows you to enable/disable 4-OP mode separately for any of
+   channels 0, 1, 2, 9, 10 and 11 (see register
+   <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg104">104h</a> in the reference below).
+   This means for instance when you switch only channel 2 into 4-OP mode,
+   channels number 0, 1, 3, 4, 6, 7, 8, 9, etc. will be still independent
+   2-OP channels.
+</p><p>
+   Channels 6, 7, 8 and 15, 16, 17 are always two-operator ones. They can't
+   be grouped to form four-operator channels.
+</p><p>
+</p><h4>4. Four-operator Melodic and Percussion Mode</h4>
+<pre>+------------+--------------------------------------------------------+
+| Channel    | 0   1   2    BD SD TT CY HH    9   10  11   15  16  17 |
++------------+--------------------------------------------------------+
+| Operator 1 | 0   1   2    12 16 14 17 13    18  19  20   30  31  32 |
+| Operator 2 | 3   4   5    15                21  22  23   33  34  35 |
+| Operator 3 | 6   7   8                      24  25  26              |
+| Operator 4 | 9   10  11                     27  28  29              |
++------------+--------------------------------------------------------+
+</pre>
+
+<p>
+<a name="chapter4-1"></a>
+</p><h3>Examples</h3>
+<ul>
+<li> Two-operator channel #14 consists of operators 26 and 29 which occupy
+     these registers (all are in the secondary register set):
+<pre>	12A - Operator 1 - Tremolo/Vibrato/Sustain/KSR/Multiplication
+	12D - Operator 2 - Tremolo/Vibrato/Sustain/KSR/Multiplication
+	14A - Operator 1 - Key Scale Level/Output Level
+	14D - Operator 2 - Key Scale Level/Output Level
+	16A - Operator 1 - Attack Rate/Decay Rate
+	16D - Operator 2 - Attack Rate/Decay Rate
+	18A - Operator 1 - Sustain Level/Release Rate
+	18D - Operator 2 - Sustain Level/Release Rate
+	1A5 -              Frequency Number (low)
+	1B5 -              Key On/Block Number/Frequency Number (high)
+	1C5 -              FeedBack/Synthesis Type
+	1EA - Operator 1 - Waveform Select
+	1ED - Operator 2 - Waveform Select
+</pre>
+</li><li> Four-operator channel #1 consists of operators 1, 4, 7 and 10. All
+     registers except register 104h are in the primary set:
+<pre>	104 - bit 1 = 1  - Enable Four-Operator Synthesis in channel #1
+	 21 - Operator 1 - Tremolo/Vibrato/Sustain/KSR/Multiplication
+	 24 - Operator 2 - Tremolo/Vibrato/Sustain/KSR/Multiplication
+	 29 - Operator 3 - Tremolo/Vibrato/Sustain/KSR/Multiplication
+	 2C - Operator 4 - Tremolo/Vibrato/Sustain/KSR/Multiplication
+	 41 - Operator 1 - Key Scale Level/Output Level
+	 44 - Operator 2 - Key Scale Level/Output Level
+	 49 - Operator 3 - Key Scale Level/Output Level
+	 4C - Operator 4 - Key Scale Level/Output Level
+	 61 - Operator 1 - Attack Rate/Decay Rate
+	 64 - Operator 2 - Attack Rate/Decay Rate
+	 69 - Operator 3 - Attack Rate/Decay Rate
+	 6C - Operator 4 - Attack Rate/Decay Rate
+	 81 - Operator 1 - Sustain Level/Release Rate
+	 84 - Operator 2 - Sustain Level/Release Rate
+	 89 - Operator 3 - Sustain Level/Release Rate
+	 8C - Operator 4 - Sustain Level/Release Rate
+	 A1 -              Frequency Number (low)
+	 A4 -              Unused
+	 B1 -              Key On/Block Number/Frequency Number (high)
+	 B4 -              Unused
+	 C1 -              FeedBack/Synthesis Type (part 1)
+	 C4 -              Synthesis Type (part 2)
+	 E1 - Operator 1 - Waveform Select
+	 E4 - Operator 2 - Waveform Select
+	 E9 - Operator 3 - Waveform Select
+	 EC - Operator 4 - Waveform Select
+</pre>
+</li></ul>
+<p>
+</p><blockquote>
+<b>Note:</b>
+	  If a register number is greater than 100h, then it belongs into the
+    	  secondary register set. (I use this numbering to emphasize the fact
+    	  that the particular register MUST be written to the secondary set.)
+          See <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#appendixA">Appendix A</a>.
+</blockquote>
+<p></p>
+
+
+<hr>
+<a name="chapter5"></a>
+<h2>
+5. OPL3 Register Reference
+</h2>
+
+<p>
+Because the registers of OPL3 are almost the same as of OPL2, I have copied
+their descriptions from file ADLIB.DOC.
+</p><p>
+<a name="chapter5-1"></a>
+</p><h3>5.1 Status Register:</h3>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |IRQ|T1 |T2 |     Not used      |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 7: IRQ Flag. Set whenever any timer has elapsed.<br>
+   bit 6: Timer 1 Flag. Set every time the preset time in Timer 1 has
+elapsed.<br>
+   bit 5: Timer 2 Flag. Set every time the preset time in Timer 2 has
+elapsed.<br>
+<p>
+   Timer interrupts are not wired to any IRQ (why??). The timers can be used
+   to detect the OPL2/OPL3 chip (see <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#appendixB">Appendix B</a>).
+</p><p>
+
+<a name="chapter5-2"></a>
+</p><h3>5.2 Data Registers:</h3>
+<p>
+<a name="reg01"></a>
+</p><h4>01: Test Register / Waveform Select Enable:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |       |WSE|   Test Register   |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 5:    Waveform Select Enable. If clear, all channels will use normal
+	     sine wave. If set, register <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regE0">E0-F5</a>
+             (Waveform Select) contents will be used.<br>
+   bits 0-4: Test Register. Must be reset to zero before any operation.
+<p>
+
+<a name="reg02"></a>
+</p><h4>02: Timer 1 Count:</h4>
+<p>
+   Upward 8 bit counter with a resolution of 80 usec. If an overflow occurs,
+   the status register bit is set, and the preset value is loaded into the
+   timer again.
+</p><p>
+
+<a name="reg03"></a>
+</p><h4>03: Timer 2 Count:</h4>
+<p>
+   Same as Timer 1, but with a resolution of 320 usec.
+</p><p>
+
+<a name="reg004"></a>
+</p><h4>004 (port: base+1): IRQ-Reset / Mask / Start:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |Rst|T1M|T2M|           |T2S|T1S|
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 7:    IRQ-Reset. Resets timer and IRQ flags in status register.
+	     All other bits are ignored when this bit is set.<br>
+   bit 6:    Timer 1 Mask. If 1, status register is not affected in
+overflow.<br>
+   bit 5:    Timer 2 Mask. Same as above.<br>
+   bit 1:    Timer 2 Start. Timer on/off.<br>
+   bit 0:    Timer 1 Start. Same as above.<br>
+<p>
+
+<a name="reg104"></a>
+</p><h4>104 (port: base+3): Four-Operator Enable:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |       |ChB|ChA|Ch9|Ch2|Ch1|Ch0|
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 5:    Enable four-operator synthesis for channel pair 11 - 14
+(decimal).<br>
+   bit 4:    Same as above for channel pair 10 - 13.<br>
+   bit 3:    Same as above for channel pair 9 - 12.<br>
+   bit 2:    Same as above for channel pair 2 - 5.<br>
+   bit 1:    Same as above for channel pair 1 - 4.<br>
+   bit 0:    Same as above for channel pair 0 - 3.<br>
+<p>
+   If reset to zero, OPL3 can produce 18 two-operator sounds at a
+time.<br>
+   If nonzero, OPL3 produces four-operator sound in appropriate channel pair.
+</p><p>
+
+<a name="reg105"></a>
+</p><h4>105 (port: base+3): OPL3 Mode Enable:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |                           |OPL|
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 0:    OPL3 Mode Enable. When set, OPL3 extensions (36 operators, 4-OP
+             synthesis, 8 waveforms, stereo output) can be used. When reset,
+             the chip behaves as an ordinary OPL2. This bit is zero by default
+             for compatibility with OPL2.
+<p>
+
+<a name="reg08"></a>
+</p><h4>08: CSW / NOTE-SEL:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |CSW|N-S|                       |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 7:    Composite sine wave mode on/off. All KEY-ON bits must be clear
+	     in order to use this mode. The card is unable to create any other
+	     sound when in CSW mode. (Unfortunately, I have no info how to
+	     use this mode :-&lt; ).<br>
+   bit 6:    NOTE-SEL. Controls the split point of the keyboard. When 0, the
+	     keyboard split is the second bit from the bit 8 of the F-Number.
+	     When 1, the MSb of the F-Number is used. (???)<br>
+<p>
+
+<a name="reg20"></a>
+</p><h4>20-35: Tremolo / Vibrato / Sustain / KSR / Frequency Multiplication
+Factor:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |Tre|Vib|Sus|KSR| Multiplication|
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 7:    Tremolo (Amplitude vibrato) on/off.<br>
+   bit 6:    Frequency vibrato on/off.<br>
+   bit 5:    Sound Sustaining. When 1, operator's output level will be held at
+             its sustain level until a KEY-OFF is done.<br>
+   bit 4:    Envelope scaling (KSR) on/off. When 1, higher notes are shorter
+             than lower notes.<br>
+   bits 0-3: Frequency Multiplication Factor (MULTI). Operator's frequency
+	     is set to (see registers <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regA0">A0</a>,
+             <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#regB0">B0</a>) F-Number * Factor.<br>
+<pre>		+-------+--------+
+		| MULTI | Factor |
+		+-------+--------+
+		|   0   |   1/2  |
+		|   1   |    1   |
+		|   2   |    2   |
+		|   3   |    3   |
+		|   4   |    4   |
+		|   5   |    5   |
+		|   6   |    6   |
+		|   7   |    7   |
+		|   8   |    8   |
+		|   9   |    9   |
+		|  10   |   10   |
+		|  11   |   10   |
+		|  12   |   12   |
+		|  13   |   12   |
+		|  14   |   15   |
+		|  15   |   15   |
+		+-------+--------+
+</pre>
+
+<a name="reg40"></a>
+<h4>40-55: Key Scale Level / Output Level:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |  KSL  |      Output Level     |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bits 6-7: Key Scale Level. Attenuates output level towards higher pitch:
+<pre>		+-----+-------------+
+		| KSL | Attenuation |
+		+-----+-------------+
+		|  0  | -           |
+		|  1  | 1.5 dB/oct  |
+		|  2  | 3.0 dB/oct  |
+		|  3  | 6.0 dB/oct  |
+		+-----+-------------+
+</pre>
+   bits 0-5: Output Level. Attenuates the operator output level. 0 is the
+	     loudest, 3F is the softest. In additive synthesis, varying
+	     the output level of any operator varies the volume of its
+	     corresponding channel. In FM synthesis, varying the output level
+	     of the carrier varies the volume of the channel. Varying the
+	     output of the modulator will change the frequency spectrum
+	     produced by the carrier.<br>
+<br>
+	     The following table summarizes which operators' output levels
+	     should be updated when trying to change channel output level.
+<pre>		+-------+------+------+------+------+
+		| Mode  | Op 1 | Op 2 | Op 3 | Op 4 |
+		+-------+------+------+------+------+
+		|  AM   |  +   |  +   | N/A  | N/A  |
+		|  FM   |  -   |  +   | N/A  | N/A  |
+		| FM-FM |  -   |  -   |  -   |  +   |
+		| AM-FM |  +   |  -   |  -   |  +   |
+		| FM-AM |  -   |  +   |  -   |  +   |
+		| AM-AM |  +   |  -   |  +   |  +   |
+		+-------+------+------+------+------+
+</pre>
+
+<a name="reg60"></a>
+<h4>60-75: Attack Rate / Decay Rate:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |  Attack Rate  |  Decay Rate   |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bits 4-7: Attack Rate. Determines the rising time for the sound.
+	     The higher the value, the faster the attack.<br>
+   bits 0-3: Decay Rate. Determines the diminishing time for the sound.
+	     The higher the value, the shorter the decay.<br>
+<p>
+
+<a name="reg80"></a>
+</p><h4>80-95: Sustain Level / Release Rate:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   | Sustain Level |  Release Rate |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bits 4-7: Sustain Level. Determines the point at which the sound ceases
+	     to decay and chages to a sound having a constant level. The
+	     sustain level is expressed as a fraction of the maximum level.
+	     0 is the softest and F is the loudest sustain level.
+	     <b>Note</b> that the Sustain-bit in the register <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg20">20-35</a> must
+             be set for this to have an effect.<br>
+   bits 0-3: Release Rate. Determines the rate at which the sound disappears
+	     after KEY-OFF. The higher the value, the shorter the release.
+<p>
+
+<a name="regA0"></a>
+</p><h4>A0-A8: Frequency Number:</h4>
+
+   Determines the pitch of the note. Highest bits of F-Number are stored
+   in the register below.
+<p>
+
+<a name="regB0"></a>
+</p><h4>B0-B8: Key On / Block Number / F-Number(hi bits):</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |       |KEY| Block Num.| Freq  |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 5:    KEY-ON. When 1, channel output is enabled.<br>
+   bits 2-4: Block Number. Roughly determines the octave.<br>
+   bits 0-1: Frequency Number. 2 highest bits of the above register.<br>
+<br>
+	     The following formula is used to determine F-Number and Block:
+<p align="center">
+		F-Number = Music Frequency * 2^(20-Block) / 49716 Hz
+</p><p>
+ <b>Note:</b> 
+         In four-operator mode only the register value of Operators 1 and 2
+         is used, value of Operators 3 and 4 in this register is ignored.
+         In other words: one channel uses only one frequency, block and KEY-ON
+         value at a time, regardless whether it is a two- or four-operator
+         channel.
+</p><p>
+
+<a name="regBD"></a>
+</p><h4>BD: Tremolo Depth / Vibrato Depth / Percussion Mode / BD/SD/TT/CY/HH On:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |Tre|Vib|Per|BD |SD |TT |CY |HH |
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 7:    Tremolo (Amplitude Vibrato) Depth. 0 = 1.0dB, 1 = 4.8dB.<br>
+   bit 6:    Frequency Vibrato Depth. 0 = 7 cents, 1 = 14 cents.
+	     A "cent" is 1/100 of a semi-tone.<br>
+   bit 5:    Percussion Mode. 0 = Melodic Mode, 1 = Percussion Mode.<br>
+   bit 4:    BD On. KEY-ON of the Bass Drum channel.<br>
+   bit 3:    SD On. KEY-ON of the Snare Drum channel.<br>
+   bit 2:    TT On. KEY-ON of the Tom-Tom channel.<br>
+   bit 1:    CY On. KEY-ON of the Cymbal channel.<br>
+   bit 0:    HH On. KEY-ON of the Hi-Hat channel.<br>
+<br>
+   <b>Note:</b>
+         KEY-ON bits of channels 6, 7 and 8 must be clear and their
+	 F-Nums, Attack/Decay/Release rates, etc. must be set properly
+	 to use percussion mode.
+<p>
+
+<a name="regC0"></a>
+</p><h4>C0-C8: FeedBack Modulation Factor / Synthesis Type:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |       | R | L | FeedBack  |Syn|
+   +---+---+---+---+---+---+---+---+
+</pre>
+   bit 5:    Right Speaker Enable. When set, channel output goes to right
+             speaker.<br>
+   bit 4:    Left Speaker Enable. When set, channel output goes to left
+             speaker. At least one of these bits must be set to hear
+             the channel.<br>
+	     These two bits can be used to realize sound "panning", but this
+	     method offers only three pan positions (left/center/right).
+	     These bits apply only to operators producing sound (Carriers).
+	     Modulators are not affected by their setting.<br>
+   bits 1-3: FeedBack Modulation Factor. If 0, no feedback is present. If 1-7,
+	     operator 1 will send a portion of its output back into itself.
+<pre>		+----------+--------+
+		| FeedBack | Factor |
+		+----------+--------+
+		|    0     |   0    |
+		|    1     |  n/16  |
+		|    2     |  n/8   |
+		|    3     |  n/4   |
+		|    4     |  n/2   |
+		|    5     |   n    |
+		|    6     |  2.n   |
+		|    7     |  4.n   |
+		+----------+--------+
+</pre>
+	     When in four-operator mode, the FeedBack value is used only by
+	     Operator 1, value of Operators 2, 3 and 4 is ignored.<br>
+   bit 0:    Synthesis Type. 1 = Additive synthesis, 0 = Frequency Modulation<br>
+	     In four-operator mode, there are two bits controlling the
+	     synthesis type. Both are the bit 0 of register C0, one of
+	     Operators 1 and 2 and the second of Operators 3 and 4.
+<pre>		+--------+--------+--------+
+		| Op 1&amp;2 | Op 3&amp;4 |  Type  |
+		+--------+--------+--------+
+		|    0   |  NONE  |   FM   |
+		|    1   |  NONE  |   AM   |
+		|    0   |    0   | FM-FM  |
+		|    1   |    0   | AM-FM  |
+		|    0   |    1   | FM-AM  |
+		|    1   |    1   | AM-AM  |
+		+--------+--------+--------+
+</pre>
+<p>
+
+<a name="regE0"></a>
+</p><h4>E0-F5: Waveform Select:</h4>
+<pre>   +-7-+-6-+-5-+-4-+-3-+-2-+-1-+-0-+
+   |                   | WaveForm  |
+   +---+---+---+---+---+---+---+---+
+</pre>
+<p>
+   bits 0-2: WaveForm Select (WS):
+
+</p><p>
+<table border="0">
+<tbody><tr><td>
+<ul>
+<li>WaveForm 0: Sine<br>
+<img src="./opl3_files/wave0.gif">
+<br><br>
+</li><li>WaveForm 1: Half-Sine<br>
+<img src="./opl3_files/wave1.gif">
+<br><br>
+</li><li>WaveForm 2: Abs-Sine<br>
+<img src="./opl3_files/wave2.gif">
+<br><br>
+</li><li>WaveForm 3: Pulse-Sine<br>
+<img src="./opl3_files/wave3.gif">
+<br>
+</li></ul>
+</td>
+<td>
+<ul>
+<li>WaveForm 4: Sine - even periods only<br>
+<img src="./opl3_files/wave4.gif">
+<br><br>
+</li><li>WaveForm 5: Abs-Sine - even periods only<br>
+<img src="./opl3_files/wave5.gif">
+<br><br>
+</li><li>WaveForm 6: Square<br>
+<img src="./opl3_files/wave6.gif">
+<br><br>
+</li><li>WaveForm 7: Derived Square<br>
+<img src="./opl3_files/wave7.gif">
+<br>
+</li></ul>
+</td></tr>
+</tbody></table>
+</p>
+
+<!--
+<PRE>
+	WaveForm 0: Sine		WaveForm 1: Half-Sine
+	 | /~\	       			 | /~\         /~\
+	 |/   \       /                  |/   \       /   \
+	-/-----\-----/--                -+-----+-----+-----+-
+	 |      \   /                    |
+	 |       \_/                     |
+
+	WaveForm 2: Abs-Sine		WaveForm 3: Pulse-Sine
+	 | /~\	 /~\   			 | /~|         /~|
+	 |/   \ /   \ /                  |/  |        /  |
+	-+-----+-----+--                -+---+-------+---+---
+	 |                               |
+	 |                               |
+
+	WaveForm 4: Sine - even periods only
+	 | /~\	       		   /~\
+	 |/   \                   /   \
+	-+-----\-----+-----------+-----\-----+-
+	 |      \   /                   \   /
+	 |       \_/                     \_/
+
+	WaveForm 5: Abs-Sine - even periods only
+	 | /~\	 /~\   		   /~\   /~\
+	 |/   \ /   \             /   \ /   \
+	-+-----+-----+-----------+-----+-----+-
+	 |
+	 |
+
+	WaveForm 6: Square
+	 |-----+     +-----+     +-----+     +-
+	 |     |     |     |     |     |     |
+	-+-----|-----|-----|-----|-----|-----|--
+	 |     |     |     |     |     |     |
+	 |     +-----+     +-----+     +-----+
+
+	WaveForm 7: Derived Square
+	 |          |\                |\
+	 |         |  \              |  \
+	-+--__----|----~~-----__----|----~~-----
+	 |    \  |              \  |
+	 |     \|                \|
+-->
+<p>
+</p><blockquote>
+<b>Note:</b>
+	 Bit 5 of register <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#reg01">01</a> must be set to use waveforms other than sine.
+	 Waveforms 4-7 are available only on OPL3.
+</blockquote>
+<p></p>
+
+
+<hr>
+<a name="appendixes"></a>
+<h1>
+Appendixes
+</h1>
+
+<a name="appendixA"></a>
+<h2>
+Appendix A - Examples
+</h2>
+
+<p>
+These examples show a few working routines used in my MUS Player.
+They are written in Borland C++ 3.1 but should be easy to translate to any
+other language.</p>
+
+<pre>--------------------------------- cut here ---------------------------------
+// I prefer using these Assembler-like types
+typedef unsigned int  WORD;
+typedef unsigned char BYTE;
+
+/*
+ * FM Synthesizer base port. SB Pro II - 0x220, Adlib 0x388
+ */
+WORD FMport = 0x220;
+
+/*
+ * Enables OPL3 extensions.
+ */
+WORD OPL3 = 1;
+
+/*
+ * Direct write to any Adlib/SB Pro II FM synthetiser register.
+ *   reg - register number (range 0x001-0x0F5 and 0x101-0x1F5). When high byte
+ *         of reg is zero, data go to port FMport, otherwise to FMport+2
+ *   data - register value to be written
+ */
+BYTE FMwriteReg(WORD reg, BYTE data)
+{
+    asm {
+	mov	dx,FMport
+	mov	ax,reg
+	or	ah,ah		// high byte is nonzero -- write to port base+2
+	jz	out1
+	inc	dx
+	inc	dx
+    }
+out1: asm {
+	out	dx,al
+	mov	cx,6
+    }
+loop1:asm {			// delay between writes
+	in	al,dx
+	loop	loop1
+
+	inc	dx
+	mov	al,data
+	out	dx,al
+	dec	dx
+	mov	cx,36
+    }
+loop2:asm {			// delay after data write
+	in	al,dx
+	loop	loop2
+    }
+    return _AL;
+}
+
+/*
+ * Write to an operator pair. To be used for register bases of 0x20, 0x40,
+ * 0x60, 0x80 and 0xE0.
+ */
+void FMwriteChannel(BYTE regbase, BYTE channel, BYTE data1, BYTE data2)
+{
+    static BYTE adlib_op[] = {0, 1, 2, 8, 9, 10, 16, 17, 18};
+    static BYTE sbpro_op[] = { 0,  1,  2,   6,  7,  8,  12, 13, 14,
+			      18, 19, 20,  24, 25, 26,  30, 31, 32};
+    static WORD rg[] = {0x000,0x001,0x002,0x003,0x004,0x005,
+			0x008,0x009,0x00A,0x00B,0x00C,0x00D,
+			0x010,0x011,0x012,0x013,0x014,0x015,
+			0x100,0x101,0x102,0x103,0x104,0x105,
+			0x108,0x109,0x10A,0x10B,0x10C,0x10D,
+			0x110,0x111,0x112,0x113,0x114,0x115};
+
+    if (OPL3)
+    {
+	register WORD reg = sbpro_op[channel];
+	FMwriteReg(rg[reg]+regbase, data1);
+	FMwriteReg(rg[reg+3]+regbase, data2);
+    } else {
+	register WORD reg = regbase+adlib_op[channel];
+	FMwriteReg(reg, data1);
+	FMwriteReg(reg+3, data2);
+    }
+}
+
+/*
+ * Write to channel a single value. To be used for register bases of
+ * 0xA0, 0xB0 and 0xC0.
+ */
+void FMwriteValue(BYTE regbase, BYTE channel, BYTE value)
+{
+    static WORD ch[] = {0x000,0x001,0x002,0x003,0x004,0x005,0x006,0x007,0x008,
+			0x100,0x101,0x102,0x103,0x104,0x105,0x106,0x107,0x108};
+    register WORD chan;
+
+    if (OPL3)
+	chan = ch[channel];
+    else
+	chan = channel;
+    FMwriteReg(regbase + chan, value);
+}
+--------------------------------- cut here ---------------------------------
+</pre>
+
+
+<a name="appendixB"></a>
+<hr>
+<h2>
+Appendix B - Detection Methods
+</h2>
+
+<a name="detectOPL2"></a>
+<h3>
+OPL2 Detection
+</h3>
+
+<p>
+An official method of Adlib (OPL2) detection is:
+</p><p>
+</p><ol>
+<li> Reset Timer 1 and Timer 2: write 60h to register 4.
+</li><li> Reset the IRQ: write 80h to register 4.<br>
+   <b>Note:</b> Steps 1 and 2 can't be combined together.
+</li><li> Read status register: read port base+0 (388h). Save the result.
+</li><li> Set Timer 1 to FFh: write FFh to register 2.
+</li><li> Unmask and start Timer 1: write 21h to register 4.
+</li><li> Wait in a delay loop for at least 80 usec.
+</li><li> Read status register: read port base+0 (388h). Save the result.
+</li><li> Reset Timer 1, Timer 2 and IRQ as in steps 1 and 2.
+</li><li> Test the results of the two reads: the first should be 0,
+   the second should be C0h.
+   If either is incorrect, then the OPL2 is not present.
+</li></ol>
+<p>
+<b>Notes:</b>
+</p><ol>
+<li>   You should AND the result bytes with E0h because the unused bits
+       are undefined.
+</li><li>   This testing method doesn't work in some SoundBlaster compatible
+       cards.
+</li></ol>
+<p>
+
+</p><h3>
+OPL3 Detection
+</h3>
+
+<ol>
+<li> <a href="http://www.fit.vutbr.cz/~arnost/opl/opl3.html#detectOPL2">Detect OPL2</a>. If present, continue.
+</li><li> Read status register: read port base+0.
+</li><li> AND the result with 06h.
+</li><li> If the result is zero, you have OPL3, otherwise OPL2.
+</li></ol>
+
+<b>Note:</b>
+      This is NOT an official method. I have dug it out of a sound driver.
+      I haven't tested it, because I haven't an OPL2 card (Adlib, SB Pro I).
+      Nevertheless it "detects" my SB Pro II properly. ;-)
+<p>
+Another possible detection method for distinguishing between SB Pro I and
+SB Pro II would be to try to detect OPL2 at I/O port base+0 and then at port
+base+2. The first test should succeed and the second should fail if OPL3 is
+present. (Remember: SB Pro I contains twin OPL2 chips at addresses base+0 and
+base+2, while SB Pro II contains one OPL3 chip at I/O address base+0 thru
+base+3).
+</p><p>
+
+</p><h3>
+The BLASTER Environment Variable
+</h3>
+
+<p>
+Perhaps the most recommended "detection" method. Reading this variable avoids
+blindfold I/O port scanning and possible device conflicts. The user is
+responsible for its proper setting.
+</p><p>
+The variable has this format:
+</p><dd>
+    BLASTER=<b>A</b><var>addr</var> <b>I</b><var>irq</var> <b>D</b><var>dma8</var>
+<b>H</b><var>dma16</var> <b>P</b><var>midi</var> <b>E</b><var>emu</var> <b>T</b><var>type</var>
+</dd>
+<p>
+<b>A</b>: Base I/O address given in hex. For most Sound Blasters the default is 220.<br>
+<b>I</b>: IRQ Number (decimal). Default 7 (old SB and SB Pro), 5 (SB 16, etc.).<br>
+<b>D</b>: DMA Number (decimal). Default 1.<br>
+<b>H</b>: High DMA Number (decimal). Default 5 (on SB 16 and newer cards only)<br>
+<b>P</b>: MPU-401 MIDI port (hexadecimal). Default 330 (on SB 16 and newer cards)<br>
+<b>E</b>: EMU-8000 base port (hexadecimal). Default 620 (on AWE32 and newer cards)<br>
+<b>T</b>: Card Type (decimal):<br>
+</p><dd> 1 - Sound Blaster 1.5
+</dd><dd> 2 - Sound Blaster Pro I
+</dd><dd> 3 - Sound Blaster 2.0
+</dd><dd> 4 - Sound Blaster Pro II
+</dd><dd> 6 - Sound Blaster 16/AWE 32/32/64
+</dd>
+<p>
+Examples:
+</p><dd>BLASTER=A220 I7 D1 T4 &nbsp;  (old 8-bit Sound Blaster Pro II)
+</dd><dd>BLASTER=A220 I5 D1 H5 P330 E620 T6 &nbsp;  (16-bit Sound Blaster 32)
+</dd>
+<p></p>
+
+
+<hr>
+<a name="references"></a>
+<h2>
+References
+</h2>
+
+<p>
+</p><pre><a name="pcgpe"></a>
+<b>Title:</b>		The PC Games Programmers Encyclopedia
+<b>Authors:</b>	Mark Feldman and many others on Usenet and Internet
+<b>WWW:</b>		<a href="http://www.qzx.com/pc-gpe/">http://www.qzx.com/pc-gpe/</a>
+<b>FTP:</b>		<a href="ftp://x2ftp.oulu.fi/pub/msdos/programming/gpe/pcgpe10.zip">ftp://x2ftp.oulu.fi/pub/msdos/programming/gpe/pcgpe10.zip</a> - 700KB
+</pre>
+ ... you can find (almost) everything you need there
+
+<pre><b>Title:</b>		Sound Blaster - The Official Book
+<b>Authors:</b>	Richard Heimlich, David M. Golden, Ivan Luk, Peter M. Ridge
+<b>Publishers:</b>	Osborne/McGraw Hill
+<b>ISBN:</b>		0-07-881907-5
+</pre>
+ ... this is a number-one in my book-wishlist. If anyone wanted to get rid of
+     the book, I wouldn't scorn it ... :-)
+
+<pre><b>Title:</b>		The SoundBlaster Developer Kit
+<b>Publishers:</b>	Creative Labs Inc
+		Creative Technology PTE LTD
+</pre>
+ ... I wonder if you can find something comprehensible in that.
+<p></p>
+
+
+<hr>
+
+<p><a href="http://www.fit.vutbr.cz/~arnost/opl/index.html"><img src="./opl3_files/back.gif" align="MIDDLE" alt="Back"></a>
+&nbsp;<a href="http://www.fit.vutbr.cz/~arnost/opl/index.html">Back</a> to previous page.</p>
+
+<address>
+<p> 1996-2000 <a href="http://www.fee.vutbr.cz/~arnost">Vladimir Arnost</a><br>
+Last modified on <!-- begin flastmod -->
+19. ledna 2009<!-- end --><br>
+If you have any suggestions, bug reports or ideas how to improve these
+pages, please feel free to
+<a href="mailto:arnost@dcse.fee.vutbr.cz">mail me</a>.<br>
+</p></address>
+
+
+
+</body><style type="text/css">embed[type*="application/x-shockwave-flash"],embed[src*=".swf"],object[type*="application/x-shockwave-flash"],object[codetype*="application/x-shockwave-flash"],object[src*=".swf"],object[codebase*="swflash.cab"],object[classid*="D27CDB6E-AE6D-11cf-96B8-444553540000"],object[classid*="d27cdb6e-ae6d-11cf-96b8-444553540000"],object[classid*="D27CDB6E-AE6D-11cf-96B8-444553540000"]{	display: none !important;}</style><style type="text/css">embed[type*="application/x-silverlight-2"],object[type*="application/x-silverlight-2"]{display: none !important;}</style></html>
