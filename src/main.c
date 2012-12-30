@@ -227,6 +227,7 @@ void render()
 int main(int argc, char* argv[])
 {
     sound_reset();
+    sound_init();
 
     init_vga();
     set_mode(VIDEO_MODE);

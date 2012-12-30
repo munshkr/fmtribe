@@ -17,6 +17,7 @@
 #define TIMER2_DATA                         0x03
 #define TIMER_CONTROL_FLAGS                 0x04
 #define SPEECH_MODE_KBD_SPLIT_NOTE          0x08
+#define AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL  0xBD
 
 // Base address for operator-channel set of registers
 // e.g: ATTACK_RATE_DECAY_RATE__BASE + CH(4) + OP1
@@ -27,11 +28,11 @@
 #define SUSTAIN_LEVEL_RELEASE_RATE__BASE    0x80
 #define WAVEFORM_SELECT__BASE               0xE0
 
+// Register for Channels
 #define FREQ_LOW(c)                         (0xA0 + c - 1)
 #define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c - 1)
 #define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c - 1)
 
-#define AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL  0xBD
 
 
 __inline void setr(const int reg, const int value) {
@@ -83,6 +84,12 @@ void sound_reset() {
     setr_b(0x05, 1);
 }
 
+void sound_init()
+{
+    setr_b(TEST_LSI_ENABLE_WAVEFORM, 0x20);
+    setr_b(AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL, 0x00);
+}
+
 void sound_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum)
 {
     setr(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, 0x01);  // Set the modulator's multiple to 1
@@ -118,9 +125,9 @@ void sound_play_bass1(unsigned int c, unsigned int octave, unsigned short fnum)
     setr(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, 0x06);
     setr(CH(c) + OP2 + WAVEFORM_SELECT__BASE, 0x05);
 
-    //setr(FEEDBACK_STRENGTH_CONN_TYPE(c),
-    setr(FREQ_LOW(c), fnum & 0xff);  // Set voice frequency's LSB
-    setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on; set the octave and freq MSB
+    setr(FEEDBACK_STRENGTH_CONN_TYPE(c), 0x30);
+    setr(FREQ_LOW(c), fnum & 0xff);
+    setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));  // Turn the voice on
 
     //msleep(1000);
     //setr(FREQ_HIGH_KEYON_OCTAVE(c), 0x10 | ((fnum >> 8) & 3));  // Turn the voice off
