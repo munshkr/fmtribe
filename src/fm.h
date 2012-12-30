@@ -1,5 +1,5 @@
-#ifndef __SOUND_H__
-#define __SOUND_H__
+#ifndef __FM_H__
+#define __FM_H__
 
 #include <pc.h>
 #include <unistd.h>
@@ -19,8 +19,8 @@
 #define NOTE_B   0x287
 #define NOTE_C   0x2ae
 
-typedef enum { Center, Left, Right } panning_t;
-typedef enum { Melodic, BD, SD, TT, TC, HH } voice_type_t;
+typedef enum { Center, Left, Right } fm_panning_t;
+typedef enum { Melodic, BD, SD, TT, TC, HH } fm_voice_type_t;
 typedef struct {
     unsigned char m__am_vib_eg;
     unsigned char c__am_vib_eg;
@@ -33,13 +33,13 @@ typedef struct {
     unsigned char m__waveform;
     unsigned char c__waveform;
     unsigned char feedback_fm;
-    panning_t     panning;
+    fm_panning_t     panning;
     signed char   fine_tune;
-    voice_type_t  voice_type;
-} instr_t;
+    fm_voice_type_t  voice_type;
+} fm_instr_t;
 
-void sound_reset();
-void sound_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum);
-void sound_play_bass1(unsigned int c, unsigned int octave, unsigned short fnum);
+void fm_reset();
+void fm_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum);
+void fm_play_bass1(unsigned int c, unsigned int octave, unsigned short fnum);
 
-#endif // __SOUND_H__
+#endif // __FM_H__

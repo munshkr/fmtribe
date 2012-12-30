@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "common.h"
-#include "sound.h"
+#include "fm.h"
 #include "vga.h"
 
 #define CHANNELS 8
@@ -71,7 +71,7 @@ void play_step()
 {
     if (metronome_on) {
         if (current_step % 4 == 0) {
-            sound_play_metronome_tick(9, 1, NOTE_E);
+            fm_play_metronome_tick(9, 1, NOTE_E);
         }
     }
 
@@ -80,9 +80,9 @@ void play_step()
         if (seq[c][current_step]) {
             // TODO play channel sound
             if (c == 0) {
-                sound_play_kick1(c + 1, 3, notes[0]);
+                fm_play_kick1(c + 1, 3, notes[0]);
             } else {
-                sound_play_metronome_tick(c + 1, 4, notes[c]);
+                fm_play_metronome_tick(c + 1, 4, notes[c]);
             }
         }
     }
@@ -226,8 +226,8 @@ void render()
 
 int main(int argc, char* argv[])
 {
-    sound_reset();
-    sound_init();
+    fm_reset();
+    fm_init();
 
     init_vga();
     set_mode(VIDEO_MODE);
@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
     }
 
     set_mode(TEXT_MODE);
-    sound_reset();
+    fm_reset();
 
     return EXIT_SUCCESS;
 }
