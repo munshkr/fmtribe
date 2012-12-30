@@ -53,8 +53,6 @@ uclock_t prev_tap = NULL;
 
 bool seq[CHANNELS][STEPS] = {};
 
-unsigned short notes[] = { NOTE_Cs, NOTE_D, NOTE_Ds, NOTE_E, NOTE_F, NOTE_Fs, NOTE_G, NOTE_Gs, NOTE_A, NOTE_As, NOTE_B, NOTE_C };
-
 extern fm_instr_t tick1;
 extern fm_instr_t bass1;
 
@@ -88,7 +86,7 @@ void play_step()
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             fm_key_off(c + 1);
-            fm_key_on(c + 1, 2, notes[0]);
+            fm_key_on(c + 1, 2, NOTE_C);
         }
     }
 }
