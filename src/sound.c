@@ -80,14 +80,14 @@ void sound_reset() {
         setr(0xe0 + i, 0);
     }
 
-    // enable OPL3
-    setr_b(0x05, 1);
 }
 
 void sound_init()
 {
-    setr_b(TEST_LSI_ENABLE_WAVEFORM, 0x20);
-    setr_b(AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL, 0x00);
+    // enable OPL3
+    setr_b(0x05, 1);
+    setr(TEST_LSI_ENABLE_WAVEFORM, 0x20);
+    setr(AM_DEPTH_VIBRATO_DEPTH_RHYTHM_CTRL, 0x00);
 }
 
 void sound_play_metronome_tick(unsigned int c, unsigned int octave, unsigned short fnum)
