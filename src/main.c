@@ -56,6 +56,19 @@ unsigned short notes[] = { NOTE_Cs, NOTE_D, NOTE_Ds, NOTE_E, NOTE_F, NOTE_Fs, NO
 
 void tick()
 {
+    current_step++;
+    if (current_step == STEPS) {
+        current_step = 0;
+        if (stop_after_current_bar) {
+            playing = false;
+            stop_after_current_bar = false;
+        }
+    }
+    dirty = true;
+}
+
+void play_step()
+{
     if (metronome_on) {
         if (current_step % 4 == 0) {
             sound_play_metronome_tick(9, 1, NOTE_E);
@@ -73,16 +86,6 @@ void tick()
             }
         }
     }
-
-    current_step++;
-    if (current_step == STEPS) {
-        current_step = 0;
-        if (stop_after_current_bar) {
-            playing = false;
-            stop_after_current_bar = false;
-        }
-    }
-    dirty = true;
 }
 
 void toggle_metronome()
@@ -248,6 +251,8 @@ int main(int argc, char* argv[])
                     pause_after_current_step = true;
                 } else {
                     playing = true;
+                    prev = uclock();
+                    play_step();
                 }
                 break;
               case K_F7:
@@ -309,6 +314,7 @@ int main(int argc, char* argv[])
                     dirty = true;
                 } else {
                     tick();
+                    play_step();
                 }
                 prev = now;
             }
