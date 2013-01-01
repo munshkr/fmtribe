@@ -7,6 +7,7 @@
 #include "fm.h"
 #include "vga.h"
 #include "instr.h"
+#include "font.h"
 
 #define CHANNELS 8
 #define STEPS    16
@@ -53,9 +54,34 @@ uclock_t prev_tap = NULL;
 
 bool seq[CHANNELS][STEPS] = {};
 
+pbm_file_t pbm;
+font_t font;
+
 extern fm_instr_t tick1;
 extern fm_instr_t bass1;
 
+
+void load_font()
+{
+    if (read_pbm_file("font.pbm", &pbm)) {
+        printf("font.pbm ~ %ix%i\n", pbm.width, pbm.height);
+
+        bool res = create_font_from_pbm(&pbm, 12, &font);
+        free_pbm(&pbm);
+
+        if (res) {
+            printf("Font loaded ~ %ix%i\n", font.width, font.height);
+        } else {
+            printf("Error loading font.\n");
+            free_font(&font);
+            return EXIT_FAILURE;
+        }
+    } else {
+        printf("Error reading font.pbm\n");
+        free_pbm(&pbm);
+        return EXIT_FAILURE;
+    }
+}
 
 void tick()
 {
@@ -223,12 +249,17 @@ void render()
     render_hits();
     render_channel_selector();
     render_board();
+
+    render_str(&font, 6, 5, 7, "FMTribe");
+
     update();
 }
 
 
 int main(int argc, char* argv[])
 {
+    load_font();
+
     fm_reset();
     fm_init();
 
@@ -239,8 +270,6 @@ int main(int argc, char* argv[])
     set_mode(VIDEO_MODE);
 
     set_bpm(DEFAULT_BPM);
-
-    render_board();
 
     bool is_running = true;
     uclock_t prev = uclock();
@@ -336,5 +365,6 @@ int main(int argc, char* argv[])
     set_mode(TEXT_MODE);
     fm_reset();
 
+    free_font(&font);
     return EXIT_SUCCESS;
 }
