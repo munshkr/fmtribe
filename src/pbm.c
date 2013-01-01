@@ -67,3 +67,11 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
 
     return true;
 }
+
+void free_pbm(pbm_file_t* pbm)
+{
+    if (pbm->buffer) {
+        free(pbm->buffer);
+        pbm->buffer = NULL;
+    }
+}

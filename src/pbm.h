@@ -11,5 +11,6 @@ typedef struct pbm_file_t {
 } pbm_file_t;
 
 bool read_pbm_file(const char* path, pbm_file_t* pbm);
+void free_pbm(pbm_file_t* pbm);
 
 #endif // __PBM_H__
