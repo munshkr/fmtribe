@@ -46,7 +46,7 @@ bool create_font_from_pbm(const pbm_file_t* pbm, const int chars_per_row, font_t
     return true;
 }
 
-void print_char(const font_t* f, const int x, const int y, const char c)
+void print_char(const font_t* f, const int x, const int y, const uint8_t color, const char c)
 {
     int char_pos = ((int) c) - 32;
 
@@ -61,7 +61,7 @@ void print_char(const font_t* f, const int x, const int y, const char c)
     for (j = 0; j < f->height; j++) {
         for (i = 0; i < f->width; i++) {
             if (*buf_ptr) {
-                putp(x + i, y + j, 0xff);
+                putp(x + i, y + j, color);
             }
             buf_ptr++;
         }
