@@ -15,8 +15,8 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
     char id[3] = "";
     fscanf(f, "%s\n", id);
     if (strcmp(id, "P4")) {
-        fprintf(stderr, "%s: not a valid raw PBM file.\n", path);
         fclose(f);
+        fprintf(stderr, "%s: not a valid raw PBM file.\n", path);
         return false;
     }
 
@@ -27,8 +27,8 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
     unsigned int raw_buf_size = DIV_CEIL(pbm->width * pbm->height, 8);
     uint8_t* raw_buf = malloc(raw_buf_size);
     if (!raw_buf) {
-        fprintf(stderr, "%s: not enough memory to read PBM file.\n", path);
         fclose(f);
+        fprintf(stderr, "%s: not enough memory to read PBM file.\n", path);
         return false;
     }
 
@@ -38,8 +38,9 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
     // allocate memory for output buffer
     pbm->buffer = malloc(pbm->width * pbm->height);
     if (!pbm->buffer) {
-        fprintf(stderr, "%s: not enough memory to read PBM file.\n", path);
+        free(raw_buf);
         fclose(f);
+        fprintf(stderr, "%s: not enough memory to read PBM file.\n", path);
         return false;
     }
 
