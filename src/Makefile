@@ -1,7 +1,7 @@
 BIN := fmtribe.exe
-SOURCES := main.c common.c vga.c fm.c pbm.c
+SOURCES := main.c common.c vga.c fm.c pbm.c font.c
 OBJS := $(SOURCES:.c=.o)
-CFLAGS := -Wall #-std=gnu99
+CFLAGS := -g -Wall #-std=gnu99
 
 all: $(BIN)
 
