@@ -9,6 +9,9 @@
 #include "instr.h"
 #include "font.h"
 
+#define MAJOR_VERSION 0
+#define MINOR_VERSION 1
+
 #define CHANNELS 8
 #define STEPS    16
 
@@ -74,12 +77,12 @@ void load_font()
         } else {
             printf("Error loading font.\n");
             free_font(&font);
-            return EXIT_FAILURE;
+            exit(EXIT_FAILURE);
         }
     } else {
         printf("Error reading font.pbm\n");
         free_pbm(&pbm);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -250,7 +253,7 @@ void render()
     render_channel_selector();
     render_board();
 
-    render_str(&font, 6, 5, 7, "FMTribe");
+    render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
 
     update();
 }

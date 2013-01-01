@@ -1,4 +1,5 @@
 #include <string.h>
+#include "common.h"
 #include "font.h"
 
 #define TOTAL_CHARS   96
@@ -77,6 +78,18 @@ void render_str(const font_t* f, const int x, const int y, const uint8_t color, 
         curx += f->width;
         str_p++;
     }
+}
+
+void render_strf(const font_t* f, const int x, const int y, const uint8_t color, const char* format, ...)
+{
+    char buffer[80] = "";
+    va_list args;
+
+    va_start(args, format);
+    vsprintf(buffer, format, args);
+    va_end(args);
+
+    render_str(f, x, y, color, buffer);
 }
 
 void free_font(font_t* f)
