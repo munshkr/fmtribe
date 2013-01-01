@@ -45,10 +45,14 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
     }
 
     // read raw buffer into output buffer
-    int i, j, k;
-    for (i = 0, j = 0; i < raw_buf_size; i++) {
+    unsigned int i, j, k, x;
+    for (i = 0, j = 0, x = 0; i < raw_buf_size; i++) {
         uint8_t byte = raw_buf[i];
-        for (k = 0; k < 8; k++, j++) {
+        for (k = 0; k < 8; k++, j++, x++) {
+            if (x == pbm->width) {
+                x = 0;
+                break;
+            }
             if (byte & 0x80) {
                 pbm->buffer[j] = 1;
             } else {
