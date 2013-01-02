@@ -71,17 +71,17 @@ void fm_init()
 
 void fm_set_instrument(const unsigned int c, const fm_instr_t* instr)
 {
-    fm_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, instr->c__am_vib_eg);
-    fm_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, instr->c__ksl_volume);
-    fm_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, instr->c__attack_decay);
-    fm_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, instr->c__sustain_release);
-    fm_write(CH(c) + OP1 + WAVEFORM_SELECT__BASE, instr->c__waveform);
+    fm_write(CH(c) + OP1 + AM_VIB_EG_KSR_MULT__BASE, instr->m__am_vib_eg);
+    fm_write(CH(c) + OP1 + KEY_SCALING_OPERATOR_LEVELS__BASE, instr->m__ksl_volume);
+    fm_write(CH(c) + OP1 + ATTACK_RATE_DECAY_RATE__BASE, instr->m__attack_decay);
+    fm_write(CH(c) + OP1 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, instr->m__sustain_release);
+    fm_write(CH(c) + OP1 + WAVEFORM_SELECT__BASE, instr->m__waveform);
 
-    fm_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, instr->m__am_vib_eg);
-    fm_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, instr->m__ksl_volume);
-    fm_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, instr->m__attack_decay);
-    fm_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, instr->m__sustain_release);
-    fm_write(CH(c) + OP2 + WAVEFORM_SELECT__BASE, instr->m__waveform);
+    fm_write(CH(c) + OP2 + AM_VIB_EG_KSR_MULT__BASE, instr->c__am_vib_eg);
+    fm_write(CH(c) + OP2 + KEY_SCALING_OPERATOR_LEVELS__BASE, instr->c__ksl_volume);
+    fm_write(CH(c) + OP2 + ATTACK_RATE_DECAY_RATE__BASE, instr->c__attack_decay);
+    fm_write(CH(c) + OP2 + SUSTAIN_LEVEL_RELEASE_RATE__BASE, instr->c__sustain_release);
+    fm_write(CH(c) + OP2 + WAVEFORM_SELECT__BASE, instr->c__waveform);
 
     fm_write(FEEDBACK_STRENGTH_CONN_TYPE(c), 0x30 | instr->feedback_fm);
 }
