@@ -1,3 +1,4 @@
+#include <math.h>
 #include "fm.h"
 
 #define BASE_PORT   0x388
@@ -33,6 +34,29 @@
 #define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c)
 #define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c)
 
+
+typedef struct {
+    note_t note;
+    double freq;
+} note_freq_t;
+
+static const note_freq_t FREQS[12] = {
+    { C,  261.626 },
+    { Db, 277.183 },
+    { D,  293.665 },
+    { Eb, 311.127 },
+    { E,  329.628 },
+    { F,  349.228 },
+    { Gb, 369.994 },
+    { G,  391.995 },
+    { Ab, 415.305 },
+    { A,  440.000 },
+    { Bb, 466.164 },
+    { B,  493.883 },
+};
+
+static double note_frequency(const note_t note);
+static int calculate_fnumber(const unsigned int octave, const note_t note);
 
 
 __inline void fm_write(const int reg, const int value) {
@@ -86,8 +110,9 @@ void fm_set_instrument(const unsigned int c, const fm_instr_t* instr)
     fm_write(FEEDBACK_STRENGTH_CONN_TYPE(c), 0x30 | instr->feedback_fm);
 }
 
-void fm_key_on(const unsigned int c, const uint8_t octave, const uint16_t fnum)
+void fm_key_on(const unsigned int c, const uint8_t octave, const note_t note)
 {
+    const int fnum = calculate_fnumber(octave, note);
     fm_write(FREQ_LOW(c), fnum & 0xff);
     fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | ((octave << 2) & 0x1c) | ((fnum >> 8) & 3));
 }
@@ -95,4 +120,21 @@ void fm_key_on(const unsigned int c, const uint8_t octave, const uint16_t fnum)
 void fm_key_off(const unsigned int c)
 {
     fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0);
+}
+
+static double note_frequency(const note_t note)
+{
+    int i;
+    for (i = 0; i < 12; i++) {
+        if (FREQS[i].note == note) break;
+    }
+    return FREQS[i].freq;
+}
+
+static int calculate_fnumber(const unsigned int octave, const note_t note)
+{
+    // F-Number = Music Frequency * 2^(20-Block) / 49716 Hz
+    const double n = note_frequency(note) * pow(2, 20 - octave);
+    const int fnum = floor(n / 49716);
+    return fnum;
 }

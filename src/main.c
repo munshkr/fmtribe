@@ -155,11 +155,12 @@ void tick()
 void play_step()
 {
     if (metronome_on) {
-        if (current_step % 4 == 0) {
-            // FIXME replace metronome instrument for one that has no release,
-            // to avoid sleeping.
+        if (current_step == 0) {
             fm_key_off(METRONOME_CH);
-            fm_key_on(METRONOME_CH, 4, NOTE_E);
+            fm_key_on(METRONOME_CH, 3, E);
+        } else if (current_step % 4 == 0) {
+            fm_key_off(METRONOME_CH);
+            fm_key_on(METRONOME_CH, 4, E);
         }
     }
 
@@ -167,7 +168,7 @@ void play_step()
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             fm_key_off(c);
-            fm_key_on(c, 4, NOTE_C);
+            fm_key_on(c, c+1, C);
         }
     }
 }
