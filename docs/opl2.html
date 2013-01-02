@@ -1,0 +1,2083 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!-- saved from url=(0043)http://www.shipbrook.net/jeff/sb.html#20-35 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Programming the AdLib/SoundBlaster FM Music Chips</title>
+
+    <meta name="DESCRIPTION" content="Document on programming the original AdLib and Sound Blaster&#39;s FM synthesis system.">
+
+  <style type="text/css"></style></head>
+
+
+
+  <body bgcolor="#FFFFFF" text="#000000" link="#000080" vlink="#800080" alink="#FF0000">
+
+    <center>
+
+      <font size="+3">
+
+        Programming the AdLib/Sound Blaster<br>
+
+        FM Music Chips<br>
+
+      </font>
+
+      <font size="+1">
+
+        Version 2.1 (24 Feb 1992)<br><br>
+
+        Copyright © 1991, 1992 by <a href="http://www.shipbrook.net/jeff/">Jeffrey S. Lee</a><br>
+
+        This HTML version copyright © 1996 by Jeffrey S. Lee<br><br>
+
+        <a href="mailto:godfrey@shipbrook.net">godfrey@shipbrook.net</a><br><br><br>
+
+        <b>Warranty and Copyright Policy</b>
+
+      </font>
+
+    </center>
+
+
+
+    <p>
+
+      This document is provided on an "as-is" basis, and its author makes
+
+      no warranty or representation, express or implied, with respect to
+
+      its quality performance or fitness for a particular purpose.  In no
+
+      event will the author of this document be liable for direct, indirect,
+
+      special, incidental, or consequential damages arising out of the use
+
+      or inability to use the information contained within.  Use of this
+
+      document is at your own risk.
+
+    </p>
+
+
+
+    <p>
+
+      This file may be used and copied freely so long as the applicable
+
+      copyright notices are retained, and no modifications are made to the
+
+      text of the document.  No money shall be charged for its distribution
+
+      beyond reasonable shipping, handling and duplication costs, nor shall
+
+      proprietary changes be made to this document so that it cannot be
+
+      distributed freely.  This document may not be included in published
+
+      material or commercial packages without the written consent of its
+
+      author.
+
+    </p>
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Overview</b>
+
+      </font>
+
+    </center>
+
+
+
+    <p>
+
+      Two of the most popular sound cards for the IBM-PC, the AdLib and the
+
+      Sound Blaster, suffer from a real dearth of clear documentation for 
+
+      programmers.  AdLib Inc. and Creative Labs, Inc. both sell developers'
+
+      kits for their sound cards, but these are expensive, and (in the case
+
+      of the Sound Blaster developers' kit) can be extremely cryptic.
+
+    </p>
+
+
+
+    <p>
+
+      This document is intended to provide programmers with a FREE source
+
+      of information about the programming of these sound cards.
+
+    </p>
+
+
+
+    <p>
+
+      The information contained in this document is a combination of 
+
+      information found in the Sound Blaster Software Developer's Kit, and
+
+      that learned by painful experience.  Some of the information may not
+
+      be valid for AdLib cards; if this is so, I apologize in advance.
+
+    </p>
+
+
+
+    <p>
+
+      Please note that numbers will be given in hexadecimal, unless otherwise
+
+      indicated.  If a number is written out longhand (sixteen instead of 16)
+
+      it is in decimal.
+
+    </p>
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Chapter One - Sound Card I/O</b>
+
+      </font>
+
+    </center>
+
+
+
+    <p>
+
+      The sound card is programmed by sending data to its internal registers
+
+      via its two I/O ports:
+
+    </p>
+
+    <blockquote>
+
+      <tt>0388 (hex) - Address/Status port  (R/W)<br>
+
+      0389 (hex) - Data port            (W/O)</tt><br>
+
+    </blockquote>
+
+
+
+    <p>
+
+      The Sound Blaster Pro is capable of stereo FM music, which is accessed
+
+      in exactly the same manner.  Ports 0220 and 0221 (hex) are the address/
+
+      data ports for the left speaker, and ports 0222 and 0223 (hex) are the
+
+      ports for the right speaker.  Ports 0388 and 0389 (hex) will cause both
+
+      speakers to output sound.
+
+    </p>
+
+
+
+    <p>
+
+     The sound card possesses an array of two hundred forty-four registers;
+
+     to write to a particular register, send the register number (01-F5) to
+
+     the address port, and the desired value to the data port.
+
+    </p>
+
+
+
+    <p>
+
+     After writing to the register port, you must wait twelve cycles before 
+
+     sending the data; after writing the data, eighty-four cycles must elapse
+
+     before any other sound card operation may be performed.
+
+    </p>
+
+
+
+    <p>
+
+     The AdLib manual gives the wait times in microseconds: three point three
+
+     (3.3) microseconds for the address, and twenty-three (23) microseconds
+
+     for the data.
+
+     </p>
+
+
+
+    <p>
+
+     AdLib suggested that the delays be produced by reading the register port
+
+     six times after writing to the register port, and reading the register
+
+     port thirty-five times after writing to the data port.  With the advent of
+
+     much faster machines, however, this method is not necessarily reliable.
+
+    </p>
+
+
+
+    <p>
+
+     The sound card registers are write-only.
+
+    </p>
+
+
+
+    <p>
+
+     The address port also functions as a sound card status byte.  To 
+
+     retrieve the sound card's status, simply read port 388.  The status 
+
+     byte has the following structure:
+
+    </p>
+
+
+
+    <blockquote>
+
+      <table border="1">
+
+        <tbody><tr>
+
+          <td align="center" width="12.5%">7</td>
+
+          <td align="center" width="12.5%">6</td>
+
+          <td align="center" width="12.5%">5</td>
+
+          <td align="center" width="12.5%">4</td>
+
+          <td align="center" width="12.5%">3</td>
+
+          <td align="center" width="12.5%">2</td>
+
+          <td align="center" width="12.5%">1</td>
+
+          <td align="center" width="12.5%">0</td>
+
+        </tr>
+
+        <tr>
+
+          <td align="center" width="12.5%">both<br>timers</td>
+
+          <td align="center" width="12.5%">timer<br>1</td>
+
+          <td align="center" width="12.5%">timer<br>2</td>
+
+          <td align="center" width="61.5%" colspan="5">unused</td>
+
+        </tr>
+
+      </tbody></table>
+
+    </blockquote>
+
+    <blockquote>
+
+      <table border="0" cellpadding="0">
+
+        <tbody><tr>
+
+          <td valign="top" align="right">Bit&nbsp;7&nbsp;-</td>
+
+          <td>set if either timer has expired.</td>
+
+        </tr>
+
+        <tr>
+
+          <td valign="top" align="right">6&nbsp;-</td>
+
+          <td>set if timer 1 has expired.</td>
+
+        </tr>
+
+        <tr>
+
+          <td valign="top" align="right">5&nbsp;-</td>
+
+          <td>set if timer 2 has expired.</td>
+
+        </tr>
+
+      </tbody></table>
+
+    </blockquote>
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Chapter Two - The Registers</b>
+
+      </font>
+
+    </center>
+
+
+
+    <p>
+
+      The following table shows the function of each register in the sound 
+
+      card.  Registers will be explained in detail after the table.  Registers
+
+      not listed are unused.
+
+    </p>
+
+
+
+    <blockquote>
+
+      <table border="1">
+
+        <tbody><tr><td align="center"><b>Address</b></td><td><b>Function</b></td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#01">01</a></td><td> Test LSI / Enable waveform control</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#02">02</a></td><td> Timer 1 data</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#03">03</a></td><td> Timer 2 data</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#04">04</a></td><td> Timer control flags</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#08">08</a></td><td> Speech synthesis mode / Keyboard split note select</td></tr>
+
+        <tr><td align="center"><a href="./opl2_files/opl2.html">20..35</a></td><td> Amp Mod / Vibrato / EG type / Key Scaling / Multiple</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#40-55">40..55</a></td><td> Key scaling level / Operator output level</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#60-75">60..75</a></td><td> Attack Rate / Decay Rate</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#80-95">80..95</a></td><td> Sustain Level / Release Rate</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#A0-B8">A0..A8</a></td><td> Frequency (low 8 bits)</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#A0-B8">B0..B8</a></td><td> Key On / Octave / Frequency (high 2 bits)</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#BD">BD</a></td><td> AM depth / Vibrato depth / Rhythm control</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#C0-C8">C0..C8</a></td><td> Feedback strength / Connection type</td></tr>
+
+        <tr><td align="center"><a href="http://www.shipbrook.net/jeff/sb.html#E0-F5">E0..F5</a></td><td> Wave Select</td></tr>
+
+      </tbody></table>
+
+    </blockquote>
+
+
+
+    <p>
+
+      The groupings of twenty-two registers (20-35, 40-55, etc.) have an odd
+
+      order due to the use of two operators for each FM voice.  The following
+
+      table shows the offsets within each group of registers for each operator.
+
+    </p>
+
+
+
+    <blockquote>
+
+      <table border="1" cellpadding="5">
+
+        <tbody><tr>
+
+          <td><b>Channel</b></td><td align="center"><b>1</b></td><td align="center"><b>2</b></td>
+
+          <td align="center"><b>3</b></td><td align="center"><b>4</b></td><td align="center"><b>5</b></td>
+
+          <td align="center"><b>6</b></td><td align="center"><b>7</b></td><td align="center"><b>8</b></td>
+
+          <td align="center"><b>9</b></td>
+
+        </tr>
+
+        <tr>
+
+          <td>Operator 1</td><td align="center">00</td><td align="center">01</td>
+
+          <td align="center">02</td><td align="center">08</td><td align="center">09</td>
+
+          <td align="center">0A</td><td align="center">10</td><td align="center">11</td>
+
+          <td align="center">12</td>
+
+        </tr>
+
+        <tr>
+
+          <td>Operator 2</td><td align="center">03</td><td align="center">04</td>
+
+          <td align="center">05</td><td align="center">0B</td><td align="center">0C</td>
+
+          <td align="center">0D</td><td align="center">13</td><td align="center">14</td>
+
+          <td align="center">15</td>
+
+        </tr>
+
+      </tbody></table>
+
+    </blockquote>
+
+
+
+    <p>
+
+      Thus, the addresses of the attack/decay bytes for channel 3 are 62 for
+
+      the first operator, and 65 for the second.  (The address of the second
+
+      operator is always the address of the first operator plus three).
+
+    </p>
+
+
+
+    <p>
+
+      To further illustrate the relationship, the addresses needed to control
+
+      channel 5 are:
+
+    </p>
+
+
+
+    <blockquote>
+
+      <table border="1">
+
+        <tbody><tr><td><b>29</b></td><td>Operator 1</td><td>AM/VIB/EG/KSR/Multiplier</td></tr>
+
+        <tr><td><b>2C</b></td><td>Operator 2</td><td>AM/VIB/EG/KSR/Multiplier</td></tr>
+
+        <tr><td><b>49</b></td><td>Operator 1</td><td>KSL/Output Level</td></tr>
+
+        <tr><td><b>4C</b></td><td>Operator 2</td><td>KSL/Output Level</td></tr>
+
+        <tr><td><b>69</b></td><td>Operator 1</td><td>Attack/Decay</td></tr>
+
+        <tr><td><b>6C</b></td><td>Operator 2</td><td>Attack/Decay</td></tr>
+
+        <tr><td><b>89</b></td><td>Operator 1</td><td>Sustain/Release</td></tr>
+
+        <tr><td><b>8C</b></td><td>Operator 2</td><td>Sustain/Release</td></tr>
+
+        <tr><td><b>A4</b></td><td>&nbsp;    </td><td>Frequency (low 8 bits)</td></tr>
+
+        <tr><td><b>B4</b></td><td>&nbsp;    </td><td>Key On/Octave/Frequency (high 2 bits)</td></tr>
+
+        <tr><td><b>C4</b></td><td>&nbsp;    </td><td>Feedback/Connection Type</td></tr>
+
+        <tr><td><b>E9</b></td><td>Operator 1</td><td>Waveform</td></tr>
+
+        <tr><td><b>EC</b></td><td>Operator 2</td><td>Waveform</td></tr>
+
+      </tbody></table>
+
+    </blockquote>
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Explanations of Registers</b>
+
+      </font>
+
+    </center>
+
+    <br>
+
+
+
+    <a name="01"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Byte&nbsp;01</b></td>
+
+        <td valign="top">
+
+          This byte is normally used to test the LSI device.  All bits
+
+          should normally be zero.  Bit 5, if enabled, allows the FM 
+
+          chips to control the waveform of each operator.<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="25%" colspan="2">unused</td>
+
+              <td align="center" width="12.5%">WS</td>
+
+              <td align="center" width="62.5%" colspan="5">unused</td>
+
+            </tr>
+
+          </tbody></table>
+
+        </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+    <a name="02"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Byte&nbsp;02</b></td>
+
+        <td valign="top">
+
+          Timer 1 Data.  If Timer 1 is enabled, the value in this 
+
+          register will be incremented until it overflows.  Upon
+
+          overflow, the sound card will signal a TIMER interrupt
+
+          (INT 08) and set bits 7 and 6 in its status byte.  The
+
+          value for this timer is incremented every eighty (80)
+
+          microseconds.
+
+        </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+    <a name="03"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Byte&nbsp;03</b></td>
+
+        <td valign="top">
+
+          Timer 2 Data.  If Timer 2 is enabled, the value in this 
+
+          register will be incremented until it overflows.  Upon
+
+          overflow, the sound card will signal a TIMER interrupt
+
+          (INT 08) and set bits 7 and 5 in its status byte.  The
+
+          value for this timer is incremented every three hundred
+
+          twenty (320) microseconds.
+
+        </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+    <a name="04"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Byte&nbsp;04</b></td>
+
+        <td valign="top">
+
+          Timer Control Byte<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="12.5%">IRQ<br>Reset</td>
+
+              <td align="center" width="12.5%">Tmr1<br>Mask</td>
+
+              <td align="center" width="12.5%">Tmr2<br>Mask</td>
+
+              <td align="center" width="37.5%" colspan="3">unused</td>
+
+              <td align="center" width="12.5%">Tmr2<br>Ctrl</td>
+
+              <td align="center" width="12.5%">Tmr3<br>Ctrl</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bit&nbsp;7&nbsp;-</td>
+
+              <td>
+
+                Resets the flags for timers 1 &amp; 2.  If set,
+
+                all other bits are ignored.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;6&nbsp;-</td>
+
+              <td>Masks Timer 1.  If set, bit 0 is ignored.</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;5&nbsp;-</td>
+
+              <td>Masks Timer 2.  If set, bit 1 is ignored.</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;1&nbsp;-</td>
+
+              <td>
+
+                When clear, Timer 2 does not operate.<br>
+
+                When set, the value from byte 03 is loaded into
+
+                Timer 2, and incrementation begins.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;0&nbsp;-</td>
+
+              <td>
+
+                When clear, Timer 1 does not operate.<br>
+
+                When set, the value from byte 02 is loaded into
+
+                Timer 1, and incrementation begins.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+    <a name="08"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Byte&nbsp;08</b></td>
+
+        <td valign="top">
+
+          CSM Mode / Keyboard Split.<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="12.5%">CSM<br>sel</td>
+
+              <td align="center" width="12.5%">Key<br>spl</td>
+
+              <td align="center" width="75.0%" colspan="6">unused</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bit&nbsp;7&nbsp;-</td>
+
+              <td>
+
+                When set, selects composite sine-wave speech synthesis
+
+                mode (all KEY-ON bits must be clear).  When clear,
+
+                selects FM music mode.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;6&nbsp;-</td>
+
+              <td>
+
+                Selects the keyboard split point (in conjunction with
+
+                the F-Number data).  The documentation in the Sound 
+
+                Blaster manual is utterly incomprehensible on this;
+
+                I can't reproduce it without violating their copyright.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="20-35"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;20-35</b></td>
+
+        <td valign="top">
+
+          Amplitude Modulation / Vibrato / Envelope Generator Type /
+
+          Keyboard Scaling Rate / Modulator Frequency Multiple<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="12.5%">Amp<br>Mod</td>
+
+              <td align="center" width="12.5%">Vib</td>
+
+              <td align="center" width="12.5%">EG<br>Typ</td>
+
+              <td align="center" width="12.5%">KSR</td>
+
+              <td align="center" width="50.0%" colspan="5">Modulator Frequency<br>Multiple</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bit&nbsp;7&nbsp;-</td>
+
+              <td>
+
+                Apply amplitude modulation when set; AM depth is
+
+                controlled by the AM-Depth flag in address BD.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;6&nbsp;-</td>
+
+              <td>
+
+                Apply vibrato when set;  vibrato depth is controlled
+
+                by the Vib-Depth flag in address BD.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;5&nbsp;-</td>
+
+              <td>
+
+                When set, the sustain level of the voice is maintained
+
+                until released; when clear, the sound begins to decay
+
+                immediately after hitting the SUSTAIN phase.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;4&nbsp;-</td>
+
+              <td>
+
+                Keyboard scaling rate.  This is another incomprehensible
+
+                bit in the Sound Blaster manual.  From experience, if 
+
+                this bit is set, the sound's envelope is foreshortened as
+
+                it rises in pitch.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bits&nbsp;3-0&nbsp;-</td>
+
+              <td>
+
+                These bits indicate which harmonic the operator will 
+
+                produce sound (or modulation) in relation to the voice's 
+
+                specified frequency:<br>
+
+                <table border="0" cellpadding="0">
+
+                  <tbody><tr><td>&nbsp;</td><td>0</td><td>-</td><td>one octave below</td></tr>
+
+                  <tr><td>&nbsp;</td><td>1</td><td>-</td><td>at the voice's specified frequency</td></tr>
+
+                  <tr><td>&nbsp;</td><td>2</td><td>-</td><td>one octave above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>3</td><td>-</td><td>an octave and a fifth above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>4</td><td>-</td><td>two octaves above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>5</td><td>-</td><td>two octaves and a major third above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>6</td><td>-</td><td>two octaves and a fifth above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>7</td><td>-</td><td>two octaves and a minor seventh above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>8</td><td>-</td><td>three octaves above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>9</td><td>-</td><td>three octaves and a major second above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>A</td><td>-</td><td>three octaves and a major third above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>B</td><td>-</td><td><i>three octaves and a major third above</i></td></tr>
+
+                  <tr><td>&nbsp;</td><td>C</td><td>-</td><td>three octaves and a fifth above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>D</td><td>-</td><td><i>three octaves and a fifth above</i></td></tr>
+
+                  <tr><td>&nbsp;</td><td>E</td><td>-</td><td>three octaves and a major seventh above</td></tr>
+
+                  <tr><td>&nbsp;</td><td>F</td><td>-</td><td><i>three octaves and a major seventh above</i></td></tr>
+
+                </tbody></table>
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+                  
+
+    <a name="40-55"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;40-55</b></td>
+
+        <td valign="top">
+
+          Level Key Scaling / Total Level<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="25.0%" colspan="2">Scaling<br>Level</td>
+
+              <td align="center" width="12.5%">24<br>dB</td>
+
+              <td align="center" width="12.5%">12<br>dB</td>
+
+              <td align="center" width="12.5%">6<br>dB</td>
+
+              <td align="center" width="12.5%">3<br>dB</td>
+
+              <td align="center" width="12.5%">1.5<br>dB</td>
+
+              <td align="center" width="12.5%">.75<br>dB</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bits&nbsp;7-6&nbsp;-</td>
+
+              <td>
+
+                causes output levels to decrease as the frequency rises: <br>
+
+                <table border="0" cellpadding="0">
+
+                  <tbody><tr><td>&nbsp;</td><td>00</td><td>-</td><td>no change</td></tr>
+
+                  <tr><td>&nbsp;</td><td>10</td><td>-</td><td>1.5 dB/8ve</td></tr>
+
+                  <tr><td>&nbsp;</td><td>01</td><td>-</td><td>3 dB/8ve</td></tr>
+
+                  <tr><td>&nbsp;</td><td>11</td><td>-</td><td>6 dB/8ve</td></tr>
+
+                </tbody></table>
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bits&nbsp;5-0&nbsp;-</td>
+
+              <td>
+
+                controls the total output level of the operator.
+
+                All bits CLEAR is loudest; all bits SET is the
+
+                softest.  Don't ask me why.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="60-75"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;60-75</b></td>
+
+        <td valign="top">
+
+          Attack Rate / Decay Rate<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="50.0%" colspan="4">Attack<br>Rate</td>
+
+              <td align="center" width="50.0%" colspan="4">Decay<br>Rate</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bits&nbsp;7-4&nbsp;-</td>
+
+              <td>
+
+                Attack rate.  0 is the slowest, F is the fastest.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bits&nbsp;3-0&nbsp;-</td>
+
+              <td>
+
+                Decay rate.  0 is the slowest, F is the fastest.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="80-95"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;80-95</b></td>
+
+        <td valign="top">
+
+          Sustain Level / Release Rate<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="50.0%" colspan="4">Sustain<br>Level</td>
+
+              <td align="center" width="50.0%" colspan="4">Release<br>Rate</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bits&nbsp;7-4&nbsp;-</td>
+
+              <td>
+
+                Sustain Level.  0 is the loudest, F is the softest.
+
+                <table border="0" cellpadding="0">
+
+                  <tbody><tr><td>&nbsp;</td><td>Bit&nbsp;7</td><td>-</td><td>24 dB</td></tr>
+
+                  <tr><td>&nbsp;</td><td>Bit&nbsp;6</td><td>-</td><td>12 dB</td></tr>
+
+                  <tr><td>&nbsp;</td><td>Bit&nbsp;5</td><td>-</td><td>6 dB</td></tr>
+
+                  <tr><td>&nbsp;</td><td>Bit&nbsp;4</td><td>-</td><td>3 dB</td></tr>
+
+                </tbody></table>
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bits&nbsp;3-0&nbsp;-</td>
+
+              <td>
+
+                Release rate.  0 is the slowest, F is the fastest.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="A0-B8"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;A0-B8</b></td>
+
+        <td valign="top">
+
+          Octave / F-Number / Key-On<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="100.0%" colspan="8">F-Number (least significant byte)</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <b>(A0-A8)</b>
+
+          <br clear="all">
+
+          <br>
+
+          <table border="">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="25.0%" colspan="2">Unused</td>
+
+              <td align="center" width="12.5%">Key<br>On</td>
+
+              <td align="center" width="37.5%" colspan="3">Octave</td>
+
+              <td align="center" width="25.0%" colspan="2">F-Number<br>most sig.</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <b>(B0-B8)</b>
+
+          <br clear="all">
+
+          <br>
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bit&nbsp;5&nbsp;-</td>
+
+              <td>Channel is voiced when set, silent when clear.</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bits&nbsp;4-2&nbsp;-</td>
+
+              <td>Octave (0-7).  0 is lowest, 7 is highest.</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bits&nbsp;1-0&nbsp;-</td>
+
+              <td>Most significant bits of F-number.</td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+      <tr>
+
+        <td></td>
+
+        <td>
+
+          In octave 4, the F-number values for the chromatic scale and their
+
+          corresponding frequencies would be:<br><br>
+
+
+
+          <table border="1">
+
+            <tbody><tr><td>F Number</td><td>Frequency<br>(decimal)</td><td>Note</td></tr>
+
+            <tr><td>16B</td><td>277.2</td><td>C#</td></tr>
+
+            <tr><td>181</td><td>293.7</td><td>D </td></tr>
+
+            <tr><td>198</td><td>311.1</td><td>D#</td></tr>
+
+            <tr><td>1B0</td><td>329.6</td><td>E </td></tr>
+
+            <tr><td>1CA</td><td>349.2</td><td>F </td></tr>
+
+            <tr><td>1E5</td><td>370.0</td><td>F#</td></tr>
+
+            <tr><td>202</td><td>392.0</td><td>G </td></tr>
+
+            <tr><td>220</td><td>415.3</td><td>G#</td></tr>
+
+            <tr><td>241</td><td>440.0</td><td>A </td></tr>
+
+            <tr><td>263</td><td>466.2</td><td>A#</td></tr>
+
+            <tr><td>287</td><td>493.9</td><td>B </td></tr>
+
+            <tr><td>2AE</td><td>523.3</td><td>C </td></tr>
+
+          </tbody></table>
+
+        </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="C0-C8"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;C0-C8</b></td>
+
+        <td valign="top">
+
+          Feedback / Algorithm<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="50.0%" colspan="4">unused</td>
+
+              <td align="center" width="37.5%" colspan="3">Feedback</td>
+
+              <td align="center" width="12.5%">Decay<br>Alg</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bits&nbsp;3-1&nbsp;-</td>
+
+              <td>
+
+                Feedback strength.  If all three bits are set to
+
+                zero, no feedback is present.  With values 1-7,
+
+                operator 1 will send a portion of its output back
+
+                into itself.  1 is the least amount of feedback,
+
+                7 is the most.
+
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;0&nbsp;-</td>
+
+              <td>
+
+                If set to 0, operator 1 modulates operator 2.  In this
+
+                case, operator 2 is the only one producing sound.
+
+                If set to 1, both operators produce sound directly.
+
+                Complex sounds are more easily created if the algorithm
+
+                is set to 0.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="BD"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Byte&nbsp;BD</b></td>
+
+        <td valign="top">
+
+          Amplitude Modulation Depth / Vibrato Depth / Rhythm<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="12.5%">AM<br>Dep</td>
+
+              <td align="center" width="12.5%">Vib<br>Dep</td>
+
+              <td align="center" width="12.5%">Rhy<br>Ena</td>
+
+              <td align="center" width="12.5%">BD</td>
+
+              <td align="center" width="12.5%">SD</td>
+
+              <td align="center" width="12.5%">TOM</td>
+
+              <td align="center" width="12.5%">Top<br>Cym</td>
+
+              <td align="center" width="12.5%">HH</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bit&nbsp;7&nbsp;-</td>
+
+              <td>Set: AM depth is 4.8 dB<br>Clear: AM depth is 1 dB</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;6&nbsp;-</td>
+
+              <td>Set: Vibrato depth is 14 cent<br>Clear: Vibrato depth is 7 cent</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;5&nbsp;-</td>
+
+              <td>Set: Rhythm enabled (6 melodic voices)<br>Clear: Rhythm disabled (9 melodic voices)</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;4&nbsp;-</td>
+
+              <td>Bass drum on/off</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;3&nbsp;-</td>
+
+              <td>Snare drum on/off</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;2&nbsp;-</td>
+
+              <td>Tom tom on/off</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;1&nbsp;-</td>
+
+              <td>Cymbal on/off</td>
+
+            </tr>
+
+            <tr>
+
+              <td valign="top">bit&nbsp;0&nbsp;-</td>
+
+              <td>Hi Hat on/off</td>
+
+            </tr>
+
+            <tr><td>&nbsp;</td></tr>
+
+            <tr>
+
+              <td valign="top">Note:</td>
+
+              <td>
+
+                KEY-ON registers for channels 06, 07, and 08 must be OFF
+
+                in order to use the rhythm section.  Other parameters
+
+                such as attack/decay/sustain/release must also be set
+
+                appropriately.
+
+              </td>
+
+            </tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+
+
+    <a name="E0-F5"></a>
+
+    <table border="0" cellpadding="5">
+
+      <tbody><tr>
+
+        <td valign="top"><b>Bytes&nbsp;E0-F5</b></td>
+
+        <td valign="top">
+
+          Waveform Select<br><br>
+
+          <table border="1">
+
+            <tbody><tr>
+
+              <td align="center" width="12.5%">7</td>
+
+              <td align="center" width="12.5%">6</td>
+
+              <td align="center" width="12.5%">5</td>
+
+              <td align="center" width="12.5%">4</td>
+
+              <td align="center" width="12.5%">3</td>
+
+              <td align="center" width="12.5%">2</td>
+
+              <td align="center" width="12.5%">1</td>
+
+              <td align="center" width="12.5%">0</td>
+
+            </tr>
+
+            <tr>
+
+              <td align="center" width="75.0%" colspan="6">unused</td>
+
+              <td align="center" width="75.0%" colspan="2">Waveform<br>Select</td>
+
+            </tr>
+
+          </tbody></table>
+
+          <br clear="all">
+
+          <table border="0">
+
+            <tbody><tr>
+
+              <td valign="top">bits&nbsp;1-0&nbsp;-</td>
+
+              <td>
+
+                When bit 5 of address 01 is set, the output waveform
+
+                will be distorted according to the waveform indicated
+
+                by these two bits:
+
+            </td></tr>
+
+          </tbody></table>
+
+         </td>
+
+      </tr>
+
+      <tr>
+
+        <td></td>
+
+        <td><img src="./opl2_files/sb-waves.gif" height="78" width="400" border="0" alt="[image]"></td>
+
+      </tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+    
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Detecting a Sound Card</b>
+
+      </font>
+
+    </center>
+
+    <br>
+
+
+
+    <p>
+
+      According to the AdLib manual, the 'official' method of checking for a 
+
+      sound card is as follows:
+
+    </p>
+
+    <ol>
+
+      <li>Reset both timers by writing 60h to register 4.</li>
+
+      <li>Enable the interrupts by writing 80h to register 4.  
+
+          <br><b>NOTE:</b> this must be a separate step from number 1.</li>
+
+      <li>Read the status register (port 388h).  Store the result.</li>
+
+      <li>Write FFh to register 2 (Timer 1).</li>
+
+      <li>Start timer 1 by writing 21h to register 4.</li>
+
+      <li>Delay for at least 80 microseconds.</li>
+
+      <li>Read the status register (port 388h).  Store the result.</li>
+
+      <li>Reset both timers and interrupts (see steps 1 and 2).</li>
+
+      <li>Test the stored results of steps 3 and 7 by ANDing them
+
+          with E0h.  The result of step 3 should be 00h, and the 
+
+          result of step 7 should be C0h.  If both are correct, an
+
+          AdLib-compatible board is installed in the computer.</li>
+
+    </ol>
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Making a Sound</b>
+
+      </font>
+
+    </center>
+
+
+
+    <p>
+
+      Many people have asked me, upon reading this document, what the proper
+
+      register values should be to make a simple sound.  Well, here they are.
+
+    </p>
+
+   
+
+    <p>
+
+      First, clear out all of the registers by setting all of them to zero.
+
+      This is the quick-and-dirty method of resetting the sound card, but it
+
+      works.  Note that if you wish to use different waveforms, you must then
+
+      turn on bit 5 of register 1.  (This reset need be done only once, at the
+
+      start of the program, and optionally when the program exits, just to 
+
+      make sure that your program doesn't leave any notes on when it exits.)
+
+    </p>
+
+ 
+
+    <p>
+
+      Now, set the following registers to the indicated value:
+
+    </p>
+
+
+
+    <table border="0">
+
+      <tbody><tr>
+
+        <td align="center"><b>REGISTER</b></td>
+
+        <td align="center"><b>VALUE</b></td>
+
+        <td><b>DESCRIPTION</b></td>
+
+      </tr>
+
+      <tr><td align="center">20</td><td align="center">01</td><td>Set the modulator's multiple to 1</td></tr>
+
+      <tr><td align="center">40</td><td align="center">10</td><td>Set the modulator's level to about 40 dB</td></tr>
+
+      <tr><td align="center">60</td><td align="center">F0</td><td>Modulator attack:  quick;   decay:   long</td></tr>
+
+      <tr><td align="center">80</td><td align="center">77</td><td>Modulator sustain: medium;  release: medium</td></tr>
+
+      <tr><td align="center">A0</td><td align="center">98</td><td>Set voice frequency's LSB (it'll be a D#)</td></tr>
+
+      <tr><td align="center">23</td><td align="center">01</td><td>Set the carrier's multiple to 1</td></tr>
+
+      <tr><td align="center">43</td><td align="center">00</td><td>Set the carrier to maximum volume (about 47 dB)</td></tr>
+
+      <tr><td align="center">63</td><td align="center">F0</td><td>Carrier attack:  quick;   decay:   long</td></tr>
+
+      <tr><td align="center">83</td><td align="center">77</td><td>Carrier sustain: medium;  release: medium</td></tr>
+
+      <tr><td align="center">B0</td><td align="center">31</td><td>Turn the voice on; set the octave and freq MSB</td></tr>
+
+    </tbody></table>
+
+    <br clear="all">
+
+
+
+    <p>
+
+      To turn the voice off, set register B0h to 11h (or, in fact, any value 
+
+      which leaves bit 5 clear).  It's generally preferable, of course, to
+
+      induce a delay before doing so.
+
+    </p>
+
+ 
+
+    <br>
+
+    <center>
+
+      <font size="+1">
+
+        <b>Acknowledgements</b>
+
+      </font>
+
+    </center>
+
+
+
+    <p>
+
+      Thanks are due to the following people:
+
+    </p>
+
+
+
+    <p>
+
+      <b>Ezra M. Dreisbach</b> (ed10+@andrew.cmu.edu), for providing the information
+
+      about the recommended port write delay from the AdLib manual, and the
+
+      'official' method of detecting an AdLib-compatible sound card.
+
+    </p>
+
+
+
+    <p>
+
+      <b>Nathan Isaac Laredo</b> (gt7080a@prism.gatech.edu), for providing the
+
+      port numbers for stereo sound on the Sound Blaster Pro.
+
+    </p>
+
+  
+
+
+
+</body><style type="text/css">embed[type*="application/x-shockwave-flash"],embed[src*=".swf"],object[type*="application/x-shockwave-flash"],object[codetype*="application/x-shockwave-flash"],object[src*=".swf"],object[codebase*="swflash.cab"],object[classid*="D27CDB6E-AE6D-11cf-96B8-444553540000"],object[classid*="d27cdb6e-ae6d-11cf-96b8-444553540000"],object[classid*="D27CDB6E-AE6D-11cf-96B8-444553540000"]{	display: none !important;}</style><style type="text/css">embed[type*="application/x-silverlight-2"],object[type*="application/x-silverlight-2"]{display: none !important;}</style></html>
