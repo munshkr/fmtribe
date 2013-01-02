@@ -89,7 +89,7 @@ void fm_set_instrument(const unsigned int c, const fm_instr_t* instr)
 void fm_key_on(const unsigned int c, const uint8_t octave, const uint16_t fnum)
 {
     fm_write(FREQ_LOW(c), fnum & 0xff);
-    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | (octave << 2) | ((fnum >> 8) & 3));
+    fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0x20 | ((octave << 2) & 0x1c) | ((fnum >> 8) & 3));
 }
 
 void fm_key_off(const unsigned int c)
