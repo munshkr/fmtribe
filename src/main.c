@@ -95,19 +95,23 @@ void load_instruments()
     for (c = 0; c < CHANNELS; c++) {
         fm_instr_t* i = &instrs[c];
 
-        i->c__am_vib_eg = 0x01;
-        i->c__ksl_volume = 0x10;
-        i->c__attack_decay = 0xf0;
-        i->c__sustain_release = 0x77;
-        i->c__waveform = 0x00;
+        i->c__am_vib_eg = 0x00;
+        i->m__am_vib_eg = 0x00;
 
-        i->m__am_vib_eg = 0x01;
-        i->m__ksl_volume = 0x00;
-        i->m__attack_decay = 0xf0;
-        i->m__sustain_release = 0x77;
-        i->m__waveform = 0x05;
+        i->c__ksl_volume = 0x00;
+        i->m__ksl_volume = 0x0b;
+
+        i->c__attack_decay = 0xd6;
+        i->m__attack_decay = 0xa8;
+
+        i->c__sustain_release = 0x4f;
+        i->m__sustain_release = 0x4c;
+
+        i->c__waveform = 0x00;
+        i->m__waveform = 0x00;
 
         i->feedback_fm = 0x00;
+
         i->fine_tune = 0x00;
         i->panning = Center;
         i->voice_type = Melodic;
