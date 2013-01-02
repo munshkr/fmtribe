@@ -291,11 +291,11 @@ void render()
 int main(int argc, char* argv[])
 {
     load_font();
-    load_instruments();
 
     fm_reset();
     fm_init();
 
+    load_instruments();
     fm_set_instrument(METRONOME_CH, &tick1);
 
     init_vga();
