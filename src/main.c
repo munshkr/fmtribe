@@ -51,11 +51,12 @@ int      current_channel = 0;
 int      current_step = 0;
 
 bool playing = false;
-bool metronome_on = false;
+bool metronome_on = true;
 
 uclock_t prev_tap = NULL;
 
 bool seq[CHANNELS][STEPS] = {};
+fm_instr_t instrs[CHANNELS] = {};
 
 pbm_file_t pbm;
 font_t font;
@@ -86,6 +87,34 @@ void load_font()
     }
 }
 
+void load_instruments()
+{
+    // TODO read instruments from file
+    int c;
+    for (c = 0; c < CHANNELS; c++) {
+        fm_instr_t* i = &instrs[c];
+
+        i->c__am_vib_eg = 0x01;
+        i->c__ksl_volume = 0x10;
+        i->c__attack_decay = 0xf0;
+        i->c__sustain_release = 0x77;
+        i->c__waveform = 0x00;
+
+        i->m__am_vib_eg = 0x01;
+        i->m__ksl_volume = 0x00;
+        i->m__attack_decay = 0xf0;
+        i->m__sustain_release = 0x77;
+        i->m__waveform = 0x05;
+
+        i->feedback_fm = 0x00;
+        i->fine_tune = 0x00;
+        i->panning = Center;
+        i->voice_type = Melodic;
+
+        fm_set_instrument(c, i);
+    }
+}
+
 void tick()
 {
     current_step++;
@@ -105,8 +134,8 @@ void play_step()
         if (current_step % 4 == 0) {
             // FIXME replace metronome instrument for one that has no release,
             // to avoid sleeping.
-            fm_key_on(8, 3, NOTE_E);
-            msleep(2000);
+            fm_key_on(8, 4, NOTE_E);
+            msleep(20000);
             fm_key_off(8);
         }
     }
@@ -115,7 +144,7 @@ void play_step()
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             fm_key_off(c);
-            fm_key_on(c, 2, NOTE_C);
+            fm_key_on(c, 4, NOTE_C);
         }
     }
 }
@@ -262,12 +291,13 @@ void render()
 int main(int argc, char* argv[])
 {
     load_font();
+    load_instruments();
 
     fm_reset();
     fm_init();
 
+    // instrument for the metronome (use channel 9)
     fm_set_instrument(8, &tick1);
-    fm_set_instrument(0, &bass1);
 
     init_vga();
     set_mode(VIDEO_MODE);
