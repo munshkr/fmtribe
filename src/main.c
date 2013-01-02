@@ -12,8 +12,9 @@
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 1
 
-#define CHANNELS 8
-#define STEPS    16
+#define CHANNELS        8
+#define STEPS           16
+#define METRONOME_CH    CHANNELS
 
 #define BOARD_SQUARE_SIZE 25
 #define BOARD_SQUARE_PADDING 10
@@ -134,9 +135,8 @@ void play_step()
         if (current_step % 4 == 0) {
             // FIXME replace metronome instrument for one that has no release,
             // to avoid sleeping.
-            fm_key_on(8, 4, NOTE_E);
-            msleep(20000);
-            fm_key_off(8);
+            fm_key_off(METRONOME_CH);
+            fm_key_on(METRONOME_CH, 4, NOTE_E);
         }
     }
 
@@ -296,8 +296,7 @@ int main(int argc, char* argv[])
     fm_reset();
     fm_init();
 
-    // instrument for the metronome (use channel 9)
-    fm_set_instrument(8, &tick1);
+    fm_set_instrument(METRONOME_CH, &tick1);
 
     init_vga();
     set_mode(VIDEO_MODE);
