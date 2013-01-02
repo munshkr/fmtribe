@@ -32,6 +32,7 @@
 #define CHANNEL_SELECTOR_TOP    (BOARD_TOP - CHANNEL_SELECTOR_HEIGHT - 10)
 #define CHANNEL_SELECTOR_LEFT   BOARD_LEFT
 
+const char* INSTRS_FILE = "INSTRS.DAT";
 
 const int DEFAULT_BPM = 120;
 
@@ -52,7 +53,7 @@ int      current_channel = 0;
 int      current_step = 0;
 
 bool playing = false;
-bool metronome_on = true;
+bool metronome_on = false;
 
 uclock_t prev_tap = NULL;
 
@@ -90,34 +91,52 @@ void load_font()
 
 void load_instruments()
 {
-    // TODO read instruments from file
+    FILE* f = fopen(INSTRS_FILE, "rb");
+    if (f) {
+        fread(instrs, sizeof(fm_instr_t), CHANNELS, f);
+        fclose(f);
+    } else {
+        fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
+        getch();
+
+        int c;
+        for (c = 0; c < CHANNELS; c++) {
+            fm_instr_t* i = &instrs[c];
+            i->c__am_vib_eg = 0x00;
+            i->m__am_vib_eg = 0x00;
+            i->c__ksl_volume = 0x00;
+            i->m__ksl_volume = 0x0b;
+            i->c__attack_decay = 0xd6;
+            i->m__attack_decay = 0xa8;
+            i->c__sustain_release = 0x4f;
+            i->m__sustain_release = 0x4c;
+            i->c__waveform = 0x00;
+            i->m__waveform = 0x00;
+            i->feedback_fm = 0x00;
+            i->fine_tune = 0x00;
+            i->panning = Center;
+            i->voice_type = Melodic;
+        }
+    }
+
+    // Configure operators for all the instruments
     int c;
     for (c = 0; c < CHANNELS; c++) {
-        fm_instr_t* i = &instrs[c];
-
-        i->c__am_vib_eg = 0x00;
-        i->m__am_vib_eg = 0x00;
-
-        i->c__ksl_volume = 0x00;
-        i->m__ksl_volume = 0x0b;
-
-        i->c__attack_decay = 0xd6;
-        i->m__attack_decay = 0xa8;
-
-        i->c__sustain_release = 0x4f;
-        i->m__sustain_release = 0x4c;
-
-        i->c__waveform = 0x00;
-        i->m__waveform = 0x00;
-
-        i->feedback_fm = 0x00;
-
-        i->fine_tune = 0x00;
-        i->panning = Center;
-        i->voice_type = Melodic;
-
-        fm_set_instrument(c, i);
+        fm_set_instrument(c, &instrs[c]);
     }
+}
+
+bool save_instruments()
+{
+    FILE* f = fopen(INSTRS_FILE, "wb");
+    if (!f) {
+        fprintf(stderr, "Could not write instruments parameters to %s.\n", INSTRS_FILE);
+        return false;
+    }
+    fwrite(instrs, sizeof(fm_instr_t), CHANNELS, f);
+    fclose(f);
+    printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
+    return true;
 }
 
 void tick()
@@ -399,8 +418,10 @@ int main(int argc, char* argv[])
     }
 
     set_mode(TEXT_MODE);
-    fm_reset();
 
+    save_instruments();
+
+    fm_reset();
     free_font(&font);
     return EXIT_SUCCESS;
 }
