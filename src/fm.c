@@ -9,8 +9,8 @@
 #define OP2 0x03
 
 #define CH(n) (n >= 0 && n <= 2 ? n : \
-              (n >= 3 && n <= 5 ? (n + 3) : \
-              (n >= 6 && n <= 8 ? (n + 8) : 0)))
+              (n >= 3 && n <= 5 ? (n + 5) : \
+              (n >= 6 && n <= 8 ? (n + 10) : 0)))
 
 #define TEST_LSI_ENABLE_WAVEFORM            0x01
 #define TIMER1_DATA                         0x02
