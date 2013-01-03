@@ -43,22 +43,23 @@ const char CHANNEL_KEYS[]    = "12345678";
 const uint8_t CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
 const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
-bool dirty = true;
-bool pause_after_current_step = false;
-bool stop_after_current_bar = false;
-
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
 int      current_channel = 0;
 int      current_step = 0;
+uclock_t prev_tap = NULL;
 
+bool dirty = true;
+bool pause_after_current_step = false;
+bool stop_after_current_bar = false;
 bool playing = false;
 bool metronome_on = false;
-
-uclock_t prev_tap = NULL;
+bool instrument_editor_enabled = false;
 
 bool seq[CHANNELS][STEPS] = {};
 instr_t instrs[CHANNELS] = {};
+
+int current_instr_field = 0;
 
 pbm_file_t pbm;
 font_t font;
@@ -231,6 +232,96 @@ void select_next_channel() {
     }
 }
 
+void switch_instrument_editor() {
+    instrument_editor_enabled = not(instrument_editor_enabled);
+    dirty = true;
+}
+
+typedef enum { Up, Down } direction_t;
+
+void instrument_editor_move(const direction_t dir) {
+    if (dir == Up && current_instr_field > 0) {
+        current_instr_field--;
+        dirty = true;
+    } else if (dir == Down && current_instr_field < 7) {
+        current_instr_field++;
+        dirty = true;
+    }
+}
+
+unsigned int get_value_for_instrument(const instr_t* ins, const unsigned int field) {
+    const fm_instr_t* fm = &ins->fm_instr;
+    switch (field) {
+      case 0:
+        return (fm->c__attack_decay >> 4) & 0xf;
+      case 1:
+        return fm->c__attack_decay & 0xf;
+      case 2:
+        return (fm->c__sustain_release >> 4) & 0xf;
+      case 3:
+        return fm->c__sustain_release & 0xf;
+      case 4:
+        return (fm->m__attack_decay >> 4) & 0xf;
+      case 5:
+        return fm->m__attack_decay & 0xf;
+      case 6:
+        return (fm->m__sustain_release >> 4) & 0xf;
+      case 7:
+        return fm->m__sustain_release & 0xf;
+    }
+    return 0;
+}
+
+void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsigned int value) {
+    fm_instr_t* fm = &ins->fm_instr;
+    switch (field) {
+      case 0:
+        fm->c__attack_decay = ((value & 0xf) << 4) | (fm->c__attack_decay & 0xf);
+        break;
+      case 1:
+        fm->c__attack_decay = (fm->c__attack_decay & 0xf0) | (value & 0xf);
+        break;
+      case 2:
+        fm->c__sustain_release = ((value & 0xf) << 4) | (fm->c__sustain_release & 0xf);
+        break;
+      case 3:
+        fm->c__sustain_release = (fm->c__sustain_release & 0xf0) | (value & 0xf);
+        break;
+      case 4:
+        fm->m__attack_decay = ((value & 0xf) << 4) | (fm->m__attack_decay & 0xf);
+        break;
+      case 5:
+        fm->m__attack_decay = (fm->m__attack_decay & 0xf0) | (value & 0xf);
+        break;
+      case 6:
+        fm->m__sustain_release = ((value & 0xf) << 4) | (fm->m__sustain_release & 0xf);
+        break;
+      case 7:
+        fm->m__sustain_release = (fm->m__sustain_release & 0xf0) | (value & 0xf);
+        break;
+    }
+}
+
+typedef enum { Increase, Decrease } action_t;
+
+void instrument_editor_change(const action_t action) {
+    instr_t* ins = &instrs[current_channel];
+    unsigned int value = get_value_for_instrument(ins, current_instr_field);
+
+    if (action == Increase && value < 15) {
+        value++;
+        set_value_for_instrument(ins, current_instr_field, value);
+        fm_set_instrument(current_channel, &ins->fm_instr);
+        dirty = true;
+    } else if (action == Decrease && value > 0) {
+        value--;
+        set_value_for_instrument(ins, current_instr_field, value);
+        fm_set_instrument(current_channel, &ins->fm_instr);
+        dirty = true;
+    }
+
+}
+
 void render_board()
 {
     int color = CHANNEL_COLORS[current_channel];
@@ -300,14 +391,70 @@ void render_hits()
     }
 }
 
+#define C_COL_LEFT  10
+#define M_COL_LEFT  150
+#define C_COL_TOP   10
+#define M_COL_TOP   C_COL_TOP
+
+const unsigned int instr_fields_pos[8][2] = {
+    { C_COL_LEFT + 120, C_COL_TOP + 20 },
+    { C_COL_LEFT + 120, C_COL_TOP + 35 },
+    { C_COL_LEFT + 120, C_COL_TOP + 50 },
+    { C_COL_LEFT + 120, C_COL_TOP + 65 },
+    { M_COL_LEFT + 120, M_COL_TOP + 20 },
+    { M_COL_LEFT + 120, M_COL_TOP + 35 },
+    { M_COL_LEFT + 120, M_COL_TOP + 50 },
+    { M_COL_LEFT + 120, M_COL_TOP + 65 },
+};
+
+void render_instrument_editor()
+{
+    const instr_t* ins = &instrs[current_channel];
+    const fm_instr_t* fm = &ins->fm_instr;
+
+    // Render labels
+    render_str(&font, C_COL_LEFT, C_COL_TOP, 7, "Carrier");
+    render_str(&font, C_COL_LEFT, C_COL_TOP + 20, 7, "Attack Rate:");
+    render_str(&font, C_COL_LEFT, C_COL_TOP + 35, 7, "Decay Rate:");
+    render_str(&font, C_COL_LEFT, C_COL_TOP + 50, 7, "Sustain Level");
+    render_str(&font, C_COL_LEFT, C_COL_TOP + 65, 7, "Release Rate:");
+    render_str(&font, M_COL_LEFT, M_COL_TOP, 7, "Modulator");
+    render_str(&font, M_COL_LEFT, M_COL_TOP + 20, 7, "Attack Rate:");
+    render_str(&font, M_COL_LEFT, M_COL_TOP + 35, 7, "Decay Rate:");
+    render_str(&font, M_COL_LEFT, M_COL_TOP + 50, 7, "Sustain Level:");
+    render_str(&font, M_COL_LEFT, M_COL_TOP + 65, 7, "Release Rate:");
+
+    // Render field values
+    render_strf(&font, instr_fields_pos[0][0], instr_fields_pos[0][1], 7, "%X", (fm->c__attack_decay >> 4) & 0xf);
+    render_strf(&font, instr_fields_pos[1][0], instr_fields_pos[1][1], 7, "%X", fm->c__attack_decay & 0xf);
+    render_strf(&font, instr_fields_pos[2][0], instr_fields_pos[2][1], 7, "%X", (fm->c__sustain_release >> 4) & 0xf);
+    render_strf(&font, instr_fields_pos[3][0], instr_fields_pos[3][1], 7, "%X", fm->c__sustain_release & 0xf);
+    render_strf(&font, instr_fields_pos[4][0], instr_fields_pos[4][1], 7, "%X", (fm->m__attack_decay >> 4) & 0xf);
+    render_strf(&font, instr_fields_pos[5][0], instr_fields_pos[5][1], 7, "%X", fm->m__attack_decay & 0xf);
+    render_strf(&font, instr_fields_pos[6][0], instr_fields_pos[6][1], 7, "%X", (fm->m__sustain_release >> 4) & 0xf);
+    render_strf(&font, instr_fields_pos[7][0], instr_fields_pos[7][1], 7, "%X", fm->m__sustain_release & 0xf);
+
+    // TODO draw "current field" rectangle
+    rect(instr_fields_pos[current_instr_field][0] - 4,
+         instr_fields_pos[current_instr_field][1] - 2,
+         instr_fields_pos[current_instr_field][0] + 10,
+         instr_fields_pos[current_instr_field][1] + 12,
+         6);
+}
+
 void render()
 {
     clear();
-    render_hits();
-    render_channel_selector();
-    render_board();
 
-    render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
+    if (instrument_editor_enabled) {
+        render_instrument_editor();
+    } else {
+        render_hits();
+        render_channel_selector();
+        render_board();
+    }
+
+    //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
 
     update();
 }
@@ -367,18 +514,41 @@ int main(int argc, char* argv[])
               case K_F9:
                 tap_tempo();
                 break;
-              case K_Delete:
-                clear_seq(current_channel);
+              case K_Tab:
+                switch_instrument_editor();
                 break;
-              case K_Control_Delete:
-                clear_seq_all();
-                break;
-              case K_Left:
-                select_prev_channel();
-                break;
-              case K_Right:
-                select_next_channel();
-                break;
+            }
+
+            if (instrument_editor_enabled) {
+                switch (key) {
+                  case K_Right:
+                    instrument_editor_change(Increase);
+                    break;
+                  case K_Left:
+                    instrument_editor_change(Decrease);
+                    break;
+                  case K_Up:
+                    instrument_editor_move(Up);
+                    break;
+                  case K_Down:
+                    instrument_editor_move(Down);
+                    break;
+                }
+            } else {
+                switch (key) {
+                  case K_Left:
+                    select_prev_channel();
+                    break;
+                  case K_Right:
+                    select_next_channel();
+                    break;
+                  case K_Delete:
+                    clear_seq(current_channel);
+                    break;
+                  case K_Control_Delete:
+                    clear_seq_all();
+                    break;
+                }
             }
 
             int i;
