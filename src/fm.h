@@ -25,7 +25,6 @@ typedef struct {
     int8_t fine_tune;
     fm_panning_t panning;
     fm_voice_type_t voice_type;
-
 } fm_instr_t;
 
 void fm_reset();

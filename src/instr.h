@@ -3,6 +3,12 @@
 
 #include "fm.h"
 
+typedef struct {
+    note_t note;
+    unsigned int octave;
+    fm_instr_t fm_instr;
+} instr_t;
+
 fm_instr_t tick1 = {
     .c__am_vib_eg = 0x05,
     .c__ksl_volume = 0x0b,

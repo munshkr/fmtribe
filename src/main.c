@@ -58,13 +58,12 @@ bool metronome_on = false;
 uclock_t prev_tap = NULL;
 
 bool seq[CHANNELS][STEPS] = {};
-fm_instr_t instrs[CHANNELS] = {};
+instr_t instrs[CHANNELS] = {};
 
 pbm_file_t pbm;
 font_t font;
 
 extern fm_instr_t tick1;
-extern fm_instr_t bass1;
 
 
 void load_font()
@@ -93,7 +92,7 @@ void load_instruments()
 {
     FILE* f = fopen(INSTRS_FILE, "rb");
     if (f) {
-        fread(instrs, sizeof(fm_instr_t), CHANNELS, f);
+        fread(instrs, sizeof(instr_t), CHANNELS, f);
         fclose(f);
     } else {
         fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
@@ -101,28 +100,30 @@ void load_instruments()
 
         int c;
         for (c = 0; c < CHANNELS; c++) {
-            fm_instr_t* i = &instrs[c];
-            i->c__am_vib_eg = 0x00;
-            i->m__am_vib_eg = 0x00;
-            i->c__ksl_volume = 0x00;
-            i->m__ksl_volume = 0x0b;
-            i->c__attack_decay = 0xd6;
-            i->m__attack_decay = 0xa8;
-            i->c__sustain_release = 0x4f;
-            i->m__sustain_release = 0x4c;
-            i->c__waveform = 0x00;
-            i->m__waveform = 0x00;
-            i->feedback_fm = 0x00;
-            i->fine_tune = 0x00;
-            i->panning = Center;
-            i->voice_type = Melodic;
+            instrs[c].note = A;
+            instrs[c].octave = 4;
+            fm_instr_t* fi = &instrs[c].fm_instr;
+            fi->c__am_vib_eg = 0x00;
+            fi->m__am_vib_eg = 0x00;
+            fi->c__ksl_volume = 0x00;
+            fi->m__ksl_volume = 0x0b;
+            fi->c__attack_decay = 0xd6;
+            fi->m__attack_decay = 0xa8;
+            fi->c__sustain_release = 0x4f;
+            fi->m__sustain_release = 0x4c;
+            fi->c__waveform = 0x00;
+            fi->m__waveform = 0x00;
+            fi->feedback_fm = 0x00;
+            fi->fine_tune = 0x00;
+            fi->panning = Center;
+            fi->voice_type = Melodic;
         }
     }
 
     // Configure operators for all the instruments
     int c;
     for (c = 0; c < CHANNELS; c++) {
-        fm_set_instrument(c, &instrs[c]);
+        fm_set_instrument(c, &instrs[c].fm_instr);
     }
 }
 
@@ -133,7 +134,7 @@ bool save_instruments()
         fprintf(stderr, "Could not write instruments parameters to %s.\n", INSTRS_FILE);
         return false;
     }
-    fwrite(instrs, sizeof(fm_instr_t), CHANNELS, f);
+    fwrite(instrs, sizeof(instr_t), CHANNELS, f);
     fclose(f);
     printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
     return true;
@@ -168,7 +169,7 @@ void play_step()
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             fm_key_off(c);
-            fm_key_on(c, c+1, C);
+            fm_key_on(c, instrs[c].octave, instrs[c].note);
         }
     }
 }
