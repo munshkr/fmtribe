@@ -122,6 +122,58 @@ void fm_key_off(const unsigned int c)
     fm_write(FREQ_HIGH_KEYON_OCTAVE(c), 0);
 }
 
+// fm_instr_t getters
+__inline unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr) {
+    return (instr->c__attack_decay >> 4) & 0xf;
+}
+__inline unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr) {
+    return instr->c__attack_decay & 0xf;
+}
+__inline unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr) {
+    return (instr->c__sustain_release >> 4) & 0xf;
+}
+__inline unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr) {
+    return instr->c__sustain_release & 0xf;
+}
+__inline unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr) {
+    return (instr->m__attack_decay >> 4) & 0xf;
+}
+__inline unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr) {
+    return instr->m__attack_decay & 0xf;
+}
+__inline unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr) {
+    return (instr->m__sustain_release >> 4) & 0xf;
+}
+__inline unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr) {
+    return instr->m__sustain_release & 0xf;
+}
+
+// fm_instr_t setters
+__inline void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value) {
+    instr->c__attack_decay = ((value & 0xf) << 4) | (instr->c__attack_decay & 0xf);
+}
+__inline void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value) {
+    instr->c__attack_decay = (instr->c__attack_decay & 0xf0) | (value & 0xf);
+}
+__inline void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value) {
+    instr->c__sustain_release = ((value & 0xf) << 4) | (instr->c__sustain_release & 0xf);
+}
+__inline void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value) {
+    instr->c__sustain_release = (instr->c__sustain_release & 0xf0) | (value & 0xf);
+}
+__inline void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value) {
+    instr->m__attack_decay = ((value & 0xf) << 4) | (instr->m__attack_decay & 0xf);
+}
+__inline void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value) {
+    instr->m__attack_decay = (instr->m__attack_decay & 0xf0) | (value & 0xf);
+}
+__inline void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value) {
+    instr->m__sustain_release = ((value & 0xf) << 4) | (instr->m__sustain_release & 0xf);
+}
+__inline void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value) {
+    instr->m__sustain_release = (instr->m__sustain_release & 0xf0) | (value & 0xf);
+}
+
 static double note_frequency(const note_t note)
 {
     int i;

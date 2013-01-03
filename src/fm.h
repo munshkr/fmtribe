@@ -33,4 +33,22 @@ void fm_set_instrument(const unsigned int channel, const fm_instr_t* instr);
 void fm_key_on(const unsigned int c, const uint8_t octave, const note_t note);
 void fm_key_off(const unsigned int channel);
 
+__inline unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr);
+__inline unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr);
+__inline unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr);
+__inline unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr);
+__inline unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr);
+__inline unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr);
+__inline unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr);
+__inline unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr);
+
+__inline void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value);
+
 #endif // __FM_H__
