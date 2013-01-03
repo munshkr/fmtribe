@@ -253,21 +253,21 @@ unsigned int get_value_for_instrument(const instr_t* ins, const unsigned int fie
     const fm_instr_t* fm = &ins->fm_instr;
     switch (field) {
       case 0:
-        return (fm->c__attack_decay >> 4) & 0xf;
+        return fm_get_carrier_attack_rate(fm);
       case 1:
-        return fm->c__attack_decay & 0xf;
+        return fm_get_carrier_decay_rate(fm);
       case 2:
-        return (fm->c__sustain_release >> 4) & 0xf;
+        return fm_get_carrier_sustain_level(fm);
       case 3:
-        return fm->c__sustain_release & 0xf;
+        return fm_get_carrier_release_rate(fm);
       case 4:
-        return (fm->m__attack_decay >> 4) & 0xf;
+        return fm_get_modulator_attack_rate(fm);
       case 5:
-        return fm->m__attack_decay & 0xf;
+        return fm_get_modulator_decay_rate(fm);
       case 6:
-        return (fm->m__sustain_release >> 4) & 0xf;
+        return fm_get_modulator_sustain_level(fm);
       case 7:
-        return fm->m__sustain_release & 0xf;
+        return fm_get_modulator_release_rate(fm);
     }
     return 0;
 }
@@ -276,28 +276,28 @@ void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsi
     fm_instr_t* fm = &ins->fm_instr;
     switch (field) {
       case 0:
-        fm->c__attack_decay = ((value & 0xf) << 4) | (fm->c__attack_decay & 0xf);
+        fm_set_carrier_attack_rate(fm, value);
         break;
       case 1:
-        fm->c__attack_decay = (fm->c__attack_decay & 0xf0) | (value & 0xf);
+        fm_set_carrier_decay_rate(fm, value);
         break;
       case 2:
-        fm->c__sustain_release = ((value & 0xf) << 4) | (fm->c__sustain_release & 0xf);
+        fm_set_carrier_sustain_level(fm, value);
         break;
       case 3:
-        fm->c__sustain_release = (fm->c__sustain_release & 0xf0) | (value & 0xf);
+        fm_set_carrier_release_rate(fm, value);
         break;
       case 4:
-        fm->m__attack_decay = ((value & 0xf) << 4) | (fm->m__attack_decay & 0xf);
+        fm_set_modulator_attack_rate(fm, value);
         break;
       case 5:
-        fm->m__attack_decay = (fm->m__attack_decay & 0xf0) | (value & 0xf);
+        fm_set_modulator_decay_rate(fm, value);
         break;
       case 6:
-        fm->m__sustain_release = ((value & 0xf) << 4) | (fm->m__sustain_release & 0xf);
+        fm_set_modulator_sustain_level(fm, value);
         break;
       case 7:
-        fm->m__sustain_release = (fm->m__sustain_release & 0xf0) | (value & 0xf);
+        fm_set_modulator_release_rate(fm, value);
         break;
     }
 }
