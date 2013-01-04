@@ -243,7 +243,7 @@ void instrument_editor_move(const direction_t dir) {
     if (dir == Up && current_instr_field > 0) {
         current_instr_field--;
         dirty = true;
-    } else if (dir == Down && current_instr_field < 7) {
+    } else if (dir == Down && current_instr_field < 9) {
         current_instr_field++;
         dirty = true;
     }
@@ -261,13 +261,17 @@ unsigned int get_value_for_instrument(const instr_t* ins, const unsigned int fie
       case 3:
         return fm_get_carrier_release_rate(fm);
       case 4:
-        return fm_get_modulator_attack_rate(fm);
+        return fm_get_carrier_waveform_type(fm);
       case 5:
-        return fm_get_modulator_decay_rate(fm);
+        return fm_get_modulator_attack_rate(fm);
       case 6:
-        return fm_get_modulator_sustain_level(fm);
+        return fm_get_modulator_decay_rate(fm);
       case 7:
+        return fm_get_modulator_sustain_level(fm);
+      case 8:
         return fm_get_modulator_release_rate(fm);
+      case 9:
+        return fm_get_modulator_waveform_type(fm);
     }
     return 0;
 }
@@ -288,16 +292,22 @@ void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsi
         fm_set_carrier_release_rate(fm, value);
         break;
       case 4:
-        fm_set_modulator_attack_rate(fm, value);
+        fm_set_carrier_waveform_type(fm, value);
         break;
       case 5:
-        fm_set_modulator_decay_rate(fm, value);
+        fm_set_modulator_attack_rate(fm, value);
         break;
       case 6:
-        fm_set_modulator_sustain_level(fm, value);
+        fm_set_modulator_decay_rate(fm, value);
         break;
       case 7:
+        fm_set_modulator_sustain_level(fm, value);
+        break;
+      case 8:
         fm_set_modulator_release_rate(fm, value);
+        break;
+      case 9:
+        fm_set_modulator_waveform_type(fm, value);
         break;
     }
 }
@@ -308,7 +318,10 @@ void instrument_editor_change(const action_t action) {
     instr_t* ins = &instrs[current_channel];
     unsigned int value = get_value_for_instrument(ins, current_instr_field);
 
-    if (action == Increase && value < 15) {
+    if (action == Increase &&
+            (((current_instr_field == 4 || current_instr_field == 9) && value < 7) ||
+             ((current_instr_field != 4 && current_instr_field != 9) && value < 15)))
+    {
         value++;
         set_value_for_instrument(ins, current_instr_field, value);
         fm_set_instrument(current_channel, &ins->fm_instr);
@@ -319,7 +332,6 @@ void instrument_editor_change(const action_t action) {
         fm_set_instrument(current_channel, &ins->fm_instr);
         dirty = true;
     }
-
 }
 
 void render_board()
@@ -396,15 +408,17 @@ void render_hits()
 #define C_COL_TOP   10
 #define M_COL_TOP   C_COL_TOP
 
-const unsigned int instr_fields_pos[8][2] = {
+const unsigned int instr_fields_pos[10][2] = {
     { C_COL_LEFT + 120, C_COL_TOP + 20 },
     { C_COL_LEFT + 120, C_COL_TOP + 35 },
     { C_COL_LEFT + 120, C_COL_TOP + 50 },
     { C_COL_LEFT + 120, C_COL_TOP + 65 },
+    { C_COL_LEFT + 120, C_COL_TOP + 80 },
     { M_COL_LEFT + 120, M_COL_TOP + 20 },
     { M_COL_LEFT + 120, M_COL_TOP + 35 },
     { M_COL_LEFT + 120, M_COL_TOP + 50 },
     { M_COL_LEFT + 120, M_COL_TOP + 65 },
+    { M_COL_LEFT + 120, M_COL_TOP + 80 },
 };
 
 void render_instrument_editor()
@@ -418,21 +432,26 @@ void render_instrument_editor()
     render_str(&font, C_COL_LEFT, C_COL_TOP + 35, 7, "Decay Rate:");
     render_str(&font, C_COL_LEFT, C_COL_TOP + 50, 7, "Sustain Level");
     render_str(&font, C_COL_LEFT, C_COL_TOP + 65, 7, "Release Rate:");
+    render_str(&font, C_COL_LEFT, C_COL_TOP + 80, 7, "Waveform:");
     render_str(&font, M_COL_LEFT, M_COL_TOP, 7, "Modulator");
     render_str(&font, M_COL_LEFT, M_COL_TOP + 20, 7, "Attack Rate:");
     render_str(&font, M_COL_LEFT, M_COL_TOP + 35, 7, "Decay Rate:");
     render_str(&font, M_COL_LEFT, M_COL_TOP + 50, 7, "Sustain Level:");
     render_str(&font, M_COL_LEFT, M_COL_TOP + 65, 7, "Release Rate:");
+    render_str(&font, M_COL_LEFT, M_COL_TOP + 80, 7, "Waveform:");
 
     // Render field values
     render_strf(&font, instr_fields_pos[0][0], instr_fields_pos[0][1], 7, "%X", (fm->c__attack_decay >> 4) & 0xf);
     render_strf(&font, instr_fields_pos[1][0], instr_fields_pos[1][1], 7, "%X", fm->c__attack_decay & 0xf);
     render_strf(&font, instr_fields_pos[2][0], instr_fields_pos[2][1], 7, "%X", (fm->c__sustain_release >> 4) & 0xf);
     render_strf(&font, instr_fields_pos[3][0], instr_fields_pos[3][1], 7, "%X", fm->c__sustain_release & 0xf);
-    render_strf(&font, instr_fields_pos[4][0], instr_fields_pos[4][1], 7, "%X", (fm->m__attack_decay >> 4) & 0xf);
-    render_strf(&font, instr_fields_pos[5][0], instr_fields_pos[5][1], 7, "%X", fm->m__attack_decay & 0xf);
-    render_strf(&font, instr_fields_pos[6][0], instr_fields_pos[6][1], 7, "%X", (fm->m__sustain_release >> 4) & 0xf);
-    render_strf(&font, instr_fields_pos[7][0], instr_fields_pos[7][1], 7, "%X", fm->m__sustain_release & 0xf);
+    render_strf(&font, instr_fields_pos[4][0], instr_fields_pos[4][1], 7, "%X", fm_get_carrier_waveform_type(fm));
+
+    render_strf(&font, instr_fields_pos[5][0], instr_fields_pos[5][1], 7, "%X", (fm->m__attack_decay >> 4) & 0xf);
+    render_strf(&font, instr_fields_pos[6][0], instr_fields_pos[6][1], 7, "%X", fm->m__attack_decay & 0xf);
+    render_strf(&font, instr_fields_pos[7][0], instr_fields_pos[7][1], 7, "%X", (fm->m__sustain_release >> 4) & 0xf);
+    render_strf(&font, instr_fields_pos[8][0], instr_fields_pos[8][1], 7, "%X", fm->m__sustain_release & 0xf);
+    render_strf(&font, instr_fields_pos[9][0], instr_fields_pos[9][1], 7, "%X", fm_get_modulator_waveform_type(fm));
 
     // TODO draw "current field" rectangle
     rect(instr_fields_pos[current_instr_field][0] - 4,
