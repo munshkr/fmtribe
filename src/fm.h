@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-typedef enum { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B } note_t;
+typedef enum { Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B, C } note_t;
 typedef enum { Center, Left, Right } fm_panning_t;
 typedef enum { Melodic, BD, SD, TT, TC, HH } fm_voice_type_t;
 typedef enum { Sine, HalfSine, AbsSine, PulseSine, SineEPO, AbsSizeEPO, Square, DerivedSquare } fm_waveform_type_t;
