@@ -135,6 +135,9 @@ __inline unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr) {
 __inline unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr) {
     return instr->c__sustain_release & 0xf;
 }
+__inline fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr) {
+    return instr->c__waveform & 0x7;
+}
 __inline unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr) {
     return (instr->m__attack_decay >> 4) & 0xf;
 }
@@ -146,6 +149,9 @@ __inline unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr) {
 }
 __inline unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr) {
     return instr->m__sustain_release & 0xf;
+}
+__inline fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr) {
+    return instr->m__waveform & 0x7;
 }
 
 // fm_instr_t setters
@@ -161,6 +167,9 @@ __inline void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value
 __inline void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value) {
     instr->c__sustain_release = (instr->c__sustain_release & 0xf0) | (value & 0xf);
 }
+__inline void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
+    instr->c__waveform = value & 0x7;
+}
 __inline void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value) {
     instr->m__attack_decay = ((value & 0xf) << 4) | (instr->m__attack_decay & 0xf);
 }
@@ -172,6 +181,9 @@ __inline void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int val
 }
 __inline void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value) {
     instr->m__sustain_release = (instr->m__sustain_release & 0xf0) | (value & 0xf);
+}
+__inline void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
+    instr->m__waveform = value & 0x7;
 }
 
 static double note_frequency(const note_t note)

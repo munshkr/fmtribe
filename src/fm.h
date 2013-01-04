@@ -9,6 +9,7 @@
 typedef enum { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B } note_t;
 typedef enum { Center, Left, Right } fm_panning_t;
 typedef enum { Melodic, BD, SD, TT, TC, HH } fm_voice_type_t;
+typedef enum { Sine, HalfSine, AbsSine, PulseSine, SineEPO, AbsSizeEPO, Square, DerivedSquare } fm_waveform_type_t;
 
 typedef struct {
     uint8_t m__am_vib_eg;
@@ -22,6 +23,7 @@ typedef struct {
     uint8_t m__waveform;
     uint8_t c__waveform;
     uint8_t feedback_fm;
+
     int8_t fine_tune;
     fm_panning_t panning;
     fm_voice_type_t voice_type;
@@ -37,18 +39,22 @@ __inline unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr);
 __inline unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr);
 __inline unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr);
 __inline unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr);
+__inline fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr);
 __inline unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr);
 __inline unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr);
 __inline unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr);
 __inline unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr);
+__inline fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr);
 
 __inline void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value);
 __inline void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value);
 __inline void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value);
 __inline void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
 __inline void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value);
 __inline void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value);
 __inline void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value);
 __inline void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value);
+__inline void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
 
 #endif // __FM_H__
