@@ -102,7 +102,7 @@ void load_instruments()
         int c;
         for (c = 0; c < CHANNELS; c++) {
             instrs[c].note = A;
-            instrs[c].octave = 4;
+            instrs[c].octave = 2;
             fm_instr_t* fi = &instrs[c].fm_instr;
             fi->c__am_vib_eg = 0x00;
             fi->m__am_vib_eg = 0x00;
