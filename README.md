@@ -39,3 +39,15 @@ sequencer is playing.
 
 Also, you can still change channels with the numbers from the instrument
 editor.
+
+To change the base note of the instrument, use the keys:
+
+      W   E       T   Y   U
+    A   S   D   F   G   H   J
+
+as in a keyboard of one octave. To change the base octave, use `PageUp`/`PageDown`.
+
+## Installation ##
+
+As this is currently in an *alpha* stage, there are no binaries to download.
+You must download the DJGPP compiler and some of its tools.
