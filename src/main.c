@@ -568,16 +568,17 @@ int main(int argc, char* argv[])
                     clear_seq_all();
                     break;
                 }
-            }
 
-            int i;
-            for (i = 0; i < STEPS; i++) {
-                if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                    seq[current_channel][i] = not(seq[current_channel][i]);
-                    dirty = true;
+                int i;
+                for (i = 0; i < STEPS; i++) {
+                    if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
+                        seq[current_channel][i] = not(seq[current_channel][i]);
+                        dirty = true;
+                    }
                 }
             }
 
+            int i;
             for (i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_KEYS[i]) {
                     current_channel = i;
