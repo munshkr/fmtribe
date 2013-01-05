@@ -34,6 +34,8 @@
 #define CHANNEL_SELECTOR_TOP    (BOARD_TOP - CHANNEL_SELECTOR_HEIGHT - 10)
 #define CHANNEL_SELECTOR_LEFT   BOARD_LEFT
 
+#define MAX_MICROSTEPS 3
+
 const char* INSTRS_FILE = "INSTRS.DAT";
 
 const int DEFAULT_BPM = 120;
@@ -45,6 +47,11 @@ const char KEYBOARD_KEYS[]       = "awsedftgyhuj";
 const char KEYBOARD_UPPER_KEYS[] = "AWSEDFTGYHUJ";
 
 const char CHANNEL_KEYS[] = "12345678";
+
+const unsigned int MICROSTEP_KEYS[] = {
+    K_Alt_Q, K_Alt_W, K_Alt_E, K_Alt_R, K_Alt_T, K_Alt_Y, K_Alt_U, K_Alt_I,
+    K_Alt_A, K_Alt_S, K_Alt_D, K_Alt_F, K_Alt_G, K_Alt_H, K_Alt_J, K_Alt_K
+};
 
 const uint8_t CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
 const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
@@ -64,8 +71,9 @@ bool playing = false;
 bool metronome_on = false;
 bool instrument_editor_enabled = false;
 
-bool seq[CHANNELS][STEPS] = {};
-instr_t instrs[CHANNELS] = {};
+instr_t      instrs[CHANNELS] = {};
+bool         seq[CHANNELS][STEPS] = {};
+unsigned int mseq[CHANNELS][STEPS] = {};
 
 int current_instr_field = 0;
 
@@ -222,6 +230,7 @@ void tap_tempo()
 void clear_seq(int channel)
 {
     memset(seq[channel], 0, STEPS * sizeof(bool));
+    memset(mseq[channel], 0, STEPS * sizeof(unsigned int));
     dirty = true;
 }
 
@@ -362,8 +371,21 @@ void render_board()
             }
 
             // render a filled square if the step is toggled
-            if (seq[current_channel][(i * BOARD_COLS) + j]) {
+            const int cur_step = (i * BOARD_COLS) + j;
+            if (seq[current_channel][cur_step]) {
                 square_fill(left, top, BOARD_SQUARE_SIZE, color);
+                if (mseq[current_channel][cur_step]) {
+                    int microcolor;
+                    if (color == CHANNEL_COLORS[current_channel]) {
+                        microcolor = CHANNEL_COLORS_B[current_channel];
+                    } else {
+                        microcolor = CHANNEL_COLORS[current_channel];
+                    }
+                    int i;
+                    for (i = 0; i < mseq[current_channel][cur_step]; i++) {
+                        square_fill(left + 3 + (i * (4 + 3)), top + BOARD_SQUARE_SIZE - 3 - 4, 4, microcolor);
+                    }
+                }
             } else {
                 square(left, top, BOARD_SQUARE_SIZE, color);
             }
@@ -613,6 +635,14 @@ int main(int argc, char* argv[])
                 for (i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
                         seq[current_channel][i] = not(seq[current_channel][i]);
+                        dirty = true;
+                    }
+                }
+
+                for (i = 0; i < STEPS; i++) {
+                    if (key == MICROSTEP_KEYS[i]) {
+                        seq[current_channel][i] = true;
+                        mseq[current_channel][i] = (mseq[current_channel][i] + 1) % MAX_MICROSTEPS;
                         dirty = true;
                     }
                 }
