@@ -16,6 +16,8 @@
 #define STEPS           16
 #define METRONOME_CH    CHANNELS
 
+#define KEYBOARD_KEYS_COUNT 12
+
 #define BOARD_SQUARE_SIZE 25
 #define BOARD_SQUARE_PADDING 10
 #define BOARD_ROWS 2
@@ -38,10 +40,16 @@ const int DEFAULT_BPM = 120;
 
 const char STEP_KEYS[]       = "qwertyuiasdfghjk";
 const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
-const char CHANNEL_KEYS[]    = "12345678";
+
+const char KEYBOARD_KEYS[]       = "awsedftgyhuj";
+const char KEYBOARD_UPPER_KEYS[] = "AWSEDFTGYHUJ";
+
+const char CHANNEL_KEYS[] = "12345678";
 
 const uint8_t CHANNEL_COLORS[CHANNELS]   = { 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
 const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+
+const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -154,6 +162,12 @@ void tick()
     dirty = true;
 }
 
+void play_channel(const unsigned int c)
+{
+    fm_key_off(c);
+    fm_key_on(c, instrs[c].octave, instrs[c].note);
+}
+
 void play_step()
 {
     if (metronome_on) {
@@ -169,8 +183,7 @@ void play_step()
     int c;
     for (c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
-            fm_key_off(c);
-            fm_key_on(c, instrs[c].octave, instrs[c].note);
+            play_channel(c);
         }
     }
 }
@@ -552,6 +565,26 @@ int main(int argc, char* argv[])
                   case K_Down:
                     instrument_editor_move(Down);
                     break;
+                  case K_PageDown:
+                    if (instrs[current_channel].octave > 1) {
+                        instrs[current_channel].octave--;
+                        dirty = true;
+                    }
+                    break;
+                  case K_PageUp:
+                    if (instrs[current_channel].octave < 8) {
+                        instrs[current_channel].octave++;
+                        dirty = true;
+                    }
+                    break;
+                }
+
+                int i;
+                for (i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
+                    if (key == KEYBOARD_KEYS[i] || key == KEYBOARD_UPPER_KEYS[i]) {
+                        instrs[current_channel].note = KEYBOARD_NOTES[i];
+                        if (!playing) play_channel(current_channel);
+                    }
                 }
             } else {
                 switch (key) {
