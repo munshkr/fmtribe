@@ -173,10 +173,10 @@ void play_step()
     if (metronome_on) {
         if (current_step == 0) {
             fm_key_off(METRONOME_CH);
-            fm_key_on(METRONOME_CH, 3, E);
+            fm_key_on(METRONOME_CH, 4, E);
         } else if (current_step % 4 == 0) {
             fm_key_off(METRONOME_CH);
-            fm_key_on(METRONOME_CH, 4, E);
+            fm_key_on(METRONOME_CH, 3, E);
         }
     }
 
