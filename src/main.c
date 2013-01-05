@@ -502,10 +502,17 @@ int main(int argc, char* argv[])
     load_instruments();
     fm_set_instrument(METRONOME_CH, &tick1);
 
+    if (argc == 1) {
+        set_bpm(DEFAULT_BPM);
+    } else {
+        const unsigned int custom_bpm = atoi(argv[1]);
+        set_bpm(custom_bpm);
+        printf("BPM set to %i\n", custom_bpm);
+        getch();
+    }
+
     init_vga();
     set_mode(VIDEO_MODE);
-
-    set_bpm(DEFAULT_BPM);
 
     bool is_running = true;
     uclock_t prev = uclock();
