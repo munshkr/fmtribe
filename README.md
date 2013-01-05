@@ -50,4 +50,4 @@ as in a keyboard of one octave. To change the base octave, use `PageUp`/`PageDow
 ## Installation ##
 
 As this is currently in an *alpha* stage, there are no binaries to download.
-You must download the DJGPP compiler and some of its tools.
+You must download the DJGPP compiler and some of its tools.  *todo*
