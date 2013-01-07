@@ -60,17 +60,17 @@ static uint16_t note_fnumber(const note_t note);
 __inline void fm_write(const int reg, const int value) {
     // set requested register into address port
     outp(ADDR_PORT, reg);
-    msleep(10);
+    usleep(10);
     // write value into data port
     outp(DATA_PORT, value);
-    msleep(60);
+    usleep(60);
 }
 
 __inline void fm_write_b(const int reg, const int value) {
     outp(ADDR_PORT, reg);
-    msleep(10);
+    usleep(10);
     outp(DATA_PORT_B, value);
-    msleep(60);
+    usleep(60);
 }
 
 void fm_reset() {

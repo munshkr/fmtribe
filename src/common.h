@@ -23,6 +23,4 @@ typedef char* string;
 
 typedef __builtin_va_list va_list;
 
-void msleep(const int microsecs);
-
 #endif // __COMMON_H__
