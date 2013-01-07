@@ -371,23 +371,19 @@ void render_board()
             }
 
             // render a filled square if the step is toggled
-            const int cur_step = (i * BOARD_COLS) + j;
-            if (seq[current_channel][cur_step]) {
-                square_fill(left, top, BOARD_SQUARE_SIZE, color);
-                if (mseq[current_channel][cur_step]) {
-                    int microcolor;
-                    if (color == CHANNEL_COLORS[current_channel]) {
-                        microcolor = CHANNEL_COLORS_B[current_channel];
-                    } else {
-                        microcolor = CHANNEL_COLORS[current_channel];
-                    }
-                    int i;
-                    for (i = 0; i < mseq[current_channel][cur_step]; i++) {
-                        square_fill(left + 3 + (i * (4 + 3)), top + BOARD_SQUARE_SIZE - 3 - 4, 4, microcolor);
-                    }
+            const unsigned int cur_step = (i * BOARD_COLS) + j;
+            const unsigned int microsteps = mseq[current_channel][cur_step] + 1;
+            const unsigned int width = BOARD_SQUARE_SIZE / microsteps;
+
+            int k;
+            for (k = 0; k < microsteps; k++) {
+                unsigned int right = left + width * (k + 1) - 3;
+                if (microsteps > 1 && k == microsteps - 1) right++;
+                if (seq[current_channel][cur_step]) {
+                    rect_fill(left + width * k, top, right, top + BOARD_SQUARE_SIZE, color);
+                } else {
+                    rect(left + width * k, top, left + width * (k + 1) - 3, top + BOARD_SQUARE_SIZE, color);
                 }
-            } else {
-                square(left, top, BOARD_SQUARE_SIZE, color);
             }
 
             // restore color
@@ -660,6 +656,7 @@ int main(int argc, char* argv[])
 
         if (playing) {
             uclock_t now = uclock();
+
             if (now >= prev + current_usecs_per_step) {
                 if (pause_after_current_step) {
                     pause_after_current_step = false;
