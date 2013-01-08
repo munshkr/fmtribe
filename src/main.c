@@ -2,6 +2,7 @@
 #include <conio.h>
 #include <keys.h>
 #include <string.h>
+#include <dos.h>
 
 #include "common.h"
 #include "fm.h"

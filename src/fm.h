@@ -1,9 +1,7 @@
 #ifndef __FM_H__
 #define __FM_H__
 
-#include <pc.h>
-#include <unistd.h>
-
+#include <stdint.h>
 #include "common.h"
 
 typedef enum { Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B, C } note_t;
@@ -35,26 +33,28 @@ void fm_set_instrument(const unsigned int channel, const fm_instr_t* instr);
 void fm_key_on(const unsigned int c, const uint8_t octave, const note_t note);
 void fm_key_off(const unsigned int channel);
 
-__inline unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr);
-__inline unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr);
-__inline unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr);
-__inline unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr);
-__inline fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr);
-__inline unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr);
-__inline unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr);
-__inline unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr);
-__inline unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr);
-__inline fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr);
+// fm_instr_t getters
+unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr);
+unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr);
+unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr);
+unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr);
+fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr);
+unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr);
+unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr);
+unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr);
+unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr);
+fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr);
 
-__inline void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
-__inline void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value);
-__inline void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
+// fm_instr_t setters
+void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value);
+void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value);
+void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value);
+void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value);
+void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
+void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value);
+void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value);
+void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value);
+void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value);
+void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
 
 #endif // __FM_H__

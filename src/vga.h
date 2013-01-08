@@ -19,13 +19,17 @@ void update();
 
 void clear();
 
+void putp(int x, int y, uint8_t color);
 void line(int x1, int y1, int x2, int y2, uint8_t color);
 
 void rect(int left, int top, int right, int bottom, uint8_t color);
 void rect_fill(int left, int top, int right, int bottom, uint8_t color);
 
-__inline void square(int left, int top, int size, uint8_t color);
-__inline void square_fill(int left, int top, int size, uint8_t color);
-__inline void putp(int x, int y, uint8_t color);
+extern __inline__ void square(int left, int top, int size, uint8_t color) {
+    rect(left, top, left + size, top + size, color);
+}
+extern __inline__ void square_fill(int left, int top, int size, uint8_t color) {
+    rect_fill(left, top, left + size, top + size, color);
+}
 
 #endif // __VGA_H__

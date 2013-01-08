@@ -1,4 +1,7 @@
+#include <unistd.h>
 #include <math.h>
+#include <dos.h>
+
 #include "fm.h"
 
 #define BASE_PORT   0x388
@@ -54,24 +57,11 @@ static const note_fnum_t FNUMS[12] = {
     { B,  0x287 },
     { C,  0x2ae },
 };
-static uint16_t note_fnumber(const note_t note);
 
+static __inline__ void fm_write(const int reg, const int value);
+static __inline__ void fm_write_b(const int reg, const int value);
+static __inline__ uint16_t note_fnumber(const note_t note);
 
-__inline void fm_write(const int reg, const int value) {
-    // set requested register into address port
-    outp(ADDR_PORT, reg);
-    usleep(10);
-    // write value into data port
-    outp(DATA_PORT, value);
-    usleep(60);
-}
-
-__inline void fm_write_b(const int reg, const int value) {
-    outp(ADDR_PORT, reg);
-    usleep(10);
-    outp(DATA_PORT_B, value);
-    usleep(60);
-}
 
 void fm_reset() {
     // reset sound by setting *all* registers to 0
@@ -121,70 +111,86 @@ void fm_key_off(const unsigned int c)
 }
 
 // fm_instr_t getters
-__inline unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr) {
+unsigned int fm_get_carrier_attack_rate(const fm_instr_t* instr) {
     return (instr->c__attack_decay >> 4) & 0xf;
 }
-__inline unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr) {
+unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr) {
     return instr->c__attack_decay & 0xf;
 }
-__inline unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr) {
+unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr) {
     return (instr->c__sustain_release >> 4) & 0xf;
 }
-__inline unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr) {
+unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr) {
     return instr->c__sustain_release & 0xf;
 }
-__inline fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr) {
+fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr) {
     return instr->c__waveform & 0x7;
 }
-__inline unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr) {
+unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr) {
     return (instr->m__attack_decay >> 4) & 0xf;
 }
-__inline unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr) {
+unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr) {
     return instr->m__attack_decay & 0xf;
 }
-__inline unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr) {
+unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr) {
     return (instr->m__sustain_release >> 4) & 0xf;
 }
-__inline unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr) {
+unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr) {
     return instr->m__sustain_release & 0xf;
 }
-__inline fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr) {
+fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr) {
     return instr->m__waveform & 0x7;
 }
 
 // fm_instr_t setters
-__inline void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value) {
+void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value) {
     instr->c__attack_decay = ((value & 0xf) << 4) | (instr->c__attack_decay & 0xf);
 }
-__inline void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value) {
+void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value) {
     instr->c__attack_decay = (instr->c__attack_decay & 0xf0) | (value & 0xf);
 }
-__inline void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value) {
+void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value) {
     instr->c__sustain_release = ((value & 0xf) << 4) | (instr->c__sustain_release & 0xf);
 }
-__inline void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value) {
+void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value) {
     instr->c__sustain_release = (instr->c__sustain_release & 0xf0) | (value & 0xf);
 }
-__inline void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
+void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
     instr->c__waveform = value & 0x7;
 }
-__inline void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value) {
+void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value) {
     instr->m__attack_decay = ((value & 0xf) << 4) | (instr->m__attack_decay & 0xf);
 }
-__inline void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value) {
+void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value) {
     instr->m__attack_decay = (instr->m__attack_decay & 0xf0) | (value & 0xf);
 }
-__inline void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value) {
+void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value) {
     instr->m__sustain_release = ((value & 0xf) << 4) | (instr->m__sustain_release & 0xf);
 }
-__inline void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value) {
+void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value) {
     instr->m__sustain_release = (instr->m__sustain_release & 0xf0) | (value & 0xf);
 }
-__inline void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
+void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
     instr->m__waveform = value & 0x7;
 }
 
-static uint16_t note_fnumber(const note_t note)
+static __inline__ void fm_write(const int reg, const int value) {
+    // set requested register into address port
+    outportb(ADDR_PORT, reg);
+    usleep(10);
+    // write value into data port
+    outportb(DATA_PORT, value);
+    usleep(60);
+}
+
+static __inline__ void fm_write_b(const int reg, const int value) {
+    outportb(ADDR_PORT, reg);
+    usleep(10);
+    outportb(DATA_PORT_B, value);
+    usleep(60);
+}
+
+static __inline__ uint16_t note_fnumber(const note_t note)
 {
     int i;
     for (i = 0; i < 12; i++) {

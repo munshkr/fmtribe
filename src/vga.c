@@ -45,7 +45,7 @@ void clear()
     memset(buffer, 0, SCREEN_SIZE);
 }
 
-__inline void putp(int x, int y, uint8_t color)
+void putp(int x, int y, uint8_t color)
 {
     buffer[(y << 8) + (y << 6) + x] = color;
 }
@@ -142,12 +142,4 @@ void rect_fill(int left, int top, int right, int bottom, uint8_t color)
     for (i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
         memset(&buffer[i], color, width);
     }
-}
-
-__inline void square(int left, int top, int size, uint8_t color) {
-    rect(left, top, left + size, top + size, color);
-}
-
-__inline void square_fill(int left, int top, int size, uint8_t color) {
-    rect_fill(left, top, left + size, top + size, color);
 }
