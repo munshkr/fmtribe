@@ -28,13 +28,12 @@ bool create_font_from_pbm(const pbm_file_t* pbm, const int chars_per_row, font_t
     uint8_t* buf_p = font->buffer;
     uint8_t* pbm_buf_p = pbm->buffer;
 
-    int r, c, i, j;
-    for (r = 0; r < rows; r++) {
+    for (int r = 0; r < rows; r++) {
         uint8_t* old = pbm_buf_p;
-        for (c = 0; c < cols; c++) {
+        for (int c = 0; c < cols; c++) {
             uint8_t* old = pbm_buf_p;
-            for (i = 0; i < font->height; i++) {
-                for (j = 0; j < font->width; j++) {
+            for (int i = 0; i < font->height; i++) {
+                for (int j = 0; j < font->width; j++) {
                     *(buf_p++) = *(pbm_buf_p++);
                 }
                 pbm_buf_p += font->width * (cols - 1);
@@ -58,9 +57,8 @@ void render_chr(const font_t* f, const int x, const int y, const uint8_t color, 
 
     uint8_t* buf_ptr = f->buffer + (char_pos * f->width * f->height);
 
-    int i, j;
-    for (j = 0; j < f->height; j++) {
-        for (i = 0; i < f->width; i++) {
+    for (int j = 0; j < f->height; j++) {
+        for (int i = 0; i < f->width; i++) {
             if (*buf_ptr) {
                 putp(x + i, y + j, color);
             }

@@ -93,7 +93,7 @@ void line(int x1, int y1, int x2, int y2, uint8_t color)
 
 void rect(int left, int top, int right, int bottom, uint8_t color)
 {
-    uint16_t top_offset, bottom_offset, i, temp;
+    uint16_t top_offset, bottom_offset, temp;
 
     if (top > bottom) {
         temp = top;
@@ -109,12 +109,12 @@ void rect(int left, int top, int right, int bottom, uint8_t color)
     top_offset = (top << 8) + (top << 6);
     bottom_offset = (bottom << 8) + (bottom << 6);
 
-    for (i = left; i <= right; i++) {
+    for (uint16_t i = left; i <= right; i++) {
         buffer[top_offset + i] = color;
         buffer[bottom_offset + i] = color;
     }
 
-    for (i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
+    for (uint16_t i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
         buffer[left + i] = color;
         buffer[right + i] = color;
     }
@@ -122,7 +122,7 @@ void rect(int left, int top, int right, int bottom, uint8_t color)
 
 void rect_fill(int left, int top, int right, int bottom, uint8_t color)
 {
-    uint16_t top_offset, bottom_offset, i, temp, width;
+    uint16_t top_offset, bottom_offset, temp, width;
 
     if (top > bottom) {
         temp = top;
@@ -139,7 +139,7 @@ void rect_fill(int left, int top, int right, int bottom, uint8_t color)
     bottom_offset = (bottom << 8) + (bottom << 6) + left;
     width = right - left + 1;
 
-    for (i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
+    for (uint16_t i = top_offset; i <= bottom_offset; i += SCREEN_WIDTH) {
         memset(&buffer[i], color, width);
     }
 }

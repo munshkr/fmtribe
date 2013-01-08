@@ -64,10 +64,10 @@ void free_pbm(pbm_file_t* pbm)
 
 static void expand_raw_buffer(const uint8_t* raw_buf, const unsigned int raw_buf_size, const unsigned int pbm_width, uint8_t* buf)
 {
-    unsigned int i, j, k, x;
+    int i, j, x;
     for (i = 0, j = 0, x = 0; i < raw_buf_size; i++) {
         uint8_t byte = raw_buf[i];
-        for (k = 0; k < 8; k++, j++, x++) {
+        for (int k = 0; k < 8; k++, j++, x++) {
             if (x == pbm_width) {
                 x = 0;
                 break;

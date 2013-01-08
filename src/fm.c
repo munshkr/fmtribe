@@ -65,8 +65,7 @@ static __inline__ uint16_t note_fnumber(const note_t note);
 
 void fm_reset() {
     // reset sound by setting *all* registers to 0
-    int i;
-    for (i = 0; i < 0xf5; i++) {
+    for (int i = 0; i < 0xf5; i++) {
         fm_write(i, 0);
     }
 }

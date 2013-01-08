@@ -116,8 +116,7 @@ void load_instruments()
         fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
         getch();
 
-        int c;
-        for (c = 0; c < CHANNELS; c++) {
+        for (int c = 0; c < CHANNELS; c++) {
             instrs[c].note = A;
             instrs[c].octave = 2;
             fm_instr_t* fi = &instrs[c].fm_instr;
@@ -139,8 +138,7 @@ void load_instruments()
     }
 
     // Configure operators for all the instruments
-    int c;
-    for (c = 0; c < CHANNELS; c++) {
+    for (int c = 0; c < CHANNELS; c++) {
         fm_set_instrument(c, &instrs[c].fm_instr);
     }
 }
@@ -189,8 +187,7 @@ void play_step()
         }
     }
 
-    int c;
-    for (c = 0; c < CHANNELS; c++) {
+    for (int c = 0; c < CHANNELS; c++) {
         if (seq[c][current_step]) {
             play_channel(c);
         }
@@ -361,10 +358,10 @@ void render_board()
 {
     int color = CHANNEL_COLORS[current_channel];
     int top = BOARD_TOP;
-    int i, j, z = 0;
-    for (i = 0; i < BOARD_ROWS; i++) {
+    int z = 0;
+    for (int i = 0; i < BOARD_ROWS; i++) {
         int left = BOARD_LEFT;
-        for (j = 0; j < BOARD_COLS; j++) {
+        for (int j = 0; j < BOARD_COLS; j++) {
             // if it is about to render the square for the current step,
             // use a different color.
             if (z == current_step) {
@@ -376,8 +373,7 @@ void render_board()
             const unsigned int microsteps = mseq[current_channel][cur_step] + 1;
             const unsigned int width = BOARD_SQUARE_SIZE / microsteps;
 
-            int k;
-            for (k = 0; k < microsteps; k++) {
+            for (int k = 0; k < microsteps; k++) {
                 unsigned int right = left + width * (k + 1) - 3;
                 if (microsteps > 1 && k == microsteps - 1) right++;
                 if (seq[current_channel][cur_step]) {
@@ -406,8 +402,7 @@ void render_channel_selector()
     int left = CHANNEL_SELECTOR_LEFT;
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
-    int i;
-    for (i = 0; i < CHANNELS; i++) {
+    for (int i = 0; i < CHANNELS; i++) {
         if (i == current_channel) {
             rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
         } else {
@@ -425,8 +420,7 @@ void render_hits()
     int left = CHANNEL_SELECTOR_LEFT;
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
-    int i;
-    for (i = 0; i < CHANNELS; i++) {
+    for (int i = 0; i < CHANNELS; i++) {
         if (seq[i][current_step]) {
             rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
@@ -536,8 +530,7 @@ int main(int argc, char* argv[])
     bool is_running = true;
     uclock_t prev = uclock();
     uclock_t mprev[CHANNELS];
-    int c;
-    for (c = 0; c < CHANNELS; c++) mprev[c] = prev;
+    for (int c = 0; c < CHANNELS; c++) mprev[c] = prev;
 
     while (is_running) {
         if (kbhit()) {
@@ -608,8 +601,7 @@ int main(int argc, char* argv[])
                     break;
                 }
 
-                int i;
-                for (i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
+                for (int i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
                     if (key == KEYBOARD_KEYS[i] || key == KEYBOARD_UPPER_KEYS[i]) {
                         instrs[current_channel].note = KEYBOARD_NOTES[i];
                         if (!playing) play_channel(current_channel);
@@ -631,15 +623,14 @@ int main(int argc, char* argv[])
                     break;
                 }
 
-                int i;
-                for (i = 0; i < STEPS; i++) {
+                for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
                         seq[current_channel][i] = not(seq[current_channel][i]);
                         dirty = true;
                     }
                 }
 
-                for (i = 0; i < STEPS; i++) {
+                for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
                         seq[current_channel][i] = true;
                         mseq[current_channel][i] = (mseq[current_channel][i] + 1) % MAX_MICROSTEPS;
@@ -648,8 +639,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            int i;
-            for (i = 0; i < CHANNELS; i++) {
+            for (int i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_KEYS[i]) {
                     current_channel = i;
                     dirty = true;
@@ -672,12 +662,11 @@ int main(int argc, char* argv[])
                     play_step();
                 }
                 prev = now;
-                for (c = 0; c < CHANNELS; c++) mprev[c] = prev;
+                for (int c = 0; c < CHANNELS; c++) mprev[c] = prev;
             }
 
             // play microsteps (if any)
-            int c;
-            for (c = 0; c < CHANNELS; c++) {
+            for (int c = 0; c < CHANNELS; c++) {
                 if (seq[c][current_step]) {
                     if (now >= mprev[c] + (current_usecs_per_step / (mseq[c][current_step] + 1))) {
                         play_channel(c);
