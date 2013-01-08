@@ -382,7 +382,7 @@ void render_board()
                 if (seq[current_channel][cur_step]) {
                     rect_fill(left + width * k, top, right, top + BOARD_SQUARE_SIZE, color);
                 } else {
-                    rect(left + width * k, top, left + width * (k + 1) - 3, top + BOARD_SQUARE_SIZE, color);
+                    rect(left + width * k, top, right, top + BOARD_SQUARE_SIZE, color);
                 }
             }
 
@@ -534,6 +534,9 @@ int main(int argc, char* argv[])
 
     bool is_running = true;
     uclock_t prev = uclock();
+    uclock_t mprev[CHANNELS];
+    int c;
+    for (c = 0; c < CHANNELS; c++) mprev[c] = prev;
 
     while (is_running) {
         if (kbhit()) {
@@ -657,6 +660,7 @@ int main(int argc, char* argv[])
         if (playing) {
             uclock_t now = uclock();
 
+            // play step
             if (now >= prev + current_usecs_per_step) {
                 if (pause_after_current_step) {
                     pause_after_current_step = false;
@@ -667,6 +671,18 @@ int main(int argc, char* argv[])
                     play_step();
                 }
                 prev = now;
+                for (c = 0; c < CHANNELS; c++) mprev[c] = prev;
+            }
+
+            // play microsteps (if any)
+            int c;
+            for (c = 0; c < CHANNELS; c++) {
+                if (seq[c][current_step]) {
+                    if (now >= mprev[c] + (current_usecs_per_step / (mseq[c][current_step] + 1))) {
+                        play_channel(c);
+                        mprev[c] = now;
+                    }
+                }
             }
         }
 
