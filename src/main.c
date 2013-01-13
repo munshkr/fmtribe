@@ -38,7 +38,7 @@
 #define MAX_MICROSTEPS 3
 
 const char* INSTRS_FILE = "INSTRS.DAT";
-const char* FONT_FILE   = "7X13.PBM";
+const char* FONT_FILE   = "8x10.PBM";
 
 const int DEFAULT_BPM = 120;
 

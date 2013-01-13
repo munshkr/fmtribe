@@ -68,7 +68,8 @@ static void expand_raw_buffer(const uint8_t* raw_buf, const unsigned int raw_buf
     for (i = 0, j = 0, x = 0; i < raw_buf_size; i++) {
         uint8_t byte = raw_buf[i];
         for (int k = 0; k < 8; k++, j++, x++) {
-            if (x == pbm_width) {
+            if (x == pbm_width - 1) {
+                buf[j++] = 0;
                 x = 0;
                 break;
             }
