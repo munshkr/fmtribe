@@ -19,8 +19,8 @@
 
 #define KEYBOARD_KEYS_COUNT 12
 
-#define BOARD_SQUARE_SIZE 25
-#define BOARD_SQUARE_PADDING 10
+#define BOARD_SQUARE_SIZE 30
+#define BOARD_SQUARE_PADDING 5
 #define BOARD_ROWS 2
 #define BOARD_COLS 8
 
@@ -389,7 +389,7 @@ void render_board()
                 color = CHANNEL_COLORS[current_channel];
             }
 
-            left += (BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING);
+            left += (BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING - 3);
             z++;
         }
         top += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;
