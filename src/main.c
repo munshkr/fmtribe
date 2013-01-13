@@ -38,6 +38,7 @@
 #define MAX_MICROSTEPS 3
 
 const char* INSTRS_FILE = "INSTRS.DAT";
+const char* FONT_FILE   = "7X13.PBM";
 
 const int DEFAULT_BPM = 120;
 
@@ -86,8 +87,8 @@ extern fm_instr_t tick1;
 
 void load_font()
 {
-    if (read_pbm_file("font.pbm", &pbm)) {
-        printf("font.pbm ~ %ix%i\n", pbm.width, pbm.height);
+    if (read_pbm_file(FONT_FILE, &pbm)) {
+        printf("%s ~ %ix%i\n", FONT_FILE, pbm.width, pbm.height);
 
         bool res = create_font_from_pbm(&pbm, 12, &font);
         free_pbm(&pbm);
