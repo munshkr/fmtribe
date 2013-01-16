@@ -28,11 +28,11 @@
 #define BOARD_HEIGHT ((BOARD_SQUARE_SIZE * BOARD_ROWS) + (BOARD_SQUARE_PADDING * (BOARD_ROWS - 1)))
 #define BOARD_SIZE   (BOARD_WIDTH * BOARD_HEIGHT)
 #define BOARD_LEFT   ((SCREEN_WIDTH  / 2) - (BOARD_WIDTH  / 2))
-#define BOARD_TOP    ((SCREEN_HEIGHT / 2) - (BOARD_HEIGHT / 2))
+#define BOARD_TOP    ((SCREEN_HEIGHT / 2) - (BOARD_HEIGHT / 2) - 30)
 
 #define CHANNEL_SELECTOR_WIDTH  15
 #define CHANNEL_SELECTOR_HEIGHT 6
-#define CHANNEL_SELECTOR_TOP    (BOARD_TOP - CHANNEL_SELECTOR_HEIGHT - 10)
+#define CHANNEL_SELECTOR_TOP    (BOARD_TOP - CHANNEL_SELECTOR_HEIGHT - 5)
 #define CHANNEL_SELECTOR_LEFT   BOARD_LEFT
 
 #define MAX_MICROSTEPS 3
@@ -372,15 +372,16 @@ void render_board()
             // render a filled square if the step is toggled
             const unsigned int cur_step = (i * BOARD_COLS) + j;
             const unsigned int microsteps = mseq[current_channel][cur_step] + 1;
-            const unsigned int width = BOARD_SQUARE_SIZE / microsteps;
+            const unsigned int width = (BOARD_SQUARE_SIZE - 3 * (microsteps - 1)) / microsteps;
 
             for (int k = 0; k < microsteps; k++) {
-                unsigned int right = left + width * (k + 1) - 3;
-                if (microsteps > 1 && k == microsteps - 1) right++;
+                unsigned int r_left = left + (width + 3) * k;
+                unsigned int r_right = left + width * (k + 1) + 3 * k;
+                if (k == microsteps - 1 && microsteps % 2 == 0) r_right++;
                 if (seq[current_channel][cur_step]) {
-                    rect_fill(left + width * k, top, right, top + BOARD_SQUARE_SIZE, color);
+                    rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 } else {
-                    rect(left + width * k, top, right, top + BOARD_SQUARE_SIZE, color);
+                    rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 }
             }
 
@@ -389,7 +390,7 @@ void render_board()
                 color = CHANNEL_COLORS[current_channel];
             }
 
-            left += (BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING - 3);
+            left += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;
             z++;
         }
         top += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;
