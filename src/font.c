@@ -3,7 +3,6 @@
 #include "font.h"
 
 #define TOTAL_CHARS   96
-#define DIV_CEIL(x,y) ((x + y - 1) / y)
 
 bool create_font_from_pbm(const pbm_file_t* pbm, const int chars_per_row, font_t* font)
 {

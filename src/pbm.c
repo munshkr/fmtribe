@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common.h"
 
 #include "pbm.h"
-
-#define DIV_CEIL(x,y) ((x + y - 1) / y)
 
 static void expand_raw_buffer(const uint8_t* raw_buf, const unsigned int raw_buf_size, const unsigned int pbm_width, uint8_t* buf);
 

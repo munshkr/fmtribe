@@ -14,6 +14,7 @@ typedef char* string;
 
 #define sgn(x) (x > 0 ? 1 : (x < 0 ? (-1) : 0))
 #define not(x) (x ? false : true)
+#define DIV_CEIL(x,y) ((x + y - 1) / y)
 
 // Use GCC built-in functionality for variable arguments
 #define va_start(v,l) __builtin_va_start(v,l)
