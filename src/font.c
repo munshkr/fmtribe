@@ -7,7 +7,7 @@
 bool create_font_from_pbm(const pbm_file_t* pbm, const int chars_per_row, font_t* font)
 {
     unsigned int cols = chars_per_row;
-    unsigned int rows = DIV_CEIL(TOTAL_CHARS, chars_per_row);
+    unsigned int rows = DivCeil(TOTAL_CHARS, chars_per_row);
 
     font->width  = pbm->width / cols;
     font->height = pbm->height / rows;

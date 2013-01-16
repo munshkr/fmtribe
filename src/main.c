@@ -197,7 +197,7 @@ void play_step()
 
 void toggle_metronome()
 {
-    metronome_on = not(metronome_on);
+    metronome_on = Not(metronome_on);
     if (metronome_on) {
         //printf("Metronome enabled ");
     } else {
@@ -254,7 +254,7 @@ void select_next_channel() {
 }
 
 void switch_instrument_editor() {
-    instrument_editor_enabled = not(instrument_editor_enabled);
+    instrument_editor_enabled = Not(instrument_editor_enabled);
     dirty = true;
 }
 
@@ -627,7 +627,7 @@ int main(int argc, char* argv[])
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                        seq[current_channel][i] = not(seq[current_channel][i]);
+                        seq[current_channel][i] = Not(seq[current_channel][i]);
                         dirty = true;
                     }
                 }

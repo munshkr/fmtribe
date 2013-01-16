@@ -25,7 +25,7 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
     fscanf(f, "%i %i\n", &(pbm->width), &(pbm->height));
 
     // allocate enough memory for reading raw content
-    unsigned int raw_buf_size = DIV_CEIL(pbm->width, 8) * pbm->height;
+    unsigned int raw_buf_size = DivCeil(pbm->width, 8) * pbm->height;
     uint8_t* raw_buf = malloc(raw_buf_size);
     if (!raw_buf) {
         fclose(f);

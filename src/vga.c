@@ -58,8 +58,8 @@ void line(int x1, int y1, int x2, int y2, uint8_t color)
     dy = y2 - y1;
     dxabs = abs(dx);
     dyabs = abs(dy);
-    sdx = sgn(dx);
-    sdy = sgn(dy);
+    sdx = Sgn(dx);
+    sdy = Sgn(dy);
     x = dyabs >> 1;
     y = dxabs >> 1;
     px = x1;
