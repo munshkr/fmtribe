@@ -262,6 +262,20 @@ void select_next_channel() {
     }
 }
 
+void select_prev_frame() {
+    if (current_selected_frame > 0) {
+        current_selected_frame--;
+        dirty = true;
+    }
+}
+
+void select_next_frame() {
+    if (current_selected_frame < FRAMES - 1) {
+        current_selected_frame++;
+        dirty = true;
+    }
+}
+
 void switch_instrument_editor() {
     instrument_editor_enabled = Not(instrument_editor_enabled);
     dirty = true;
@@ -621,11 +635,17 @@ int main(int argc, char* argv[])
                 }
             } else {
                 switch (key) {
-                  case K_Left:
+                  case '<':
                     select_prev_channel();
                     break;
-                  case K_Right:
+                  case '>':
                     select_next_channel();
+                    break;
+                  case K_Left:
+                    select_prev_frame();
+                    break;
+                  case K_Right:
+                    select_next_frame();
                     break;
                   case K_Delete:
                     clear_seq(current_selected_channel);
