@@ -279,6 +279,7 @@ void select_next_channel() {
 void select_prev_frame() {
     if (current_selected_frame > 0) {
         current_selected_frame--;
+        follow = false;
         dirty = true;
     }
 }
@@ -286,6 +287,7 @@ void select_prev_frame() {
 void select_next_frame() {
     if (current_selected_frame < FRAMES - 1) {
         current_selected_frame++;
+        follow = false;
         dirty = true;
     }
 }
