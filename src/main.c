@@ -15,6 +15,7 @@
 
 #define CHANNELS        8
 #define STEPS           16
+#define FRAMES          4
 #define METRONOME_CH    CHANNELS
 
 #define KEYBOARD_KEYS_COUNT 12
@@ -63,6 +64,7 @@ const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
 int      current_channel = 0;
+int      current_frame = 0;
 int      current_step = 0;
 uclock_t prev_tap = NULL;
 
@@ -74,8 +76,9 @@ bool metronome_on = false;
 bool instrument_editor_enabled = false;
 
 instr_t      instrs[CHANNELS] = {};
-bool         seq[CHANNELS][STEPS] = {};
-unsigned int mseq[CHANNELS][STEPS] = {};
+// TODO mseq and seq should be merged (1 microstep == 1 step...)
+bool         seq[CHANNELS][FRAMES][STEPS] = {};
+unsigned int mseq[CHANNELS][FRAMES][STEPS] = {};
 
 int current_instr_field = 0;
 
@@ -189,7 +192,7 @@ void play_step()
     }
 
     for (int c = 0; c < CHANNELS; c++) {
-        if (seq[c][current_step]) {
+        if (seq[c][current_frame][current_step]) {
             play_channel(c);
         }
     }
@@ -228,14 +231,14 @@ void tap_tempo()
 
 void clear_seq(int channel)
 {
-    memset(seq[channel], 0, STEPS * sizeof(bool));
-    memset(mseq[channel], 0, STEPS * sizeof(unsigned int));
+    memset(seq[channel][current_frame], 0, STEPS * sizeof(bool));
+    memset(mseq[channel][current_frame], 0, STEPS * sizeof(unsigned int));
     dirty = true;
 }
 
 void clear_seq_all()
 {
-    memset(seq, 0, CHANNELS * STEPS * sizeof(bool));
+    memset(seq, 0, CHANNELS * FRAMES * STEPS * sizeof(bool));
     dirty = true;
 }
 
@@ -371,14 +374,14 @@ void render_board()
 
             // render a filled square if the step is toggled
             const unsigned int cur_step = (i * BOARD_COLS) + j;
-            const unsigned int microsteps = mseq[current_channel][cur_step] + 1;
+            const unsigned int microsteps = mseq[current_channel][current_frame][cur_step] + 1;
             const unsigned int width = (BOARD_SQUARE_SIZE - 3 * (microsteps - 1)) / microsteps;
 
             for (int k = 0; k < microsteps; k++) {
                 unsigned int r_left = left + (width + 3) * k;
                 unsigned int r_right = left + width * (k + 1) + 3 * k;
                 if (k == microsteps - 1 && microsteps % 2 == 0) r_right++;
-                if (seq[current_channel][cur_step]) {
+                if (seq[current_channel][current_frame][cur_step]) {
                     rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 } else {
                     rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
@@ -423,7 +426,7 @@ void render_hits()
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
     for (int i = 0; i < CHANNELS; i++) {
-        if (seq[i][current_step]) {
+        if (seq[i][current_frame][current_step]) {
             rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
         left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
@@ -627,15 +630,15 @@ int main(int argc, char* argv[])
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                        seq[current_channel][i] = Not(seq[current_channel][i]);
+                        seq[current_channel][current_frame][i] = Not(seq[current_channel][current_frame][i]);
                         dirty = true;
                     }
                 }
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
-                        seq[current_channel][i] = true;
-                        mseq[current_channel][i] = (mseq[current_channel][i] + 1) % MAX_MICROSTEPS;
+                        seq[current_channel][current_frame][i] = true;
+                        mseq[current_channel][current_frame][i] = (mseq[current_channel][current_frame][i] + 1) % MAX_MICROSTEPS;
                         dirty = true;
                     }
                 }
@@ -669,8 +672,8 @@ int main(int argc, char* argv[])
 
             // play microsteps (if any)
             for (int c = 0; c < CHANNELS; c++) {
-                if (seq[c][current_step]) {
-                    if (now >= mprev[c] + (current_usecs_per_step / (mseq[c][current_step] + 1))) {
+                if (seq[c][current_frame][current_step]) {
+                    if (now >= mprev[c] + (current_usecs_per_step / (mseq[c][current_frame][current_step] + 1))) {
                         play_channel(c);
                         mprev[c] = now;
                     }
