@@ -63,6 +63,7 @@ const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 
 int current_selected_channel = 0;
 int current_selected_frame = 0;
+bool follow = true;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -165,6 +166,7 @@ bool save_instruments()
 void tick()
 {
     current_step++;
+
     if (current_step == STEPS) {
         current_step = 0;
         current_frame++;
@@ -173,9 +175,15 @@ void tick()
             stop_after_current_bar = false;
         }
     }
+
     if (current_frame == FRAMES) {
         current_frame = 0;
     }
+
+    if (follow) {
+        current_selected_frame = current_frame;
+    }
+
     dirty = true;
 }
 
@@ -212,6 +220,12 @@ void toggle_metronome()
     } else {
         //printf("Metronome disabled ");
     }
+}
+
+void toggle_follow()
+{
+    follow = Not(follow);
+    dirty = true;
 }
 
 void set_bpm(const float value)
@@ -526,6 +540,9 @@ void render()
 
     //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
     render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
+    if (follow) {
+      render_strf(&font, 305, 185, 7, "F");
+    }
 
     update();
 }
@@ -594,6 +611,9 @@ int main(int argc, char* argv[])
                 break;
               case K_F9:
                 tap_tempo();
+                break;
+              case K_Shift_F10:
+                toggle_follow();
                 break;
               case K_Tab:
                 switch_instrument_editor();
