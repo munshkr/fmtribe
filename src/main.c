@@ -658,15 +658,17 @@ int main(int argc, char* argv[])
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                        seq[current_selected_channel][current_frame][i] = Not(seq[current_selected_channel][current_frame][i]);
+                        seq[current_selected_channel][current_selected_frame][i] =
+                          Not(seq[current_selected_channel][current_selected_frame][i]);
                         dirty = true;
                     }
                 }
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
-                        seq[current_selected_channel][current_frame][i] = true;
-                        mseq[current_selected_channel][current_frame][i] = (mseq[current_selected_channel][current_frame][i] + 1) % MAX_MICROSTEPS;
+                        seq[current_selected_channel][current_selected_frame][i] = true;
+                        mseq[current_selected_channel][current_selected_frame][i] =
+                          (mseq[current_selected_channel][current_selected_frame][i] + 1) % MAX_MICROSTEPS;
                         dirty = true;
                     }
                 }
