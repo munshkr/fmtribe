@@ -251,8 +251,8 @@ void tap_tempo()
 
 void clear_seq(int channel)
 {
-    memset(seq[channel][current_frame], 0, STEPS * sizeof(bool));
-    memset(mseq[channel][current_frame], 0, STEPS * sizeof(unsigned int));
+    memset(seq[channel][current_selected_frame], 0, STEPS * sizeof(bool));
+    memset(mseq[channel][current_selected_frame], 0, STEPS * sizeof(unsigned int));
     dirty = true;
 }
 
