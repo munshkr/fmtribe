@@ -61,7 +61,8 @@ const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x18, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
 
 const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 
-int      current_selected_channel = 0;
+int current_selected_channel = 0;
+int current_selected_frame = 0;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -166,10 +167,14 @@ void tick()
     current_step++;
     if (current_step == STEPS) {
         current_step = 0;
+        current_frame++;
         if (stop_after_current_bar) {
             playing = false;
             stop_after_current_bar = false;
         }
+    }
+    if (current_frame == FRAMES) {
+        current_frame = 0;
     }
     dirty = true;
 }
@@ -369,20 +374,20 @@ void render_board()
         for (int j = 0; j < BOARD_COLS; j++) {
             // if it is about to render the square for the current step,
             // use a different color.
-            if (z == current_step) {
+            if (current_frame == current_selected_frame && z == current_step) {
                 color = CHANNEL_COLORS_B[current_selected_channel];
             }
 
             // render a filled square if the step is toggled
             const unsigned int cur_step = (i * BOARD_COLS) + j;
-            const unsigned int microsteps = mseq[current_selected_channel][current_frame][cur_step] + 1;
+            const unsigned int microsteps = mseq[current_selected_channel][current_selected_frame][cur_step] + 1;
             const unsigned int width = (BOARD_SQUARE_SIZE - 3 * (microsteps - 1)) / microsteps;
 
             for (int k = 0; k < microsteps; k++) {
                 unsigned int r_left = left + (width + 3) * k;
                 unsigned int r_right = left + width * (k + 1) + 3 * k;
                 if (k == microsteps - 1 && microsteps % 2 == 0) r_right++;
-                if (seq[current_selected_channel][current_frame][cur_step]) {
+                if (seq[current_selected_channel][current_selected_frame][cur_step]) {
                     rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 } else {
                     rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
@@ -390,7 +395,7 @@ void render_board()
             }
 
             // restore color
-            if (z == current_step) {
+            if (current_frame == current_selected_frame && z == current_step) {
                 color = CHANNEL_COLORS[current_selected_channel];
             }
 
@@ -506,6 +511,7 @@ void render()
     }
 
     //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
+    render_strf(&font, 6, 5, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
 
     update();
 }
