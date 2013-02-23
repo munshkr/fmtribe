@@ -583,6 +583,7 @@ int main(int argc, char* argv[])
                         stop_after_current_bar = false;
                         pause_after_current_step = true;
                         current_step = 0;
+                        current_frame = 0;
                     } else {
                         stop_after_current_bar = true;
                     }
