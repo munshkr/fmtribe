@@ -4,7 +4,7 @@ OPL3 synth/drum machine/thingie focused on live jamming for DOS.
 
 Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 
-![Step Sequencer](http://i.imgur.com/eHASWKi.png)&nbsp;![Instrument Editor](http://i.imgur.com/okBby.png)
+![Step Sequencer](http://i.imgur.com/8Sllomo.png)&nbsp;![Instrument Editor](http://i.imgur.com/okBby.png)
 
 ## Usage ##
 
