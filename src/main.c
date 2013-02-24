@@ -420,8 +420,10 @@ void render_pattern_map()
     // cursor
     unsigned int cursor_left = (current_frame * MAP__FRAME_WIDTH) + (current_step * MAP__STEP_SQUARE_SIZE);
     rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE - 1, SCREEN_HEIGHT - 1, MAP__COLOR);
-    // highlight current step in frame block
+    // highlight frame block slice
     rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT, MAP__HI_COLOR);
+    // highlight frame underscore slice
+    rect_fill(cursor_left, MAP__TOP + MAP__HEIGHT + 5, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT + 7, MAP__HI_COLOR);
 
     // steps
     unsigned int step_top = MAP__TOP;
