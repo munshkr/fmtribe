@@ -270,17 +270,21 @@ void clear_seq_all()
 }
 
 void select_prev_channel() {
-    if (current_selected_channel > 0) {
+    if (current_selected_channel == 0) {
+        current_selected_channel = CHANNELS - 1;
+    } else {
         current_selected_channel--;
-        dirty = true;
     }
+    dirty = true;
 }
 
 void select_next_channel() {
-    if (current_selected_channel < CHANNELS - 1) {
+    if (current_selected_channel == CHANNELS - 1) {
+        current_selected_channel = 0;
+    } else {
         current_selected_channel++;
-        dirty = true;
     }
+    dirty = true;
 }
 
 void select_prev_frame() {
