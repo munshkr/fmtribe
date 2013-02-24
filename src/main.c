@@ -605,6 +605,9 @@ void render()
         render_hits();
         render_channel_selector();
         render_board();
+        if (follow) {
+          render_strf(&font, 300, 185, 7, "f");
+        }
     }
 
     //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
@@ -681,9 +684,6 @@ int main(int argc, char* argv[])
               case K_F9:
                 tap_tempo();
                 break;
-              case K_Shift_F10:
-                toggle_follow();
-                break;
               case K_Tab:
                 switch_instrument_editor();
                 break;
@@ -742,6 +742,9 @@ int main(int argc, char* argv[])
                     break;
                   case K_Control_Delete:
                     clear_seq_all();
+                    break;
+                  case K_F10:
+                    toggle_follow();
                     break;
                 }
 
