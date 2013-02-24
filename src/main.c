@@ -675,6 +675,9 @@ int main(int argc, char* argv[])
                         pause_after_current_step = true;
                         current_step = 0;
                         current_frame = 0;
+                        if (follow) {
+                            current_selected_frame = current_frame;
+                        }
                     } else {
                         stop_after_current_bar = true;
                     }
