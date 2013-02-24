@@ -608,7 +608,7 @@ void render()
     }
 
     //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
-    render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
+    //render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
     if (follow) {
       render_strf(&font, 305, 185, 7, "F");
     }
