@@ -64,6 +64,7 @@ const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 int current_selected_channel = 0;
 int current_selected_frame = 0;
 bool follow = true;
+bool apply_all_frames = true;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -225,6 +226,12 @@ void toggle_metronome()
 void toggle_follow()
 {
     follow = Not(follow);
+    dirty = true;
+}
+
+void toggle_apply_all_frames()
+{
+    apply_all_frames = Not(apply_all_frames);
     dirty = true;
 }
 
@@ -608,13 +615,13 @@ void render()
         if (follow) {
           render_strf(&font, 300, 185, 7, "f");
         }
+        if (apply_all_frames) {
+          render_strf(&font, 308, 185, 7, "*");
+        }
     }
 
     //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
     //render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
-    if (follow) {
-      render_strf(&font, 305, 185, 7, "F");
-    }
 
     update();
 }
@@ -737,6 +744,10 @@ int main(int argc, char* argv[])
                   case K_Right:
                     select_next_frame();
                     break;
+                  case 'm':
+                  case 'M':
+                    toggle_apply_all_frames();
+                    break;
                   case K_Delete:
                     clear_seq(current_selected_channel);
                     break;
@@ -750,17 +761,32 @@ int main(int argc, char* argv[])
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                        seq[current_selected_channel][current_selected_frame][i] =
-                          Not(seq[current_selected_channel][current_selected_frame][i]);
+                        if (apply_all_frames) {
+                            for (int j = 0; j < FRAMES; j++) {
+                                seq[current_selected_channel][j][i] =
+                                  Not(seq[current_selected_channel][j][i]);
+                            }
+                        } else {
+                            seq[current_selected_channel][current_selected_frame][i] =
+                              Not(seq[current_selected_channel][current_selected_frame][i]);
+                        }
                         dirty = true;
                     }
                 }
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
-                        seq[current_selected_channel][current_selected_frame][i] = true;
-                        mseq[current_selected_channel][current_selected_frame][i] =
-                          (mseq[current_selected_channel][current_selected_frame][i] + 1) % MAX_MICROSTEPS;
+                        if (apply_all_frames) {
+                            for (int j = 0; j < FRAMES; j++) {
+                                seq[current_selected_channel][j][i] = true;
+                                mseq[current_selected_channel][j][i] =
+                                  (mseq[current_selected_channel][j][i] + 1) % MAX_MICROSTEPS;
+                            }
+                        } else {
+                            seq[current_selected_channel][current_selected_frame][i] = true;
+                            mseq[current_selected_channel][current_selected_frame][i] =
+                              (mseq[current_selected_channel][current_selected_frame][i] + 1) % MAX_MICROSTEPS;
+                        }
                         dirty = true;
                     }
                 }
