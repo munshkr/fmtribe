@@ -422,7 +422,7 @@ void instrument_editor_change(const action_t action) {
 #define MAP__HEIGHT             (CHANNELS * MAP__STEP_SQUARE_SIZE)
 #define MAP__FRAME_WIDTH        (STEPS * MAP__STEP_SQUARE_SIZE)
 #define MAP__COLOR              0x12
-#define MAP__HI_COLOR           0x14
+#define MAP__HI_COLOR           0x13
 
 void render_pattern_map()
 {
@@ -436,13 +436,30 @@ void render_pattern_map()
               MAP__FRAME_WIDTH * (current_frame + 1) - 1, MAP__TOP + MAP__HEIGHT + 7,
               MAP__COLOR);
 
-    // cursor
+    // step cursor
     unsigned int cursor_left = (current_frame * MAP__FRAME_WIDTH) + (current_step * MAP__STEP_SQUARE_SIZE);
     rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE - 1, SCREEN_HEIGHT - 1, MAP__COLOR);
     // highlight frame block slice
-    rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__HI_COLOR);
+    if (current_selected_frame == current_frame) {
+        rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__HI_COLOR);
+    } else {
+        rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__COLOR);
+    }
     // highlight frame underscore slice
     rect_fill(cursor_left, MAP__TOP + MAP__HEIGHT + 5, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT + 7, MAP__HI_COLOR);
+
+    // channel cursor
+    unsigned int cursor_top = MAP__TOP + (current_selected_channel * MAP__STEP_SQUARE_SIZE);
+    rect_fill(0, cursor_top, SCREEN_WIDTH - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1, MAP__COLOR);
+    // highlight frame block slice
+    rect_fill(MAP__FRAME_WIDTH * current_selected_frame, cursor_top,
+              MAP__FRAME_WIDTH * (current_selected_frame + 1) - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1,
+              MAP__HI_COLOR);
+
+    // highlight intersection of step cursor and channel cursor
+    rect_fill(cursor_left, cursor_top,
+              cursor_left + MAP__STEP_SQUARE_SIZE - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1,
+              MAP__HI_COLOR);
 
     // steps
     unsigned int step_top = MAP__TOP;
