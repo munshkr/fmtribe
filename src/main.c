@@ -728,10 +728,10 @@ int main(int argc, char* argv[])
                 }
             } else {
                 switch (key) {
-                  case '<':
+                  case K_Up:
                     select_prev_channel();
                     break;
-                  case '>':
+                  case K_Down:
                     select_next_channel();
                     break;
                   case K_Left:

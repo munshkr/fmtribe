@@ -16,8 +16,8 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 * `F10`: Toggle "follow cursor"
 * `Left`: Move to previous frame
 * `Right`: Move to next frame
-* `<`: Move left in the channel selector
-* `>`: Move right in the channel selector
+* `Up`: Move to previous channel
+* `Down`: Move to next channel
 * `Del`: Clear pattern for current channel
 * `Ctrl` + `Del`: Clear pattern for all channels
 * `M`: Toggle "apply step changes to all frames"
