@@ -695,6 +695,7 @@ int main(int argc, char* argv[])
     set_mode(VIDEO_MODE);
 
     bool is_running = true;
+    bool record_step = false;
     uclock_t prev = uclock();
     uclock_t mprev[CHANNELS];
     for (int c = 0; c < CHANNELS; c++) mprev[c] = prev;
@@ -855,15 +856,7 @@ int main(int argc, char* argv[])
                         play_channel(i);
                     }
                     if (playing && recording) {
-                        if (apply_all_frames) {
-                            for (int j = 0; j < FRAMES; j++) {
-                                seq[current_selected_channel][j][current_step] =
-                                  Not(seq[current_selected_channel][j][current_step]);
-                            }
-                        } else {
-                            seq[current_selected_channel][current_selected_frame][current_step] =
-                              Not(seq[current_selected_channel][current_selected_frame][current_step]);
-                        }
+                        record_step = true;
                     }
                     dirty = true;
                     break;
@@ -873,6 +866,27 @@ int main(int argc, char* argv[])
 
         if (playing) {
             uclock_t now = uclock();
+
+            if (record_step) {
+                record_step = false;
+
+                // if it is nearer the next step than the current, record step
+                // on the next step (quantization)
+                unsigned int step = current_step;
+                if (now - prev > current_usecs_per_step / 2.0) {
+                    step++;
+                }
+
+                if (apply_all_frames) {
+                    for (int j = 0; j < FRAMES; j++) {
+                        seq[current_selected_channel][j][step] =
+                            Not(seq[current_selected_channel][j][step]);
+                    }
+                } else {
+                    seq[current_selected_channel][current_selected_frame][step] =
+                        Not(seq[current_selected_channel][current_selected_frame][step]);
+                }
+            }
 
             // play step
             if (now >= prev + current_usecs_per_step) {
