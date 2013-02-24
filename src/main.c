@@ -65,6 +65,7 @@ int current_selected_channel = 0;
 int current_selected_frame = 0;
 bool follow = true;
 bool apply_all_frames = true;
+bool play_instruments = false;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -227,6 +228,12 @@ void toggle_follow()
 void toggle_apply_all_frames()
 {
     apply_all_frames = Not(apply_all_frames);
+    dirty = true;
+}
+
+void toggle_play_instruments()
+{
+    play_instruments = Not(play_instruments);
     dirty = true;
 }
 
@@ -637,6 +644,9 @@ void render()
         render_hits();
         render_channel_selector();
         render_board();
+        if (play_instruments) {
+          render_strf(&font, 292, 185, 7, "p");
+        }
         if (follow) {
           render_strf(&font, 300, 185, 7, "f");
         }
@@ -776,6 +786,10 @@ int main(int argc, char* argv[])
                   case 'M':
                     toggle_apply_all_frames();
                     break;
+                  case 'p':
+                  case 'P':
+                    toggle_play_instruments();
+                    break;
                   case K_Delete:
                     clear_seq(current_selected_channel);
                     break;
@@ -823,6 +837,9 @@ int main(int argc, char* argv[])
             for (int i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_KEYS[i]) {
                     current_selected_channel = i;
+                    if (play_instruments) {
+                        play_channel(i);
+                    }
                     dirty = true;
                     break;
                 }

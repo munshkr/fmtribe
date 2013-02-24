@@ -20,8 +20,9 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 * `Down`: Move to next channel
 * `Del`: Clear pattern for current channel
 * `Ctrl` + `Del`: Clear pattern for all channels
-* `M`: Toggle "apply step changes to all frames"
 * `Tab`: Switch instrument editor for the current channel
+* `M`: Toggle "apply step changes to all frames"
+* `P`: Toggle "play channel instrument"
 
 ### Step Sequencer ###
 
