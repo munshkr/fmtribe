@@ -261,6 +261,7 @@ void clear_seq(int channel)
 void clear_seq_all()
 {
     memset(seq, 0, CHANNELS * FRAMES * STEPS * sizeof(bool));
+    memset(mseq, 0, CHANNELS * FRAMES * STEPS * sizeof(unsigned int));
     dirty = true;
 }
 
