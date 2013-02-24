@@ -414,10 +414,6 @@ void instrument_editor_change(const action_t action) {
 
 void render_pattern_map()
 {
-    // horizontal lines
-    line(0, MAP__TOP, SCREEN_WIDTH - 1, MAP__TOP, MAP__COLOR);
-    line(0, MAP__TOP + MAP__HEIGHT, SCREEN_WIDTH - 1, MAP__TOP + MAP__HEIGHT, MAP__COLOR);
-
     // highlight current frame block
     rect_fill(MAP__FRAME_WIDTH * current_selected_frame, MAP__TOP,
               MAP__FRAME_WIDTH * (current_selected_frame + 1) - 1, MAP__TOP + MAP__HEIGHT,
