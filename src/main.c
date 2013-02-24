@@ -66,6 +66,7 @@ int current_selected_frame = 0;
 bool follow = true;
 bool apply_all_frames = true;
 bool play_instruments = false;
+bool record = false;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -234,6 +235,12 @@ void toggle_apply_all_frames()
 void toggle_play_instruments()
 {
     play_instruments = Not(play_instruments);
+    dirty = true;
+}
+
+void toggle_record()
+{
+    record = Not(record);
     dirty = true;
 }
 
@@ -625,7 +632,7 @@ void render_instrument_editor()
     render_strf(&font, instr_fields_pos[8][0], instr_fields_pos[8][1], 7, "%X", fm->m__sustain_release & 0xf);
     render_strf(&font, instr_fields_pos[9][0], instr_fields_pos[9][1], 7, "%X", fm_get_modulator_waveform_type(fm));
 
-    // TODO draw "current field" rectangle
+    // draw "current field" rectangle
     rect(instr_fields_pos[current_instr_field][0] - 4,
          instr_fields_pos[current_instr_field][1] - 2,
          instr_fields_pos[current_instr_field][0] + 10,
@@ -644,6 +651,9 @@ void render()
         render_hits();
         render_channel_selector();
         render_board();
+        if (record) {
+          render_strf(&font, 284, 185, 7, "R");
+        }
         if (play_instruments) {
           render_strf(&font, 292, 185, 7, "p");
         }
@@ -790,6 +800,10 @@ int main(int argc, char* argv[])
                   case 'P':
                     toggle_play_instruments();
                     break;
+                  case 'z':
+                  case 'Z':
+                    toggle_record();
+                    break;
                   case K_Delete:
                     clear_seq(current_selected_channel);
                     break;
@@ -839,6 +853,17 @@ int main(int argc, char* argv[])
                     current_selected_channel = i;
                     if (play_instruments) {
                         play_channel(i);
+                    }
+                    if (playing && record) {
+                        if (apply_all_frames) {
+                            for (int j = 0; j < FRAMES; j++) {
+                                seq[current_selected_channel][j][current_step] =
+                                  Not(seq[current_selected_channel][j][current_step]);
+                            }
+                        } else {
+                            seq[current_selected_channel][current_selected_frame][current_step] =
+                              Not(seq[current_selected_channel][current_selected_frame][current_step]);
+                        }
                     }
                     dirty = true;
                     break;

@@ -23,6 +23,7 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 * `Tab`: Switch instrument editor for the current channel
 * `M`: Toggle "apply step changes to all frames"
 * `P`: Toggle "play channel instrument"
+* `Z`: Toggle "record steps"
 
 ### Step Sequencer ###
 
