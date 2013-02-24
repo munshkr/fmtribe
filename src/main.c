@@ -216,11 +216,6 @@ void play_step()
 void toggle_metronome()
 {
     metronome_on = Not(metronome_on);
-    if (metronome_on) {
-        //printf("Metronome enabled ");
-    } else {
-        //printf("Metronome disabled ");
-    }
 }
 
 void toggle_follow()
