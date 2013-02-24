@@ -66,7 +66,7 @@ int current_selected_frame = 0;
 bool follow = true;
 bool apply_all_frames = true;
 bool play_instruments = false;
-bool record = false;
+bool recording = false;
 
 uclock_t current_usecs_per_step = 0;
 float    current_bpm;
@@ -238,9 +238,9 @@ void toggle_play_instruments()
     dirty = true;
 }
 
-void toggle_record()
+void toggle_recording()
 {
-    record = Not(record);
+    recording = Not(recording);
     dirty = true;
 }
 
@@ -651,7 +651,7 @@ void render()
         render_hits();
         render_channel_selector();
         render_board();
-        if (record) {
+        if (recording) {
           render_strf(&font, 284, 185, 7, "R");
         }
         if (play_instruments) {
@@ -802,7 +802,7 @@ int main(int argc, char* argv[])
                     break;
                   case 'z':
                   case 'Z':
-                    toggle_record();
+                    toggle_recording();
                     break;
                   case K_Delete:
                     clear_seq(current_selected_channel);
@@ -854,7 +854,7 @@ int main(int argc, char* argv[])
                     if (play_instruments) {
                         play_channel(i);
                     }
-                    if (playing && record) {
+                    if (playing && recording) {
                         if (apply_all_frames) {
                             for (int j = 0; j < FRAMES; j++) {
                                 seq[current_selected_channel][j][current_step] =
