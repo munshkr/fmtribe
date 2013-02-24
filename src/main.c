@@ -74,7 +74,7 @@ uclock_t prev_tap = NULL;
 
 bool dirty = true;
 bool pause_after_current_step = false;
-bool stop_after_current_bar = false;
+bool stop_after_pattern_ends = false;
 bool playing = false;
 bool metronome_on = false;
 bool instrument_editor_enabled = false;
@@ -171,14 +171,14 @@ void tick()
     if (current_step == STEPS) {
         current_step = 0;
         current_frame++;
-        if (stop_after_current_bar) {
-            playing = false;
-            stop_after_current_bar = false;
-        }
     }
 
     if (current_frame == FRAMES) {
         current_frame = 0;
+        if (stop_after_pattern_ends) {
+            playing = false;
+            stop_after_pattern_ends = false;
+        }
     }
 
     if (follow) {
@@ -670,8 +670,8 @@ int main(int argc, char* argv[])
                 if (playing) {
                     // on second F7, stop immediately, by pausing after current
                     // step and resetting current_step.
-                    if (stop_after_current_bar) {
-                        stop_after_current_bar = false;
+                    if (stop_after_pattern_ends) {
+                        stop_after_pattern_ends = false;
                         pause_after_current_step = true;
                         current_step = 0;
                         current_frame = 0;
@@ -679,7 +679,7 @@ int main(int argc, char* argv[])
                             current_selected_frame = current_frame;
                         }
                     } else {
-                        stop_after_current_bar = true;
+                        stop_after_pattern_ends = true;
                     }
                 }
                 break;
