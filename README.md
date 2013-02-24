@@ -13,8 +13,11 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 * `F7`: Stop after bar (2 times, stop immeadiately)
 * `F9`: Tap tempo
 * `Shift` + `F9`: Toggle metronome
-* `Left`: Move left in the channel selector
-* `Right`: Move right in the channel selector
+* `Shift` + `F10`: Toggle "follow cursor"
+* `Left`: Move to previous frame
+* `Right`: Move to next frame
+* `<`: Move left in the channel selector
+* `>`: Move right in the channel selector
 * `Del`: Clear pattern for current channel
 * `Ctrl` + `Del`: Clear pattern for all channels
 * `Tab`: Switch instrument editor for the current channel
