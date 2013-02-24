@@ -879,12 +879,10 @@ int main(int argc, char* argv[])
 
                 if (apply_all_frames) {
                     for (int j = 0; j < FRAMES; j++) {
-                        seq[current_selected_channel][j][step] =
-                            Not(seq[current_selected_channel][j][step]);
+                        seq[current_selected_channel][j][step] = true;
                     }
                 } else {
-                    seq[current_selected_channel][current_selected_frame][step] =
-                        Not(seq[current_selected_channel][current_selected_frame][step]);
+                    seq[current_selected_channel][current_selected_frame][step] = true;
                 }
             }
 
