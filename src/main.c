@@ -409,19 +409,19 @@ void render_pattern_map()
 
     // highlight current frame block
     rect_fill(MAP__FRAME_WIDTH * current_selected_frame, MAP__TOP,
-              MAP__FRAME_WIDTH * (current_selected_frame + 1), MAP__TOP + MAP__HEIGHT,
+              MAP__FRAME_WIDTH * (current_selected_frame + 1) - 1, MAP__TOP + MAP__HEIGHT,
               MAP__COLOR);
 
     // highlight current frame with an underscore
     rect_fill(MAP__FRAME_WIDTH * current_frame, MAP__TOP + MAP__HEIGHT + 5,
-              MAP__FRAME_WIDTH * (current_frame + 1), MAP__TOP + MAP__HEIGHT + 7,
+              MAP__FRAME_WIDTH * (current_frame + 1) - 1, MAP__TOP + MAP__HEIGHT + 7,
               MAP__COLOR);
 
     // cursor
     unsigned int cursor_left = (current_frame * MAP__FRAME_WIDTH) + (current_step * MAP__STEP_SQUARE_SIZE);
-    rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE, SCREEN_HEIGHT - 1, MAP__COLOR);
+    rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE - 1, SCREEN_HEIGHT - 1, MAP__COLOR);
     // highlight current step in frame block
-    rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE, MAP__TOP + MAP__HEIGHT, MAP__HI_COLOR);
+    rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT, MAP__HI_COLOR);
 
     // steps
     unsigned int step_top = MAP__TOP;
@@ -438,8 +438,8 @@ void render_pattern_map()
 
                     rect_fill(step_left,
                               step_top,
-                              step_left + MAP__STEP_SQUARE_SIZE,
-                              step_top + MAP__STEP_SQUARE_SIZE,
+                              step_left + MAP__STEP_SQUARE_SIZE - 1,
+                              step_top + MAP__STEP_SQUARE_SIZE - 1,
                               color);
 
                     // restore color
