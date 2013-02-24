@@ -394,6 +394,66 @@ void instrument_editor_change(const action_t action) {
     }
 }
 
+#define MAP__STEP_SQUARE_SIZE   5
+#define MAP__TOP                120
+#define MAP__HEIGHT             (CHANNELS * MAP__STEP_SQUARE_SIZE)
+#define MAP__FRAME_WIDTH        (STEPS * MAP__STEP_SQUARE_SIZE)
+#define MAP__COLOR              0x12
+#define MAP__HI_COLOR           0x14
+
+void render_pattern_map()
+{
+    // horizontal lines
+    line(0, MAP__TOP, SCREEN_WIDTH - 1, MAP__TOP, MAP__COLOR);
+    line(0, MAP__TOP + MAP__HEIGHT, SCREEN_WIDTH - 1, MAP__TOP + MAP__HEIGHT, MAP__COLOR);
+
+    // highlight current frame block
+    rect_fill(MAP__FRAME_WIDTH * current_selected_frame, MAP__TOP,
+              MAP__FRAME_WIDTH * (current_selected_frame + 1), MAP__TOP + MAP__HEIGHT,
+              MAP__COLOR);
+
+    // highlight current frame with an underscore
+    rect_fill(MAP__FRAME_WIDTH * current_frame, MAP__TOP + MAP__HEIGHT + 5,
+              MAP__FRAME_WIDTH * (current_frame + 1), MAP__TOP + MAP__HEIGHT + 7,
+              MAP__COLOR);
+
+    // cursor
+    unsigned int cursor_left = (current_frame * MAP__FRAME_WIDTH) + (current_step * MAP__STEP_SQUARE_SIZE);
+    rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE, SCREEN_HEIGHT - 1, MAP__COLOR);
+    // highlight current step in frame block
+    rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE, MAP__TOP + MAP__HEIGHT, MAP__HI_COLOR);
+
+    // steps
+    unsigned int step_top = MAP__TOP;
+    for (int i = 0; i < CHANNELS; i++) {
+        unsigned int color = CHANNEL_COLORS[i];
+        unsigned int step_left = 0;
+        for (int j = 0; j < FRAMES; j++) {
+            for (int k = 0; k < STEPS; k++) {
+                if (seq[i][j][k]) {
+                    // use highlighted color if cursor is over current frame+step
+                    if (j == current_frame && k == current_step) {
+                        color = CHANNEL_COLORS_B[i];
+                    }
+
+                    rect_fill(step_left,
+                              step_top,
+                              step_left + MAP__STEP_SQUARE_SIZE,
+                              step_top + MAP__STEP_SQUARE_SIZE,
+                              color);
+
+                    // restore color
+                    if (j == current_frame && k == current_step) {
+                        color = CHANNEL_COLORS[i];
+                    }
+                }
+                step_left += MAP__STEP_SQUARE_SIZE;
+            }
+        }
+        step_top += MAP__STEP_SQUARE_SIZE;
+    }
+}
+
 void render_board()
 {
     int color = CHANNEL_COLORS[current_selected_channel];
@@ -535,6 +595,7 @@ void render()
     if (instrument_editor_enabled) {
         render_instrument_editor();
     } else {
+        render_pattern_map();
         render_hits();
         render_channel_selector();
         render_board();
