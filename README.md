@@ -34,6 +34,8 @@ To toggle a step in the pattern of the 16-step sequencer, use the keys:
 
 To select one of the eight channels, use keys 1 through 8.
 
+Press Alt + StepKey to define microsteps (upto 3 for now).
+
 ### Instrument Editor ###
 
 To customize the parameters of an instrument, press the Tab key, select a field
