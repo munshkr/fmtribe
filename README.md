@@ -24,6 +24,7 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 * `M`: Toggle "apply step changes to all frames"
 * `P`: Toggle "play channel instrument"
 * `Z`: Toggle "record steps"
+* `Alt` + Number: Mute/unmute channel
 
 ### Step Sequencer ###
 
@@ -33,8 +34,9 @@ To toggle a step in the pattern of the 16-step sequencer, use the keys:
     A S D F G H J K
 
 To select one of the eight channels, use keys 1 through 8.
+You can mute a channel anytime using `Alt` + NumberKey.
 
-Press Alt + StepKey to define microsteps (upto 3 for now).
+Press `Alt` + StepKey to define microsteps (upto 3 for now).
 
 ### Instrument Editor ###
 

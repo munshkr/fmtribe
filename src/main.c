@@ -51,6 +51,10 @@ const char KEYBOARD_UPPER_KEYS[] = "AWSEDFTGYHUJ";
 
 const char CHANNEL_KEYS[] = "12345678";
 
+const unsigned int CHANNEL_MUTE_KEYS[] = {
+    K_Alt_1, K_Alt_2, K_Alt_3, K_Alt_4, K_Alt_5, K_Alt_6, K_Alt_7, K_Alt_8
+};
+
 const unsigned int MICROSTEP_KEYS[] = {
     K_Alt_Q, K_Alt_W, K_Alt_E, K_Alt_R, K_Alt_T, K_Alt_Y, K_Alt_U, K_Alt_I,
     K_Alt_A, K_Alt_S, K_Alt_D, K_Alt_F, K_Alt_G, K_Alt_H, K_Alt_J, K_Alt_K
@@ -85,6 +89,7 @@ instr_t      instrs[CHANNELS] = {};
 // TODO mseq and seq should be merged (1 microstep == 1 step...)
 bool         seq[CHANNELS][FRAMES][STEPS] = {};
 unsigned int mseq[CHANNELS][FRAMES][STEPS] = {};
+bool         muted_channels[CHANNELS] = {};
 
 int current_instr_field = 0;
 
@@ -209,7 +214,7 @@ void play_step()
     }
 
     for (int c = 0; c < CHANNELS; c++) {
-        if (seq[c][current_frame][current_step]) {
+        if (!muted_channels[c] && seq[c][current_frame][current_step]) {
             play_channel(c);
         }
     }
@@ -556,11 +561,16 @@ void render_channel_selector()
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
     for (int i = 0; i < CHANNELS; i++) {
-        if (i == current_selected_channel) {
-            rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
-        } else {
+        if (muted_channels[i]) {
             rect(left, top, right, bottom, CHANNEL_COLORS[i]);
+        } else {
+            rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
         }
+
+        if (i == current_selected_channel) {
+            rect(left, top, right, bottom, CHANNEL_COLORS_B[i]);
+        }
+
         left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
         right = left + CHANNEL_SELECTOR_WIDTH;
     }
@@ -860,6 +870,13 @@ int main(int argc, char* argv[])
                     }
                     dirty = true;
                     break;
+                }
+            }
+
+            for (int i = 0; i < CHANNELS; i++) {
+                if (key == CHANNEL_MUTE_KEYS[i]) {
+                    muted_channels[i] = Not(muted_channels[i]);
+                    dirty = true;
                 }
             }
         }
