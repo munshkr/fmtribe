@@ -584,7 +584,7 @@ void render_hits()
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
     for (int i = 0; i < CHANNELS; i++) {
-        if (seq[i][current_frame][current_step]) {
+        if (!muted_channels[i] && seq[i][current_frame][current_step]) {
             rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
         left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
