@@ -919,7 +919,7 @@ int main(int argc, char* argv[])
 
             // play microsteps (if any)
             for (int c = 0; c < CHANNELS; c++) {
-                if (seq[c][current_frame][current_step]) {
+                if (!muted_channels[c] && seq[c][current_frame][current_step]) {
                     if (now >= mprev[c] + (current_usecs_per_step / (mseq[c][current_frame][current_step] + 1))) {
                         play_channel(c);
                         mprev[c] = now;
