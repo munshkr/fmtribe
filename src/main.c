@@ -828,32 +828,38 @@ int main(int argc, char* argv[])
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
+                        seq[current_selected_channel][current_selected_frame][i] =
+                          Not(seq[current_selected_channel][current_selected_frame][i]);
+
                         if (apply_all_frames) {
                             for (int j = 0; j < FRAMES; j++) {
-                                seq[current_selected_channel][j][i] =
-                                  Not(seq[current_selected_channel][j][i]);
+                                if (j != current_selected_frame) {
+                                    seq[current_selected_channel][j][i] =
+                                      seq[current_selected_channel][current_selected_frame][i];
+                                }
                             }
-                        } else {
-                            seq[current_selected_channel][current_selected_frame][i] =
-                              Not(seq[current_selected_channel][current_selected_frame][i]);
                         }
+
                         dirty = true;
                     }
                 }
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
+                        seq[current_selected_channel][current_selected_frame][i] = true;
+                        mseq[current_selected_channel][current_selected_frame][i] =
+                          (mseq[current_selected_channel][current_selected_frame][i] + 1) % MAX_MICROSTEPS;
+
                         if (apply_all_frames) {
                             for (int j = 0; j < FRAMES; j++) {
-                                seq[current_selected_channel][j][i] = true;
-                                mseq[current_selected_channel][j][i] =
-                                  (mseq[current_selected_channel][j][i] + 1) % MAX_MICROSTEPS;
+                                if (j != current_selected_frame) {
+                                    seq[current_selected_channel][j][i] = true;
+                                    mseq[current_selected_channel][j][i] =
+                                      mseq[current_selected_channel][current_selected_frame][i];
+                                }
                             }
-                        } else {
-                            seq[current_selected_channel][current_selected_frame][i] = true;
-                            mseq[current_selected_channel][current_selected_frame][i] =
-                              (mseq[current_selected_channel][current_selected_frame][i] + 1) % MAX_MICROSTEPS;
                         }
+
                         dirty = true;
                     }
                 }
