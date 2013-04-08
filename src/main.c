@@ -38,8 +38,9 @@
 
 #define MAX_MICROSTEPS 3
 
-const char* INSTRS_FILE = "INSTRS.DAT";
-const char* FONT_FILE   = "8x10.PBM";
+const char* INSTRS_FILE  = "INSTRS.DAT";
+const char* PATTERN_FILE = "PATTERN.DAT";
+const char* FONT_FILE    = "8x10.PBM";
 
 const int DEFAULT_BPM = 120;
 
@@ -168,6 +169,34 @@ bool save_instruments()
     fwrite(instrs, sizeof(instr_t), CHANNELS, f);
     fclose(f);
     printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
+    return true;
+}
+
+void load_pattern()
+{
+    FILE* f = fopen(PATTERN_FILE, "rb");
+    if (f) {
+        fread(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
+        fread(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+        fread(muted_channels, sizeof(bool), CHANNELS, f);
+        fclose(f);
+    }
+}
+
+bool save_pattern()
+{
+    FILE* f = fopen(PATTERN_FILE, "wb");
+    if (!f) {
+        fprintf(stderr, "Could not write pattern to %s.\n", PATTERN_FILE);
+        return false;
+    }
+
+    fwrite(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
+    fwrite(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+    fwrite(muted_channels, sizeof(bool), CHANNELS, f);
+
+    fclose(f);
+    printf("Pattern was written to %s.\n", PATTERN_FILE);
     return true;
 }
 
@@ -689,8 +718,10 @@ int main(int argc, char* argv[])
     fm_reset();
     fm_init();
 
-    load_instruments();
     fm_set_instrument(METRONOME_CH, &tick1);
+
+    load_pattern();
+    load_instruments();
 
     if (argc == 1) {
         set_bpm(DEFAULT_BPM);
@@ -943,6 +974,7 @@ int main(int argc, char* argv[])
     set_mode(TEXT_MODE);
 
     save_instruments();
+    save_pattern();
 
     fm_reset();
     free_font(&font);
