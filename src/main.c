@@ -99,6 +99,8 @@ font_t font;
 
 extern fm_instr_t tick1;
 
+void set_bpm(const float value);
+
 
 void load_font()
 {
@@ -176,6 +178,10 @@ void load_pattern()
 {
     FILE* f = fopen(PATTERN_FILE, "rb");
     if (f) {
+        float bpm = 0;
+        fread(&bpm, sizeof(float), 1, f);
+        set_bpm(bpm);
+
         fread(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
         fread(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
         fread(muted_channels, sizeof(bool), CHANNELS, f);
@@ -191,6 +197,7 @@ bool save_pattern()
         return false;
     }
 
+    fwrite(&current_bpm, sizeof(float), 1, f);
     fwrite(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
     fwrite(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
     fwrite(muted_channels, sizeof(bool), CHANNELS, f);
@@ -723,7 +730,7 @@ int main(int argc, char* argv[])
     load_pattern();
     load_instruments();
 
-    if (argc == 1) {
+    if (argc == 1 && current_bpm == 0) {
         set_bpm(DEFAULT_BPM);
     } else {
         const unsigned int custom_bpm = atoi(argv[1]);
