@@ -42,7 +42,7 @@ const char* INSTRS_FILE  = "INSTRS.DAT";
 const char* PATTERN_FILE = "PATTERN.DAT";
 const char* FONT_FILE    = "8x10.PBM";
 
-const int DEFAULT_BPM = 120;
+const unsigned int DEFAULT_BPM = 120;
 
 const char STEP_KEYS[]       = "qwertyuiasdfghjk";
 const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
@@ -73,11 +73,11 @@ bool apply_all_frames = true;
 bool play_instruments = false;
 bool recording = false;
 
-uclock_t current_usecs_per_step = 0;
-float    current_bpm;
-int      current_frame = 0;
-int      current_step = 0;
-uclock_t prev_tap = NULL;
+uclock_t     current_usecs_per_step = 0;
+unsigned int current_bpm = 0;
+int          current_frame = 0;
+int          current_step = 0;
+uclock_t     prev_tap = NULL;
 
 bool dirty = true;
 bool pause_after_current_step = false;
@@ -99,7 +99,7 @@ font_t font;
 
 extern fm_instr_t tick1;
 
-void set_bpm(const float value);
+void set_bpm(const unsigned int value);
 
 
 void load_font()
@@ -178,8 +178,8 @@ void load_pattern()
 {
     FILE* f = fopen(PATTERN_FILE, "rb");
     if (f) {
-        float bpm = 0;
-        fread(&bpm, sizeof(float), 1, f);
+        unsigned int bpm = 0;
+        fread(&bpm, sizeof(unsigned int), 1, f);
         set_bpm(bpm);
 
         fread(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
@@ -197,7 +197,7 @@ bool save_pattern()
         return false;
     }
 
-    fwrite(&current_bpm, sizeof(float), 1, f);
+    fwrite(&current_bpm, sizeof(unsigned int), 1, f);
     fwrite(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
     fwrite(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
     fwrite(muted_channels, sizeof(bool), CHANNELS, f);
@@ -285,7 +285,7 @@ void toggle_recording()
     dirty = true;
 }
 
-void set_bpm(const float value)
+void set_bpm(const unsigned int value)
 {
     current_bpm = value;
     current_usecs_per_step = (USECS_PER_MINUTE / value) / 4;
@@ -730,14 +730,14 @@ int main(int argc, char* argv[])
     load_pattern();
     load_instruments();
 
-    if (argc == 1 && current_bpm == 0) {
-        set_bpm(DEFAULT_BPM);
-    } else {
+    if (argc == 2) {
         const unsigned int custom_bpm = atoi(argv[1]);
         set_bpm(custom_bpm);
         printf("BPM set to %i\n", custom_bpm);
         getch();
     }
+
+    if (!current_bpm) set_bpm(DEFAULT_BPM);
 
     init_vga();
     set_mode(VIDEO_MODE);
