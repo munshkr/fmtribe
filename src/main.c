@@ -73,7 +73,7 @@ bool apply_all_frames = true;
 bool play_instruments = false;
 bool recording = false;
 
-uclock_t     current_usecs_per_step = 0;
+uclock_t     current_uclocks_per_step = 0;
 unsigned int current_bpm = 0;
 int          current_frame = 0;
 int          current_step = 0;
@@ -288,20 +288,20 @@ void toggle_recording()
 void set_bpm(const unsigned int value)
 {
     current_bpm = value;
-    current_usecs_per_step = (USECS_PER_MINUTE / value) / 4;
+    current_uclocks_per_step = (UCLOCKS_PER_MIN / value) / 4;
 }
 
-void set_bpm_from_usecs_per_beat(uclock_t usecs)
+void set_bpm_from_uclocks_per_beat(uclock_t uclocks)
 {
-    current_bpm = USECS_PER_MINUTE / usecs;
-    current_usecs_per_step = usecs / 4;
+    current_bpm = UCLOCKS_PER_MIN / uclocks;
+    current_uclocks_per_step = uclocks / 4;
 }
 
 void tap_tempo()
 {
     uclock_t now = uclock();
     if (prev_tap) {
-        set_bpm_from_usecs_per_beat(now - prev_tap);
+        set_bpm_from_uclocks_per_beat(now - prev_tap);
     }
     prev_tap = now;
 }
@@ -935,7 +935,7 @@ int main(int argc, char* argv[])
                 // if it is nearer the next step than the current, record step
                 // on the next step (quantization)
                 unsigned int step = current_step;
-                if (now - prev > current_usecs_per_step / 2.0) {
+                if (now - prev > current_uclocks_per_step / 2.0) {
                     step++;
                 }
 
@@ -949,7 +949,7 @@ int main(int argc, char* argv[])
             }
 
             // play step
-            if (now >= prev + current_usecs_per_step) {
+            if (now >= prev + current_uclocks_per_step) {
                 if (pause_after_current_step) {
                     pause_after_current_step = false;
                     playing = false;
@@ -965,7 +965,7 @@ int main(int argc, char* argv[])
             // play microsteps (if any)
             for (int c = 0; c < CHANNELS; c++) {
                 if (!muted_channels[c] && seq[c][current_frame][current_step]) {
-                    if (now >= mprev[c] + (current_usecs_per_step / (mseq[c][current_frame][current_step] + 1))) {
+                    if (now >= mprev[c] + (current_uclocks_per_step / (mseq[c][current_frame][current_step] + 1))) {
                         play_channel(c);
                         mprev[c] = now;
                     }

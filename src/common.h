@@ -10,7 +10,7 @@
 typedef char* string;
 
 #define KEY_ESC 27
-#define USECS_PER_MINUTE (1000000 * 60)
+#define UCLOCKS_PER_MIN (UCLOCKS_PER_SEC * 60)
 
 #define Sgn(x) (x > 0 ? 1 : (x < 0 ? (-1) : 0))
 #define Not(x) (x ? false : true)
