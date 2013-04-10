@@ -293,7 +293,7 @@ void set_bpm(const unsigned int value)
 
 void set_bpm_from_usecs_per_beat(uclock_t usecs)
 {
-    current_bpm = usecs * USECS_PER_MINUTE;
+    current_bpm = USECS_PER_MINUTE / usecs;
     current_usecs_per_step = usecs / 4;
 }
 
