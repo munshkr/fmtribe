@@ -125,6 +125,9 @@ unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr) {
 fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr) {
     return instr->c__waveform & 0x7;
 }
+unsigned int fm_get_carrier_level(const fm_instr_t* instr) {
+    return instr->c__ksl_volume & 0x3f;
+}
 unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr) {
     return (instr->m__attack_decay >> 4) & 0xf;
 }
@@ -139,6 +142,9 @@ unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr) {
 }
 fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr) {
     return instr->m__waveform & 0x7;
+}
+unsigned int fm_get_modulator_level(const fm_instr_t* instr) {
+    return instr->m__ksl_volume & 0x3f;
 }
 
 // fm_instr_t setters
@@ -157,6 +163,9 @@ void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value) {
 void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
     instr->c__waveform = value & 0x7;
 }
+void fm_set_carrier_level(fm_instr_t* instr, unsigned int value) {
+    instr->c__ksl_volume = (instr->c__ksl_volume & 0xc0) | (value & 0x3f);
+}
 void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value) {
     instr->m__attack_decay = ((value & 0xf) << 4) | (instr->m__attack_decay & 0xf);
 }
@@ -171,6 +180,9 @@ void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value) {
 }
 void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value) {
     instr->m__waveform = value & 0x7;
+}
+void fm_set_modulator_level(fm_instr_t* instr, unsigned int value) {
+    instr->m__ksl_volume = (instr->m__ksl_volume & 0xc0) | (value & 0x3f);
 }
 
 static __inline__ void fm_write(const int reg, const int value) {

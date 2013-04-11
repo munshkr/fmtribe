@@ -39,11 +39,13 @@ unsigned int fm_get_carrier_decay_rate(const fm_instr_t* instr);
 unsigned int fm_get_carrier_sustain_level(const fm_instr_t* instr);
 unsigned int fm_get_carrier_release_rate(const fm_instr_t* instr);
 fm_waveform_type_t fm_get_carrier_waveform_type(const fm_instr_t* instr);
+unsigned int fm_get_carrier_level(const fm_instr_t* instr);
 unsigned int fm_get_modulator_attack_rate(const fm_instr_t* instr);
 unsigned int fm_get_modulator_decay_rate(const fm_instr_t* instr);
 unsigned int fm_get_modulator_sustain_level(const fm_instr_t* instr);
 unsigned int fm_get_modulator_release_rate(const fm_instr_t* instr);
 fm_waveform_type_t fm_get_modulator_waveform_type(const fm_instr_t* instr);
+unsigned int fm_get_modulator_level(const fm_instr_t* instr);
 
 // fm_instr_t setters
 void fm_set_carrier_attack_rate(fm_instr_t* instr, unsigned int value);
@@ -51,10 +53,12 @@ void fm_set_carrier_decay_rate(fm_instr_t* instr, unsigned int value);
 void fm_set_carrier_sustain_level(fm_instr_t* instr, unsigned int value);
 void fm_set_carrier_release_rate(fm_instr_t* instr, unsigned int value);
 void fm_set_carrier_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
+void fm_set_carrier_level(fm_instr_t* instr, unsigned int value);
 void fm_set_modulator_attack_rate(fm_instr_t* instr, unsigned int value);
 void fm_set_modulator_decay_rate(fm_instr_t* instr, unsigned int value);
 void fm_set_modulator_sustain_level(fm_instr_t* instr, unsigned int value);
 void fm_set_modulator_release_rate(fm_instr_t* instr, unsigned int value);
 void fm_set_modulator_waveform_type(fm_instr_t* instr, fm_waveform_type_t value);
+void fm_set_modulator_level(fm_instr_t* instr, unsigned int value);
 
 #endif // __FM_H__
