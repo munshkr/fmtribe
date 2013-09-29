@@ -21,15 +21,19 @@ typedef struct {
     int          current_frame;
     int          current_step;
 
-    uclock_t     prev_tap;
+    uclock_t prev;
+    uclock_t mprev[CHANNELS];
+    uclock_t prev_tap;
 
     bool pause_after_current_step;
+    bool record_step;
     bool stop_after_pattern_ends;
     bool playing;
     bool metronome_on;
 
-    int current_selected_channel;
-    int current_selected_frame;
+    int  current_selected_channel;
+    int  current_selected_frame;
+
     bool follow;
     bool apply_all_frames;
     bool play_instruments;
@@ -41,6 +45,8 @@ typedef struct {
 seq_t seq_new();
 
 void seq_tick(seq_t* this);
+void seq_advance_step(seq_t* this);
+
 void seq_play_channel(const seq_t* this, const unsigned int c);
 void seq_play_step(const seq_t* this);
 

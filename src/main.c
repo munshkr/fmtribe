@@ -604,10 +604,6 @@ int main(int argc, char* argv[])
     set_mode(VIDEO_MODE);
 
     bool is_running = true;
-    bool record_step = false;
-    uclock_t prev = uclock();
-    uclock_t mprev[CHANNELS];
-    for (int c = 0; c < CHANNELS; c++) mprev[c] = prev;
 
     while (is_running) {
         if (kbhit()) {
@@ -622,7 +618,7 @@ int main(int argc, char* argv[])
                     seq.pause_after_current_step = true;
                 } else {
                     seq.playing = true;
-                    prev = uclock();
+                    seq.prev = uclock();
                     seq_play_step(&seq);
                 }
                 break;
@@ -775,7 +771,7 @@ int main(int argc, char* argv[])
                     }
                     // on recording, record current step
                     if (seq.playing && seq.recording) {
-                        record_step = true;
+                        seq.record_step = true;
                     }
                     seq.dirty = true;
                     break;
@@ -791,52 +787,7 @@ int main(int argc, char* argv[])
             }
         }
 
-        if (seq.playing) {
-            uclock_t now = uclock();
-
-            if (record_step) {
-                record_step = false;
-
-                // if it is nearer the next step than the current, record step
-                // on the next step (quantization)
-                unsigned int step = seq.current_step;
-                if (now - prev > seq.current_uclocks_per_step / 2.0) {
-                    step++;
-                }
-
-                if (seq.apply_all_frames) {
-                    for (int j = 0; j < FRAMES; j++) {
-                        seq.seq[seq.current_selected_channel][j][step] = true;
-                    }
-                } else {
-                    seq.seq[seq.current_selected_channel][seq.current_selected_frame][step] = true;
-                }
-            }
-
-            // play step
-            if (now >= prev + seq.current_uclocks_per_step) {
-                if (seq.pause_after_current_step) {
-                    seq.pause_after_current_step = false;
-                    seq.playing = false;
-                    seq.dirty = true;
-                } else {
-                    seq_tick(&seq);
-                    seq_play_step(&seq);
-                }
-                prev = now;
-                for (int c = 0; c < CHANNELS; c++) mprev[c] = prev;
-            }
-
-            // play microsteps (if any)
-            for (int c = 0; c < CHANNELS; c++) {
-                if (!seq.muted_channels[c] && seq.seq[c][seq.current_frame][seq.current_step]) {
-                    if (now >= mprev[c] + (seq.current_uclocks_per_step / (seq.mseq[c][seq.current_frame][seq.current_step] + 1))) {
-                        seq_play_channel(&seq, c);
-                        mprev[c] = now;
-                    }
-                }
-            }
-        }
+        seq_tick(&seq);
 
         // render everything if something changed (dirty flag is set)
         if (seq.dirty || dirty) {

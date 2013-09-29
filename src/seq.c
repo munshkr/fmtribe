@@ -16,9 +16,12 @@ seq_t seq_new() {
         .current_frame = 0,
         .current_step = 0,
 
+        .prev = 0,
+        .mprev = {},
         .prev_tap = NULL,
 
         .pause_after_current_step = false,
+        .record_step = false,
         .stop_after_pattern_ends = false,
         .playing = false,
         .metronome_on = false,
@@ -36,6 +39,56 @@ seq_t seq_new() {
 };
 
 void seq_tick(seq_t* this)
+{
+    if (this->playing) {
+        uclock_t now = uclock();
+
+        if (this->record_step) {
+            this->record_step = false;
+
+            // if it is nearer the next step than the current, record step
+            // on the next step (quantization)
+            unsigned int step = this->current_step;
+            if (now - this->prev > this->current_uclocks_per_step / 2.0) {
+                step++;
+            }
+
+            if (this->apply_all_frames) {
+                for (int j = 0; j < FRAMES; j++) {
+                    this->seq[this->current_selected_channel][j][step] = true;
+                }
+            } else {
+                this->seq[this->current_selected_channel][this->current_selected_frame][step] = true;
+            }
+        }
+
+        // play step
+        if (now >= this->prev + this->current_uclocks_per_step) {
+            if (this->pause_after_current_step) {
+                this->pause_after_current_step = false;
+                this->playing = false;
+                this->dirty = true;
+            } else {
+                seq_advance_step(this);
+                seq_play_step(this);
+            }
+            this->prev = now;
+            for (int c = 0; c < CHANNELS; c++) this->mprev[c] = this->prev;
+        }
+
+        // play microsteps (if any)
+        for (int c = 0; c < CHANNELS; c++) {
+            if (!this->muted_channels[c] && this->seq[c][this->current_frame][this->current_step]) {
+                if (now >= this->mprev[c] + (this->current_uclocks_per_step / (this->mseq[c][this->current_frame][this->current_step] + 1))) {
+                    seq_play_channel(this, c);
+                    this->mprev[c] = now;
+                }
+            }
+        }
+    }
+}
+
+void seq_advance_step(seq_t* this)
 {
     this->current_step++;
 
