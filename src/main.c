@@ -688,7 +688,7 @@ int main(int argc, char* argv[])
                         if (!seq.playing) seq_play_channel(&seq, seq.current_selected_channel);
                     }
                 }
-            } else {
+            } else { // step sequencer mode
                 switch (key) {
                   case K_Up:
                     seq_select_prev_channel(&seq);
@@ -725,6 +725,7 @@ int main(int argc, char* argv[])
                     break;
                 }
 
+                // toggle steps based on key
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
                         seq.seq[seq.current_selected_channel][seq.current_selected_frame][i] =
@@ -743,6 +744,7 @@ int main(int argc, char* argv[])
                     }
                 }
 
+                // toggle microsteps based on key
                 for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
                         seq.seq[seq.current_selected_channel][seq.current_selected_frame][i] = true;
@@ -764,12 +766,14 @@ int main(int argc, char* argv[])
                 }
             }
 
+            // select (and play) channel if key was pressed
             for (int i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_KEYS[i]) {
                     seq.current_selected_channel = i;
                     if (seq.play_instruments) {
                         seq_play_channel(&seq, i);
                     }
+                    // on recording, record current step
                     if (seq.playing && seq.recording) {
                         record_step = true;
                     }
@@ -778,6 +782,7 @@ int main(int argc, char* argv[])
                 }
             }
 
+            // mute channel if key was pressed
             for (int i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_MUTE_KEYS[i]) {
                     seq.muted_channels[i] = Not(seq.muted_channels[i]);
@@ -833,6 +838,7 @@ int main(int argc, char* argv[])
             }
         }
 
+        // render everything if something changed (dirty flag is set)
         if (seq.dirty || dirty) {
             render();
             seq.dirty = false;
