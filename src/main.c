@@ -13,7 +13,7 @@
 
 #include "seq.h"
 
-#include "pe_view.h"
+#include "pe_vw.h"
 
 #include "base_ctl.h"
 #include "pe_ctl.h"
@@ -368,11 +368,11 @@ int main(int argc, char* argv[])
     seq = seq_new();
 
     // views
-    pe_view_t pe_view = pe_view_new(&seq, &font);
+    pe_vw_t pe_vw = pe_vw_new(&seq, &font);
 
     // controllers
     base_ctl_t base_ctl = base_ctl_new(&seq);
-    pe_ctl_t   pe_ctl   = pe_ctl_new(&seq, &pe_view);
+    pe_ctl_t   pe_ctl   = pe_ctl_new(&seq, &pe_vw);
 
     load_pattern();
     load_instruments();
@@ -459,7 +459,7 @@ int main(int argc, char* argv[])
             if (instrument_editor_enabled) {
                 render_instrument_editor();
             } else {
-                pe_view_render(&pe_view);
+                pe_vw_render(&pe_vw);
             }
 
             //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);

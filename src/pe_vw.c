@@ -1,4 +1,4 @@
-#include "pe_view.h"
+#include "pe_vw.h"
 #include "vga.h"
 
 #define BOARD_SQUARE_SIZE 30
@@ -27,21 +27,21 @@
 const uint8_t CHANNEL_COLORS[CHANNELS]   = { 0x68, 0x6c, 0x6f, 0x72, 0x74, 0x77, 0x7c, 0x08 };
 const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x20, 0x24, 0x27, 0x2a, 0x2c, 0x2f, 0x34, 0x1f };
 
-static void render_pattern_map(const pe_view_t* this);
-static void render_board(const pe_view_t* this);
-static void render_channel_selector(const pe_view_t* this);
-static void render_hits(const pe_view_t* this);
+static void render_pattern_map(const pe_vw_t* this);
+static void render_board(const pe_vw_t* this);
+static void render_channel_selector(const pe_vw_t* this);
+static void render_hits(const pe_vw_t* this);
 
 
-pe_view_t pe_view_new(const seq_t* seq, const font_t* font)
+pe_vw_t pe_vw_new(const seq_t* seq, const font_t* font)
 {
-    return (pe_view_t) {
+    return (pe_vw_t) {
         .seq  = seq,
         .font = font,
     };
 };
 
-void pe_view_render(const pe_view_t* this)
+void pe_vw_render(const pe_vw_t* this)
 {
     render_pattern_map(this);
     render_hits(this);
@@ -62,7 +62,7 @@ void pe_view_render(const pe_view_t* this)
     }
 }
 
-static void render_pattern_map(const pe_view_t* this)
+static void render_pattern_map(const pe_vw_t* this)
 {
     // highlight current frame block
     rect_fill(MAP__FRAME_WIDTH * this->seq->current_selected_frame, MAP__TOP,
@@ -130,7 +130,7 @@ static void render_pattern_map(const pe_view_t* this)
     }
 }
 
-static void render_board(const pe_view_t* this)
+static void render_board(const pe_vw_t* this)
 {
     int color = CHANNEL_COLORS[this->seq->current_selected_channel];
     int top = BOARD_TOP;
@@ -172,7 +172,7 @@ static void render_board(const pe_view_t* this)
     }
 }
 
-static void render_channel_selector(const pe_view_t* this)
+static void render_channel_selector(const pe_vw_t* this)
 {
     const int top = CHANNEL_SELECTOR_TOP;
     const int bottom = top + CHANNEL_SELECTOR_HEIGHT;
@@ -195,7 +195,7 @@ static void render_channel_selector(const pe_view_t* this)
     }
 }
 
-static void render_hits(const pe_view_t* this)
+static void render_hits(const pe_vw_t* this)
 {
     const int top = CHANNEL_SELECTOR_TOP - (CHANNEL_SELECTOR_HEIGHT / 2) - 3;
     const int bottom = top + (CHANNEL_SELECTOR_HEIGHT / 2);

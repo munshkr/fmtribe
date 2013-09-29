@@ -12,11 +12,11 @@ const unsigned int MICROSTEP_KEYS[] = {
 };
 
 
-pe_ctl_t pe_ctl_new(seq_t* seq, pe_view_t* pe_view)
+pe_ctl_t pe_ctl_new(seq_t* seq, pe_vw_t* pe_vw)
 {
     return (pe_ctl_t) {
-        .seq     = seq,
-        .pe_view = pe_view,
+        .seq   = seq,
+        .pe_vw = pe_vw,
     };
 };
 
