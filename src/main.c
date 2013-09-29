@@ -6,6 +6,7 @@
 
 #include "common.h"
 #include "seq.h"
+#include "seq_ui.h"
 #include "fm.h"
 #include "vga.h"
 #include "instr.h"
@@ -34,16 +35,11 @@
 #define CHANNEL_SELECTOR_TOP    (BOARD_TOP - CHANNEL_SELECTOR_HEIGHT - 5)
 #define CHANNEL_SELECTOR_LEFT   BOARD_LEFT
 
-#define MAX_MICROSTEPS 3
-
 const char* INSTRS_FILE  = "INSTRS.DAT";
 const char* PATTERN_FILE = "PATTERN.DAT";
 const char* FONT_FILE    = "8x10.PBM";
 
 const unsigned int DEFAULT_BPM = 120;
-
-const char STEP_KEYS[]       = "qwertyuiasdfghjk";
-const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
 
 const char KEYBOARD_KEYS[]       = "awsedftgyhuj";
 const char KEYBOARD_UPPER_KEYS[] = "AWSEDFTGYHUJ";
@@ -52,11 +48,6 @@ const char CHANNEL_KEYS[] = "12345678";
 
 const unsigned int CHANNEL_MUTE_KEYS[] = {
     K_Alt_1, K_Alt_2, K_Alt_3, K_Alt_4, K_Alt_5, K_Alt_6, K_Alt_7, K_Alt_8
-};
-
-const unsigned int MICROSTEP_KEYS[] = {
-    K_Alt_Q, K_Alt_W, K_Alt_E, K_Alt_R, K_Alt_T, K_Alt_Y, K_Alt_U, K_Alt_I,
-    K_Alt_A, K_Alt_S, K_Alt_D, K_Alt_F, K_Alt_G, K_Alt_H, K_Alt_J, K_Alt_K
 };
 
 const uint8_t CHANNEL_COLORS[CHANNELS]   = { 0x68, 0x6c, 0x6f, 0x72, 0x74, 0x77, 0x7c, 0x08 };
@@ -571,6 +562,44 @@ void render()
     update();
 }
 
+void handle_keyboard(seq_t* seq, const int key)
+{
+    switch (key) {
+      case K_F5:
+        if (seq->playing) {
+            seq->pause_after_current_step = true;
+        } else {
+            seq->playing = true;
+            seq->prev = uclock();
+            seq_play_step(seq);
+        }
+        break;
+      case K_F7:
+        if (seq->playing) {
+            // on second F7, stop immediately, by pausing after current
+            // step and resetting current_step.
+            if (seq->stop_after_pattern_ends) {
+                seq->stop_after_pattern_ends = false;
+                seq->pause_after_current_step = true;
+                seq->current_step = 0;
+                seq->current_frame = 0;
+                if (seq->follow) {
+                    seq->current_selected_frame = seq->current_frame;
+                }
+            } else {
+                seq->stop_after_pattern_ends = true;
+            }
+        }
+        break;
+      case K_Shift_F9:
+        seq_toggle_metronome(seq);
+        break;
+      case K_F9:
+        seq_tap_tempo(seq);
+        break;
+    }
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -581,8 +610,11 @@ int main(int argc, char* argv[])
 
     fm_set_instrument(METRONOME_CH, &tick1);
 
-    // Create sequencer
+    // Create Sequencer
     seq = seq_new();
+
+    // Create Sequencer UI
+    seq_ui_t seq_ui = seq_ui_new(&seq);
 
     load_pattern();
     load_instruments();
@@ -613,42 +645,12 @@ int main(int argc, char* argv[])
               case K_Escape:
                 is_running = false;
                 break;
-              case K_F5:
-                if (seq.playing) {
-                    seq.pause_after_current_step = true;
-                } else {
-                    seq.playing = true;
-                    seq.prev = uclock();
-                    seq_play_step(&seq);
-                }
-                break;
-              case K_F7:
-                if (seq.playing) {
-                    // on second F7, stop immediately, by pausing after current
-                    // step and resetting current_step.
-                    if (seq.stop_after_pattern_ends) {
-                        seq.stop_after_pattern_ends = false;
-                        seq.pause_after_current_step = true;
-                        seq.current_step = 0;
-                        seq.current_frame = 0;
-                        if (seq.follow) {
-                            seq.current_selected_frame = seq.current_frame;
-                        }
-                    } else {
-                        seq.stop_after_pattern_ends = true;
-                    }
-                }
-                break;
-              case K_Shift_F9:
-                seq_toggle_metronome(&seq);
-                break;
-              case K_F9:
-                seq_tap_tempo(&seq);
-                break;
               case K_Tab:
                 switch_instrument_editor();
                 break;
             }
+
+            handle_keyboard(&seq, key);
 
             if (instrument_editor_enabled) {
                 switch (key) {
@@ -685,81 +687,7 @@ int main(int argc, char* argv[])
                     }
                 }
             } else { // step sequencer mode
-                switch (key) {
-                  case K_Up:
-                    seq_select_prev_channel(&seq);
-                    break;
-                  case K_Down:
-                    seq_select_next_channel(&seq);
-                    break;
-                  case K_Left:
-                    seq_select_prev_frame(&seq);
-                    break;
-                  case K_Right:
-                    seq_select_next_frame(&seq);
-                    break;
-                  case 'm':
-                  case 'M':
-                    seq_toggle_apply_all_frames(&seq);
-                    break;
-                  case 'p':
-                  case 'P':
-                    seq_toggle_play_instruments(&seq);
-                    break;
-                  case 'z':
-                  case 'Z':
-                    seq_toggle_recording(&seq);
-                    break;
-                  case K_Delete:
-                    seq_clear_seq(&seq, seq.current_selected_channel);
-                    break;
-                  case K_Control_Delete:
-                    seq_clear_seq_all(&seq);
-                    break;
-                  case K_F10:
-                    seq_toggle_follow(&seq);
-                    break;
-                }
-
-                // toggle steps based on key
-                for (int i = 0; i < STEPS; i++) {
-                    if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                        seq.seq[seq.current_selected_channel][seq.current_selected_frame][i] =
-                          Not(seq.seq[seq.current_selected_channel][seq.current_selected_frame][i]);
-
-                        if (seq.apply_all_frames) {
-                            for (int j = 0; j < FRAMES; j++) {
-                                if (j != seq.current_selected_frame) {
-                                    seq.seq[seq.current_selected_channel][j][i] =
-                                      seq.seq[seq.current_selected_channel][seq.current_selected_frame][i];
-                                }
-                            }
-                        }
-
-                        seq.dirty = true;
-                    }
-                }
-
-                // toggle microsteps based on key
-                for (int i = 0; i < STEPS; i++) {
-                    if (key == MICROSTEP_KEYS[i]) {
-                        seq.seq[seq.current_selected_channel][seq.current_selected_frame][i] = true;
-                        seq.mseq[seq.current_selected_channel][seq.current_selected_frame][i] =
-                          (seq.mseq[seq.current_selected_channel][seq.current_selected_frame][i] + 1) % MAX_MICROSTEPS;
-
-                        if (seq.apply_all_frames) {
-                            for (int j = 0; j < FRAMES; j++) {
-                                if (j != seq.current_selected_frame) {
-                                    seq.seq[seq.current_selected_channel][j][i] = true;
-                                    seq.mseq[seq.current_selected_channel][j][i] =
-                                      seq.mseq[seq.current_selected_channel][seq.current_selected_frame][i];
-                                }
-                            }
-                        }
-
-                        seq.dirty = true;
-                    }
-                }
+                seq_ui_handle_keyboard(&seq_ui, key);
             }
 
             // select (and play) channel if key was pressed

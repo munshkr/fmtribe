@@ -5,7 +5,7 @@
 #define METRONOME_CH    CHANNELS
 
 seq_t seq_new() {
-    seq_t new = {
+    return (seq_t) {
         .instrs = {},
         .seq = {},
         .mseq = {},
@@ -35,7 +35,6 @@ seq_t seq_new() {
 
         .dirty = true,
     };
-    return new;
 };
 
 void seq_tick(seq_t* this)
