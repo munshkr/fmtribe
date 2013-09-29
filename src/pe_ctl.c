@@ -1,4 +1,4 @@
-#include "seq_ui.h"
+#include "pe_ctl.h"
 #include <keys.h>
 
 #define MAX_MICROSTEPS 3
@@ -12,14 +12,14 @@ const unsigned int MICROSTEP_KEYS[] = {
 };
 
 
-seq_ui_t seq_ui_new(seq_t* seq)
+pe_ctl_t pe_ctl_new(seq_t* seq)
 {
-    return (seq_ui_t) {
+    return (pe_ctl_t) {
         .seq = seq,
     };
 };
 
-void seq_ui_handle_keyboard(seq_ui_t* this, const int key)
+void pe_ctl_handle_keyboard(pe_ctl_t* this, const int key)
 {
     switch (key) {
       case K_Up:

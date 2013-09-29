@@ -1,5 +1,5 @@
 BIN := FMTRIBE.EXE
-SOURCES := main.c seq.c seq_ui.c vga.c fm.c pbm.c font.c
+SOURCES := main.c seq.c base_ctl.c pe_ctl.c vga.c fm.c pbm.c font.c
 OBJS := $(SOURCES:.c=.o)
 CFLAGS := -g -Wall -std=gnu99 -fgnu89-inline
 
