@@ -6,6 +6,13 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 
 ![Step Sequencer](http://i.imgur.com/8Sllomo.png)&nbsp;![Instrument Editor](http://i.imgur.com/fkLsV9T.png)
 
+## Download ##
+
+* Go to [releases](https://github.com/munshkr/fmtribe/releases) tab to download
+  binaries.
+* Unzip and run FMTRIBE.EXE.
+* Have fun!
+
 ## Usage ##
 
 * `Esc`: Exit
@@ -57,7 +64,8 @@ To change the base note of the instrument, use the keys:
 
 as in a keyboard of one octave. To change the base octave, use `PageUp`/`PageDown`.
 
-## Installation ##
+## Source ##
 
-Check out the [releases](https://github.com/munshkr/fmtribe/releases) tab to
-download binaries.
+To tinker with the source code, you need to install DJGPP and its C compiler.
+Go to the [zip picker](http://www.delorie.com/djgpp/zip-picker.html) and follow
+instructions.
