@@ -1,10 +1,18 @@
 BIN := FMTRIBE.EXE
-SOURCES := main.c seq.c base_ctl.c pe_ctl.c vga.c fm.c pbm.c font.c
+SOURCES := \
+	src/main.c \
+	src/seq.c \
+	src/base_ctl.c \
+	src/pe_ctl.c \
+	src/vga.c \
+	src/fm.c \
+	src/pbm.c \
+	src/font.c
 OBJS := $(SOURCES:.c=.o)
 CFLAGS := -g -Wall -std=gnu99 -fgnu89-inline
 
-ZIP_FILES := $(BIN) INSTRS.DAT 8x10.PBM ..\README.md
-TAG := 07
+ZIP_FILES := fonts/8x10.pbm INSTRS.DAT README.md $(BIN)
+TAG := 08
 ZIP := FMTRIB$(TAG).ZIP
 
 all: $(BIN)
@@ -21,4 +29,4 @@ $(BIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJS) $(LFLAGS) $(LIBS)
 
 .c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) -c $<
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) -c $< -o $@

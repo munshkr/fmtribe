@@ -41,7 +41,7 @@
 
 const char* INSTRS_FILE  = "INSTRS.DAT";
 const char* PATTERN_FILE = "PATTERN.DAT";
-const char* FONT_FILE    = "8x10.PBM";
+const char* FONT_FILE    = "FONTS/8x10.PBM";
 
 const unsigned int DEFAULT_BPM = 120;
 
@@ -99,7 +99,7 @@ void load_font()
             exit(EXIT_FAILURE);
         }
     } else {
-        printf("Error reading font.pbm\n");
+        printf("Error reading %s\n", FONT_FILE);
         free_pbm(&pbm);
         exit(EXIT_FAILURE);
     }
