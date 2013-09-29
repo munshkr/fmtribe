@@ -5,6 +5,7 @@
 #include <dos.h>
 
 #include "common.h"
+#include "seq.h"
 #include "fm.h"
 #include "vga.h"
 #include "instr.h"
@@ -13,9 +14,6 @@
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 1
 
-#define CHANNELS        8
-#define STEPS           16
-#define FRAMES          4
 #define METRONOME_CH    CHANNELS
 
 #define KEYBOARD_KEYS_COUNT 12
@@ -66,40 +64,34 @@ const uint8_t CHANNEL_COLORS_B[CHANNELS] = { 0x20, 0x24, 0x27, 0x2a, 0x2c, 0x2f,
 
 const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 
-int current_selected_channel = 0;
-int current_selected_frame = 0;
-bool follow = true;
-bool apply_all_frames = true;
-bool play_instruments = false;
-bool recording = false;
-
-uclock_t     current_uclocks_per_step = 0;
-unsigned int current_bpm = 0;
-int          current_frame = 0;
-int          current_step = 0;
-uclock_t     prev_tap = NULL;
-
-bool dirty = true;
-bool pause_after_current_step = false;
-bool stop_after_pattern_ends = false;
-bool playing = false;
-bool metronome_on = false;
+bool dirty = true; // instrument-editor dirty flag
 bool instrument_editor_enabled = false;
-
-instr_t      instrs[CHANNELS] = {};
-// TODO mseq and seq should be merged (1 microstep == 1 step...)
-bool         seq[CHANNELS][FRAMES][STEPS] = {};
-unsigned int mseq[CHANNELS][FRAMES][STEPS] = {};
-bool         muted_channels[CHANNELS] = {};
 
 int current_instr_field = 0;
 
 pbm_file_t pbm;
 font_t font;
 
-extern fm_instr_t tick1;
+seq_t seq;
 
-void set_bpm(const unsigned int value);
+fm_instr_t tick1 = {
+    .c__am_vib_eg = 0x05,
+    .c__ksl_volume = 0x0b,
+    .c__attack_decay = 0xf6,
+    .c__sustain_release = 0x94,
+    .c__waveform = 0x00,
+
+    .m__am_vib_eg = 0x07,
+    .m__ksl_volume = 0x40,
+    .m__attack_decay = 0x09,
+    .m__sustain_release = 0x53,
+    .m__waveform = 0x00,
+
+    .feedback_fm = 0x0e,
+    .fine_tune = 0x00,
+    .panning = Center,
+    .voice_type = Melodic,
+};
 
 
 void load_font()
@@ -128,16 +120,16 @@ void load_instruments()
 {
     FILE* f = fopen(INSTRS_FILE, "rb");
     if (f) {
-        fread(instrs, sizeof(instr_t), CHANNELS, f);
+        fread(seq.instrs, sizeof(instr_t), CHANNELS, f);
         fclose(f);
     } else {
         fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
         getch();
 
         for (int c = 0; c < CHANNELS; c++) {
-            instrs[c].note = A;
-            instrs[c].octave = 2;
-            fm_instr_t* fi = &instrs[c].fm_instr;
+            seq.instrs[c].note = A;
+            seq.instrs[c].octave = 2;
+            fm_instr_t* fi = &seq.instrs[c].fm_instr;
             fi->c__am_vib_eg = 0x00;
             fi->m__am_vib_eg = 0x00;
             fi->c__ksl_volume = 0x00;
@@ -157,7 +149,7 @@ void load_instruments()
 
     // Configure operators for all the instruments
     for (int c = 0; c < CHANNELS; c++) {
-        fm_set_instrument(c, &instrs[c].fm_instr);
+        fm_set_instrument(c, &seq.instrs[c].fm_instr);
     }
 }
 
@@ -168,7 +160,7 @@ bool save_instruments()
         fprintf(stderr, "Could not write instruments parameters to %s.\n", INSTRS_FILE);
         return false;
     }
-    fwrite(instrs, sizeof(instr_t), CHANNELS, f);
+    fwrite(seq.instrs, sizeof(instr_t), CHANNELS, f);
     fclose(f);
     printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
     return true;
@@ -180,12 +172,18 @@ void load_pattern()
     if (f) {
         unsigned int bpm = 0;
         fread(&bpm, sizeof(unsigned int), 1, f);
-        set_bpm(bpm);
+        if (bpm) {
+            seq_set_bpm(&seq, bpm);
+        } else {
+            fprintf(stderr, "Invalid BPM value in %s\n", PATTERN_FILE);
+        }
 
-        fread(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
-        fread(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
-        fread(muted_channels, sizeof(bool), CHANNELS, f);
+        fread(seq.seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
+        fread(seq.mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+        fread(seq.muted_channels, sizeof(bool), CHANNELS, f);
         fclose(f);
+    } else {
+        fprintf(stderr, "Could not load %s.\n", PATTERN_FILE);
     }
 }
 
@@ -197,177 +195,14 @@ bool save_pattern()
         return false;
     }
 
-    fwrite(&current_bpm, sizeof(unsigned int), 1, f);
-    fwrite(seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
-    fwrite(mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
-    fwrite(muted_channels, sizeof(bool), CHANNELS, f);
+    fwrite(&(seq.current_bpm), sizeof(unsigned int), 1, f);
+    fwrite(seq.seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
+    fwrite(seq.mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+    fwrite(seq.muted_channels, sizeof(bool), CHANNELS, f);
 
     fclose(f);
     printf("Pattern was written to %s.\n", PATTERN_FILE);
     return true;
-}
-
-void tick()
-{
-    current_step++;
-
-    if (current_step == STEPS) {
-        current_step = 0;
-        current_frame++;
-    }
-
-    if (current_frame == FRAMES) {
-        current_frame = 0;
-        if (stop_after_pattern_ends) {
-            playing = false;
-            stop_after_pattern_ends = false;
-        }
-    }
-
-    if (follow) {
-        current_selected_frame = current_frame;
-    }
-
-    dirty = true;
-}
-
-void play_channel(const unsigned int c)
-{
-    fm_key_off(c);
-    fm_key_on(c, instrs[c].octave, instrs[c].note);
-}
-
-void play_step()
-{
-    if (metronome_on) {
-        if (current_step == 0) {
-            fm_key_off(METRONOME_CH);
-            fm_key_on(METRONOME_CH, 4, E);
-        } else if (current_step % 4 == 0) {
-            fm_key_off(METRONOME_CH);
-            fm_key_on(METRONOME_CH, 3, E);
-        }
-    }
-
-    for (int c = 0; c < CHANNELS; c++) {
-        if (!muted_channels[c] && seq[c][current_frame][current_step]) {
-            play_channel(c);
-        }
-    }
-}
-
-void toggle_metronome()
-{
-    metronome_on = Not(metronome_on);
-}
-
-void toggle_follow()
-{
-    follow = Not(follow);
-    dirty = true;
-}
-
-void toggle_apply_all_frames()
-{
-    apply_all_frames = Not(apply_all_frames);
-    dirty = true;
-}
-
-void toggle_play_instruments()
-{
-    play_instruments = Not(play_instruments);
-    dirty = true;
-}
-
-void toggle_recording()
-{
-    recording = Not(recording);
-    dirty = true;
-}
-
-void set_bpm(const unsigned int value)
-{
-    current_bpm = value;
-    current_uclocks_per_step = (UCLOCKS_PER_MIN / value) / 4;
-}
-
-void set_bpm_from_uclocks_per_beat(uclock_t uclocks)
-{
-    current_bpm = UCLOCKS_PER_MIN / uclocks;
-    current_uclocks_per_step = uclocks / 4;
-}
-
-void tap_tempo()
-{
-    uclock_t now = uclock();
-    if (prev_tap) {
-        set_bpm_from_uclocks_per_beat(now - prev_tap);
-    }
-    prev_tap = now;
-}
-
-void clear_seq(int channel)
-{
-    if (apply_all_frames) {
-        memset(seq[channel], 0, FRAMES * STEPS * sizeof(bool));
-        memset(mseq[channel], 0, FRAMES * STEPS * sizeof(unsigned int));
-    } else {
-        memset(seq[channel][current_selected_frame], 0, STEPS * sizeof(bool));
-        memset(mseq[channel][current_selected_frame], 0, STEPS * sizeof(unsigned int));
-    }
-    dirty = true;
-}
-
-void clear_seq_all()
-{
-    if (apply_all_frames) {
-        memset(seq, 0, CHANNELS * FRAMES * STEPS * sizeof(bool));
-        memset(mseq, 0, CHANNELS * FRAMES * STEPS * sizeof(unsigned int));
-    } else {
-        for (int c = 0; c < CHANNELS; c++) {
-            memset(seq[c][current_selected_frame], 0, STEPS * sizeof(bool));
-            memset(mseq[c][current_selected_frame], 0, STEPS * sizeof(unsigned int));
-        }
-    }
-    dirty = true;
-}
-
-void select_prev_channel() {
-    if (current_selected_channel == 0) {
-        current_selected_channel = CHANNELS - 1;
-    } else {
-        current_selected_channel--;
-    }
-    dirty = true;
-}
-
-void select_next_channel() {
-    if (current_selected_channel == CHANNELS - 1) {
-        current_selected_channel = 0;
-    } else {
-        current_selected_channel++;
-    }
-    dirty = true;
-}
-
-void select_prev_frame() {
-    if (current_selected_frame == 0) {
-        current_selected_frame = FRAMES - 1;
-    } else {
-        current_selected_frame--;
-    }
-    follow = false;
-    dirty = true;
-}
-
-void select_next_frame() {
-    if (current_selected_frame == FRAMES - 1) {
-        current_selected_frame = 0;
-    } else {
-        current_selected_frame++;
-    }
-    follow = false;
-    dirty = true;
 }
 
 void switch_instrument_editor() {
@@ -463,7 +298,7 @@ void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsi
 typedef enum { Increase, Decrease } action_t;
 
 void instrument_editor_change(const action_t action) {
-    instr_t* ins = &instrs[current_selected_channel];
+    instr_t* ins = &seq.instrs[seq.current_selected_channel];
     unsigned int value = get_value_for_instrument(ins, current_instr_field);
 
     if (action == Increase &&
@@ -474,12 +309,12 @@ void instrument_editor_change(const action_t action) {
     {
         value++;
         set_value_for_instrument(ins, current_instr_field, value);
-        fm_set_instrument(current_selected_channel, &ins->fm_instr);
+        fm_set_instrument(seq.current_selected_channel, &ins->fm_instr);
         dirty = true;
     } else if (action == Decrease && value > 0) {
         value--;
         set_value_for_instrument(ins, current_instr_field, value);
-        fm_set_instrument(current_selected_channel, &ins->fm_instr);
+        fm_set_instrument(seq.current_selected_channel, &ins->fm_instr);
         dirty = true;
     }
 }
@@ -494,20 +329,20 @@ void instrument_editor_change(const action_t action) {
 void render_pattern_map()
 {
     // highlight current frame block
-    rect_fill(MAP__FRAME_WIDTH * current_selected_frame, MAP__TOP,
-              MAP__FRAME_WIDTH * (current_selected_frame + 1) - 1, MAP__TOP + MAP__HEIGHT - 1,
+    rect_fill(MAP__FRAME_WIDTH * seq.current_selected_frame, MAP__TOP,
+              MAP__FRAME_WIDTH * (seq.current_selected_frame + 1) - 1, MAP__TOP + MAP__HEIGHT - 1,
               MAP__COLOR);
 
     // highlight current frame with an underscore
-    rect_fill(MAP__FRAME_WIDTH * current_frame, MAP__TOP + MAP__HEIGHT + 5,
-              MAP__FRAME_WIDTH * (current_frame + 1) - 1, MAP__TOP + MAP__HEIGHT + 7,
+    rect_fill(MAP__FRAME_WIDTH * seq.current_frame, MAP__TOP + MAP__HEIGHT + 5,
+              MAP__FRAME_WIDTH * (seq.current_frame + 1) - 1, MAP__TOP + MAP__HEIGHT + 7,
               MAP__COLOR);
 
     // step cursor
-    unsigned int cursor_left = (current_frame * MAP__FRAME_WIDTH) + (current_step * MAP__STEP_SQUARE_SIZE);
+    unsigned int cursor_left = (seq.current_frame * MAP__FRAME_WIDTH) + (seq.current_step * MAP__STEP_SQUARE_SIZE);
     rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE - 1, SCREEN_HEIGHT - 1, MAP__COLOR);
     // highlight frame block slice
-    if (current_selected_frame == current_frame) {
+    if (seq.current_selected_frame == seq.current_frame) {
         rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__HI_COLOR);
     } else {
         rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__COLOR);
@@ -516,11 +351,11 @@ void render_pattern_map()
     rect_fill(cursor_left, MAP__TOP + MAP__HEIGHT + 5, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT + 7, MAP__HI_COLOR);
 
     // channel cursor
-    unsigned int cursor_top = MAP__TOP + (current_selected_channel * MAP__STEP_SQUARE_SIZE);
+    unsigned int cursor_top = MAP__TOP + (seq.current_selected_channel * MAP__STEP_SQUARE_SIZE);
     rect_fill(0, cursor_top, SCREEN_WIDTH - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1, MAP__COLOR);
     // highlight frame block slice
-    rect_fill(MAP__FRAME_WIDTH * current_selected_frame, cursor_top,
-              MAP__FRAME_WIDTH * (current_selected_frame + 1) - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1,
+    rect_fill(MAP__FRAME_WIDTH * seq.current_selected_frame, cursor_top,
+              MAP__FRAME_WIDTH * (seq.current_selected_frame + 1) - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1,
               MAP__HI_COLOR);
 
     // highlight intersection of step cursor and channel cursor
@@ -535,9 +370,9 @@ void render_pattern_map()
         unsigned int step_left = 0;
         for (int j = 0; j < FRAMES; j++) {
             for (int k = 0; k < STEPS; k++) {
-                if (seq[i][j][k]) {
+                if (seq.seq[i][j][k]) {
                     // use highlighted color if cursor is over current frame+step
-                    if (j == current_frame && k == current_step) {
+                    if (j == seq.current_frame && k == seq.current_step) {
                         color = CHANNEL_COLORS_B[i];
                     }
 
@@ -548,7 +383,7 @@ void render_pattern_map()
                               color);
 
                     // restore color
-                    if (j == current_frame && k == current_step) {
+                    if (j == seq.current_frame && k == seq.current_step) {
                         color = CHANNEL_COLORS[i];
                     }
                 }
@@ -561,7 +396,7 @@ void render_pattern_map()
 
 void render_board()
 {
-    int color = CHANNEL_COLORS[current_selected_channel];
+    int color = CHANNEL_COLORS[seq.current_selected_channel];
     int top = BOARD_TOP;
     int z = 0;
     for (int i = 0; i < BOARD_ROWS; i++) {
@@ -569,20 +404,20 @@ void render_board()
         for (int j = 0; j < BOARD_COLS; j++) {
             // if it is about to render the square for the current step,
             // use a different color.
-            if (current_frame == current_selected_frame && z == current_step) {
-                color = CHANNEL_COLORS_B[current_selected_channel];
+            if (seq.current_frame == seq.current_selected_frame && z == seq.current_step) {
+                color = CHANNEL_COLORS_B[seq.current_selected_channel];
             }
 
             // render a filled square if the step is toggled
             const unsigned int cur_step = (i * BOARD_COLS) + j;
-            const unsigned int microsteps = mseq[current_selected_channel][current_selected_frame][cur_step] + 1;
+            const unsigned int microsteps = seq.mseq[seq.current_selected_channel][seq.current_selected_frame][cur_step] + 1;
             const unsigned int width = (BOARD_SQUARE_SIZE - 3 * (microsteps - 1)) / microsteps;
 
             for (int k = 0; k < microsteps; k++) {
                 unsigned int r_left = left + (width + 3) * k;
                 unsigned int r_right = left + width * (k + 1) + 3 * k;
                 if (k == microsteps - 1 && microsteps % 2 == 0) r_right++;
-                if (seq[current_selected_channel][current_selected_frame][cur_step]) {
+                if (seq.seq[seq.current_selected_channel][seq.current_selected_frame][cur_step]) {
                     rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 } else {
                     rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
@@ -590,8 +425,8 @@ void render_board()
             }
 
             // restore color
-            if (current_frame == current_selected_frame && z == current_step) {
-                color = CHANNEL_COLORS[current_selected_channel];
+            if (seq.current_frame == seq.current_selected_frame && z == seq.current_step) {
+                color = CHANNEL_COLORS[seq.current_selected_channel];
             }
 
             left += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;
@@ -609,13 +444,13 @@ void render_channel_selector()
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
     for (int i = 0; i < CHANNELS; i++) {
-        if (muted_channels[i]) {
+        if (seq.muted_channels[i]) {
             rect(left, top, right, bottom, CHANNEL_COLORS[i]);
         } else {
             rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
         }
 
-        if (i == current_selected_channel) {
+        if (i == seq.current_selected_channel) {
             rect(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
 
@@ -632,7 +467,7 @@ void render_hits()
     int right = left + CHANNEL_SELECTOR_WIDTH;
 
     for (int i = 0; i < CHANNELS; i++) {
-        if (!muted_channels[i] && seq[i][current_frame][current_step]) {
+        if (!seq.muted_channels[i] && seq.seq[i][seq.current_frame][seq.current_step]) {
             rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
         left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
@@ -662,7 +497,7 @@ const unsigned int instr_fields_pos[12][2] = {
 
 void render_instrument_editor()
 {
-    const instr_t* ins = &instrs[current_selected_channel];
+    const instr_t* ins = &seq.instrs[seq.current_selected_channel];
     const fm_instr_t* fm = &ins->fm_instr;
 
     // Render labels
@@ -715,23 +550,23 @@ void render()
         render_hits();
         render_channel_selector();
         render_board();
-        if (recording) {
+        if (seq.recording) {
           render_strf(&font, 284, 185, 7, "R");
         }
-        if (play_instruments) {
+        if (seq.play_instruments) {
           render_strf(&font, 292, 185, 7, "p");
         }
-        if (follow) {
+        if (seq.follow) {
           render_strf(&font, 300, 185, 7, "f");
         }
-        if (apply_all_frames) {
+        if (seq.apply_all_frames) {
           render_strf(&font, 308, 185, 7, "*");
         }
     }
 
     //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
     //render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
-    render_strf(&font, 6, 185, 7, "%u", current_bpm);
+    render_strf(&font, 6, 185, 7, "%u", seq.current_bpm);
 
     update();
 }
@@ -746,17 +581,24 @@ int main(int argc, char* argv[])
 
     fm_set_instrument(METRONOME_CH, &tick1);
 
+    // Create sequencer
+    seq = seq_new();
+
     load_pattern();
     load_instruments();
 
     if (argc == 2) {
         const unsigned int custom_bpm = atoi(argv[1]);
-        set_bpm(custom_bpm);
+        seq_set_bpm(&seq, custom_bpm);
         printf("BPM set to %i\n", custom_bpm);
         getch();
     }
 
-    if (!current_bpm) set_bpm(DEFAULT_BPM);
+    if (!seq.current_bpm) {
+        printf("No BPM, use default: %i\n", DEFAULT_BPM);
+        getch();
+        seq_set_bpm(&seq, DEFAULT_BPM);
+    }
 
     init_vga();
     set_mode(VIDEO_MODE);
@@ -776,36 +618,36 @@ int main(int argc, char* argv[])
                 is_running = false;
                 break;
               case K_F5:
-                if (playing) {
-                    pause_after_current_step = true;
+                if (seq.playing) {
+                    seq.pause_after_current_step = true;
                 } else {
-                    playing = true;
+                    seq.playing = true;
                     prev = uclock();
-                    play_step();
+                    seq_play_step(&seq);
                 }
                 break;
               case K_F7:
-                if (playing) {
+                if (seq.playing) {
                     // on second F7, stop immediately, by pausing after current
                     // step and resetting current_step.
-                    if (stop_after_pattern_ends) {
-                        stop_after_pattern_ends = false;
-                        pause_after_current_step = true;
-                        current_step = 0;
-                        current_frame = 0;
-                        if (follow) {
-                            current_selected_frame = current_frame;
+                    if (seq.stop_after_pattern_ends) {
+                        seq.stop_after_pattern_ends = false;
+                        seq.pause_after_current_step = true;
+                        seq.current_step = 0;
+                        seq.current_frame = 0;
+                        if (seq.follow) {
+                            seq.current_selected_frame = seq.current_frame;
                         }
                     } else {
-                        stop_after_pattern_ends = true;
+                        seq.stop_after_pattern_ends = true;
                     }
                 }
                 break;
               case K_Shift_F9:
-                toggle_metronome();
+                seq_toggle_metronome(&seq);
                 break;
               case K_F9:
-                tap_tempo();
+                seq_tap_tempo(&seq);
                 break;
               case K_Tab:
                 switch_instrument_editor();
@@ -827,14 +669,14 @@ int main(int argc, char* argv[])
                     instrument_editor_move(Down);
                     break;
                   case K_PageDown:
-                    if (instrs[current_selected_channel].octave > 1) {
-                        instrs[current_selected_channel].octave--;
+                    if (seq.instrs[seq.current_selected_channel].octave > 1) {
+                        seq.instrs[seq.current_selected_channel].octave--;
                         dirty = true;
                     }
                     break;
                   case K_PageUp:
-                    if (instrs[current_selected_channel].octave < 8) {
-                        instrs[current_selected_channel].octave++;
+                    if (seq.instrs[seq.current_selected_channel].octave < 8) {
+                        seq.instrs[seq.current_selected_channel].octave++;
                         dirty = true;
                     }
                     break;
@@ -842,109 +684,109 @@ int main(int argc, char* argv[])
 
                 for (int i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
                     if (key == KEYBOARD_KEYS[i] || key == KEYBOARD_UPPER_KEYS[i]) {
-                        instrs[current_selected_channel].note = KEYBOARD_NOTES[i];
-                        if (!playing) play_channel(current_selected_channel);
+                        seq.instrs[seq.current_selected_channel].note = KEYBOARD_NOTES[i];
+                        if (!seq.playing) seq_play_channel(&seq, seq.current_selected_channel);
                     }
                 }
             } else {
                 switch (key) {
                   case K_Up:
-                    select_prev_channel();
+                    seq_select_prev_channel(&seq);
                     break;
                   case K_Down:
-                    select_next_channel();
+                    seq_select_next_channel(&seq);
                     break;
                   case K_Left:
-                    select_prev_frame();
+                    seq_select_prev_frame(&seq);
                     break;
                   case K_Right:
-                    select_next_frame();
+                    seq_select_next_frame(&seq);
                     break;
                   case 'm':
                   case 'M':
-                    toggle_apply_all_frames();
+                    seq_toggle_apply_all_frames(&seq);
                     break;
                   case 'p':
                   case 'P':
-                    toggle_play_instruments();
+                    seq_toggle_play_instruments(&seq);
                     break;
                   case 'z':
                   case 'Z':
-                    toggle_recording();
+                    seq_toggle_recording(&seq);
                     break;
                   case K_Delete:
-                    clear_seq(current_selected_channel);
+                    seq_clear_seq(&seq, seq.current_selected_channel);
                     break;
                   case K_Control_Delete:
-                    clear_seq_all();
+                    seq_clear_seq_all(&seq);
                     break;
                   case K_F10:
-                    toggle_follow();
+                    seq_toggle_follow(&seq);
                     break;
                 }
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-                        seq[current_selected_channel][current_selected_frame][i] =
-                          Not(seq[current_selected_channel][current_selected_frame][i]);
+                        seq.seq[seq.current_selected_channel][seq.current_selected_frame][i] =
+                          Not(seq.seq[seq.current_selected_channel][seq.current_selected_frame][i]);
 
-                        if (apply_all_frames) {
+                        if (seq.apply_all_frames) {
                             for (int j = 0; j < FRAMES; j++) {
-                                if (j != current_selected_frame) {
-                                    seq[current_selected_channel][j][i] =
-                                      seq[current_selected_channel][current_selected_frame][i];
+                                if (j != seq.current_selected_frame) {
+                                    seq.seq[seq.current_selected_channel][j][i] =
+                                      seq.seq[seq.current_selected_channel][seq.current_selected_frame][i];
                                 }
                             }
                         }
 
-                        dirty = true;
+                        seq.dirty = true;
                     }
                 }
 
                 for (int i = 0; i < STEPS; i++) {
                     if (key == MICROSTEP_KEYS[i]) {
-                        seq[current_selected_channel][current_selected_frame][i] = true;
-                        mseq[current_selected_channel][current_selected_frame][i] =
-                          (mseq[current_selected_channel][current_selected_frame][i] + 1) % MAX_MICROSTEPS;
+                        seq.seq[seq.current_selected_channel][seq.current_selected_frame][i] = true;
+                        seq.mseq[seq.current_selected_channel][seq.current_selected_frame][i] =
+                          (seq.mseq[seq.current_selected_channel][seq.current_selected_frame][i] + 1) % MAX_MICROSTEPS;
 
-                        if (apply_all_frames) {
+                        if (seq.apply_all_frames) {
                             for (int j = 0; j < FRAMES; j++) {
-                                if (j != current_selected_frame) {
-                                    seq[current_selected_channel][j][i] = true;
-                                    mseq[current_selected_channel][j][i] =
-                                      mseq[current_selected_channel][current_selected_frame][i];
+                                if (j != seq.current_selected_frame) {
+                                    seq.seq[seq.current_selected_channel][j][i] = true;
+                                    seq.mseq[seq.current_selected_channel][j][i] =
+                                      seq.mseq[seq.current_selected_channel][seq.current_selected_frame][i];
                                 }
                             }
                         }
 
-                        dirty = true;
+                        seq.dirty = true;
                     }
                 }
             }
 
             for (int i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_KEYS[i]) {
-                    current_selected_channel = i;
-                    if (play_instruments) {
-                        play_channel(i);
+                    seq.current_selected_channel = i;
+                    if (seq.play_instruments) {
+                        seq_play_channel(&seq, i);
                     }
-                    if (playing && recording) {
+                    if (seq.playing && seq.recording) {
                         record_step = true;
                     }
-                    dirty = true;
+                    seq.dirty = true;
                     break;
                 }
             }
 
             for (int i = 0; i < CHANNELS; i++) {
                 if (key == CHANNEL_MUTE_KEYS[i]) {
-                    muted_channels[i] = Not(muted_channels[i]);
-                    dirty = true;
+                    seq.muted_channels[i] = Not(seq.muted_channels[i]);
+                    seq.dirty = true;
                 }
             }
         }
 
-        if (playing) {
+        if (seq.playing) {
             uclock_t now = uclock();
 
             if (record_step) {
@@ -952,29 +794,29 @@ int main(int argc, char* argv[])
 
                 // if it is nearer the next step than the current, record step
                 // on the next step (quantization)
-                unsigned int step = current_step;
-                if (now - prev > current_uclocks_per_step / 2.0) {
+                unsigned int step = seq.current_step;
+                if (now - prev > seq.current_uclocks_per_step / 2.0) {
                     step++;
                 }
 
-                if (apply_all_frames) {
+                if (seq.apply_all_frames) {
                     for (int j = 0; j < FRAMES; j++) {
-                        seq[current_selected_channel][j][step] = true;
+                        seq.seq[seq.current_selected_channel][j][step] = true;
                     }
                 } else {
-                    seq[current_selected_channel][current_selected_frame][step] = true;
+                    seq.seq[seq.current_selected_channel][seq.current_selected_frame][step] = true;
                 }
             }
 
             // play step
-            if (now >= prev + current_uclocks_per_step) {
-                if (pause_after_current_step) {
-                    pause_after_current_step = false;
-                    playing = false;
-                    dirty = true;
+            if (now >= prev + seq.current_uclocks_per_step) {
+                if (seq.pause_after_current_step) {
+                    seq.pause_after_current_step = false;
+                    seq.playing = false;
+                    seq.dirty = true;
                 } else {
-                    tick();
-                    play_step();
+                    seq_tick(&seq);
+                    seq_play_step(&seq);
                 }
                 prev = now;
                 for (int c = 0; c < CHANNELS; c++) mprev[c] = prev;
@@ -982,17 +824,18 @@ int main(int argc, char* argv[])
 
             // play microsteps (if any)
             for (int c = 0; c < CHANNELS; c++) {
-                if (!muted_channels[c] && seq[c][current_frame][current_step]) {
-                    if (now >= mprev[c] + (current_uclocks_per_step / (mseq[c][current_frame][current_step] + 1))) {
-                        play_channel(c);
+                if (!seq.muted_channels[c] && seq.seq[c][seq.current_frame][seq.current_step]) {
+                    if (now >= mprev[c] + (seq.current_uclocks_per_step / (seq.mseq[c][seq.current_frame][seq.current_step] + 1))) {
+                        seq_play_channel(&seq, c);
                         mprev[c] = now;
                     }
                 }
             }
         }
 
-        if (dirty) {
+        if (seq.dirty || dirty) {
             render();
+            seq.dirty = false;
             dirty = false;
         }
     }
