@@ -14,16 +14,16 @@
 #include "seq.h"
 
 #include "pe_vw.h"
+#include "ie_vw.h"
 
 #include "base_ctl.h"
 #include "pe_ctl.h"
+#include "ie_ctl.h"
 
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 8
 
 #define METRONOME_CH    CHANNELS
-
-#define KEYBOARD_KEYS_COUNT 12
 
 const char* INSTRS_FILE  = "INSTRS.DAT";
 const char* PATTERN_FILE = "PATTERN.DAT";
@@ -31,15 +31,7 @@ const char* FONT_FILE    = "FONTS/8x10.PBM";
 
 const unsigned int DEFAULT_BPM = 120;
 
-const char KEYBOARD_KEYS[]       = "awsedftgyhuj";
-const char KEYBOARD_UPPER_KEYS[] = "AWSEDFTGYHUJ";
-
-const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
-
-bool dirty = true; // instrument-editor dirty flag
 bool instrument_editor_enabled = false;
-
-int current_instr_field = 0;
 
 pbm_file_t pbm;
 font_t font;
@@ -178,182 +170,8 @@ bool save_pattern()
 }
 
 void switch_instrument_editor() {
-    instrument_editor_enabled = Not(instrument_editor_enabled);
-    dirty = true;
 }
 
-typedef enum { Up, Down } direction_t;
-
-void instrument_editor_move(const direction_t dir) {
-    if (dir == Up && current_instr_field > 0) {
-        current_instr_field--;
-        dirty = true;
-    } else if (dir == Down && current_instr_field < 11) {
-        current_instr_field++;
-        dirty = true;
-    }
-}
-
-unsigned int get_value_for_instrument(const instr_t* ins, const unsigned int field) {
-    const fm_instr_t* fm = &ins->fm_instr;
-    switch (field) {
-      case 0:
-        return fm_get_carrier_attack_rate(fm);
-      case 1:
-        return fm_get_carrier_decay_rate(fm);
-      case 2:
-        return fm_get_carrier_sustain_level(fm);
-      case 3:
-        return fm_get_carrier_release_rate(fm);
-      case 4:
-        return fm_get_carrier_waveform_type(fm);
-      case 5:
-        return fm_get_carrier_level(fm);
-      case 6:
-        return fm_get_modulator_attack_rate(fm);
-      case 7:
-        return fm_get_modulator_decay_rate(fm);
-      case 8:
-        return fm_get_modulator_sustain_level(fm);
-      case 9:
-        return fm_get_modulator_release_rate(fm);
-      case 10:
-        return fm_get_modulator_waveform_type(fm);
-      case 11:
-        return fm_get_modulator_level(fm);
-    }
-    return 0;
-}
-
-void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsigned int value) {
-    fm_instr_t* fm = &ins->fm_instr;
-    switch (field) {
-      case 0:
-        fm_set_carrier_attack_rate(fm, value);
-        break;
-      case 1:
-        fm_set_carrier_decay_rate(fm, value);
-        break;
-      case 2:
-        fm_set_carrier_sustain_level(fm, value);
-        break;
-      case 3:
-        fm_set_carrier_release_rate(fm, value);
-        break;
-      case 4:
-        fm_set_carrier_waveform_type(fm, value);
-        break;
-      case 5:
-        fm_set_carrier_level(fm, value);
-        break;
-      case 6:
-        fm_set_modulator_attack_rate(fm, value);
-        break;
-      case 7:
-        fm_set_modulator_decay_rate(fm, value);
-        break;
-      case 8:
-        fm_set_modulator_sustain_level(fm, value);
-        break;
-      case 9:
-        fm_set_modulator_release_rate(fm, value);
-        break;
-      case 10:
-        fm_set_modulator_waveform_type(fm, value);
-        break;
-      case 11:
-        fm_set_modulator_level(fm, value);
-        break;
-    }
-}
-
-typedef enum { Increase, Decrease } action_t;
-
-void instrument_editor_change(const action_t action) {
-    instr_t* ins = &seq.instrs[seq.current_selected_channel];
-    unsigned int value = get_value_for_instrument(ins, current_instr_field);
-
-    if (action == Increase &&
-            ( ((current_instr_field == 4 || current_instr_field == 10) && value < 7) ||
-              ((current_instr_field == 5 || current_instr_field == 11) && value < 31) ||
-              ((current_instr_field != 4 && current_instr_field != 5 &&
-                current_instr_field != 10 && current_instr_field != 11) && value < 15)) )
-    {
-        value++;
-        set_value_for_instrument(ins, current_instr_field, value);
-        fm_set_instrument(seq.current_selected_channel, &ins->fm_instr);
-        dirty = true;
-    } else if (action == Decrease && value > 0) {
-        value--;
-        set_value_for_instrument(ins, current_instr_field, value);
-        fm_set_instrument(seq.current_selected_channel, &ins->fm_instr);
-        dirty = true;
-    }
-}
-
-#define C_COL_LEFT  10
-#define M_COL_LEFT  150
-#define C_COL_TOP   10
-#define M_COL_TOP   C_COL_TOP
-
-const unsigned int instr_fields_pos[12][2] = {
-    { C_COL_LEFT + 120, C_COL_TOP + 20 },
-    { C_COL_LEFT + 120, C_COL_TOP + 35 },
-    { C_COL_LEFT + 120, C_COL_TOP + 50 },
-    { C_COL_LEFT + 120, C_COL_TOP + 65 },
-    { C_COL_LEFT + 120, C_COL_TOP + 80 },
-    { C_COL_LEFT + 120, C_COL_TOP + 95 },
-    { M_COL_LEFT + 120, M_COL_TOP + 20 },
-    { M_COL_LEFT + 120, M_COL_TOP + 35 },
-    { M_COL_LEFT + 120, M_COL_TOP + 50 },
-    { M_COL_LEFT + 120, M_COL_TOP + 65 },
-    { M_COL_LEFT + 120, M_COL_TOP + 80 },
-    { M_COL_LEFT + 120, M_COL_TOP + 95 },
-};
-
-void render_instrument_editor()
-{
-    const instr_t* ins = &seq.instrs[seq.current_selected_channel];
-    const fm_instr_t* fm = &ins->fm_instr;
-
-    // Render labels
-    render_str(&font, C_COL_LEFT, C_COL_TOP, 7, "Carrier");
-    render_str(&font, C_COL_LEFT, C_COL_TOP + 20, 7, "Attack Rate:");
-    render_str(&font, C_COL_LEFT, C_COL_TOP + 35, 7, "Decay Rate:");
-    render_str(&font, C_COL_LEFT, C_COL_TOP + 50, 7, "Sustain Level");
-    render_str(&font, C_COL_LEFT, C_COL_TOP + 65, 7, "Release Rate:");
-    render_str(&font, C_COL_LEFT, C_COL_TOP + 80, 7, "Waveform:");
-    render_str(&font, C_COL_LEFT, C_COL_TOP + 95, 7, "Volume:");
-    render_str(&font, M_COL_LEFT, M_COL_TOP, 7, "Modulator");
-    render_str(&font, M_COL_LEFT, M_COL_TOP + 20, 7, "Attack Rate:");
-    render_str(&font, M_COL_LEFT, M_COL_TOP + 35, 7, "Decay Rate:");
-    render_str(&font, M_COL_LEFT, M_COL_TOP + 50, 7, "Sustain Level:");
-    render_str(&font, M_COL_LEFT, M_COL_TOP + 65, 7, "Release Rate:");
-    render_str(&font, M_COL_LEFT, M_COL_TOP + 80, 7, "Waveform:");
-    render_str(&font, M_COL_LEFT, M_COL_TOP + 95, 7, "Volume:");
-
-    // Render field values
-    render_strf(&font, instr_fields_pos[0][0], instr_fields_pos[0][1], 7, "%X", (fm->c__attack_decay >> 4) & 0xf);
-    render_strf(&font, instr_fields_pos[1][0], instr_fields_pos[1][1], 7, "%X", fm->c__attack_decay & 0xf);
-    render_strf(&font, instr_fields_pos[2][0], instr_fields_pos[2][1], 7, "%X", (fm->c__sustain_release >> 4) & 0xf);
-    render_strf(&font, instr_fields_pos[3][0], instr_fields_pos[3][1], 7, "%X", fm->c__sustain_release & 0xf);
-    render_strf(&font, instr_fields_pos[4][0], instr_fields_pos[4][1], 7, "%X", fm_get_carrier_waveform_type(fm));
-    render_strf(&font, instr_fields_pos[5][0], instr_fields_pos[5][1], 7, "%X", fm_get_carrier_level(fm));
-
-    render_strf(&font, instr_fields_pos[6][0], instr_fields_pos[6][1], 7, "%X", (fm->m__attack_decay >> 4) & 0xf);
-    render_strf(&font, instr_fields_pos[7][0], instr_fields_pos[7][1], 7, "%X", fm->m__attack_decay & 0xf);
-    render_strf(&font, instr_fields_pos[8][0], instr_fields_pos[8][1], 7, "%X", (fm->m__sustain_release >> 4) & 0xf);
-    render_strf(&font, instr_fields_pos[9][0], instr_fields_pos[9][1], 7, "%X", fm->m__sustain_release & 0xf);
-    render_strf(&font, instr_fields_pos[10][0], instr_fields_pos[10][1], 7, "%X", fm_get_modulator_waveform_type(fm));
-    render_strf(&font, instr_fields_pos[11][0], instr_fields_pos[11][1], 7, "%X", fm_get_modulator_level(fm));
-
-    // draw "current field" rectangle
-    rect(instr_fields_pos[current_instr_field][0] - 4,
-         instr_fields_pos[current_instr_field][1] - 2,
-         instr_fields_pos[current_instr_field][0] + 10,
-         instr_fields_pos[current_instr_field][1] + 12,
-         6);
-}
 
 int main(int argc, char* argv[])
 {
@@ -369,10 +187,12 @@ int main(int argc, char* argv[])
 
     // views
     pe_vw_t pe_vw = pe_vw_new(&seq, &font);
+    ie_vw_t ie_vw = ie_vw_new(&seq, &font);
 
     // controllers
     base_ctl_t base_ctl = base_ctl_new(&seq);
     pe_ctl_t   pe_ctl   = pe_ctl_new(&seq, &pe_vw);
+    ie_ctl_t   ie_ctl   = ie_ctl_new(&seq, &ie_vw);
 
     load_pattern();
     load_instruments();
@@ -404,47 +224,16 @@ int main(int argc, char* argv[])
                 is_running = false;
                 break;
               case K_Tab:
-                switch_instrument_editor();
+                instrument_editor_enabled = Not(instrument_editor_enabled);
+                ie_vw.dirty = true;
                 break;
             }
 
             base_ctl_handle_keyboard(&base_ctl, key);
 
             if (instrument_editor_enabled) {
-                switch (key) {
-                  case K_Right:
-                    instrument_editor_change(Increase);
-                    break;
-                  case K_Left:
-                    instrument_editor_change(Decrease);
-                    break;
-                  case K_Up:
-                    instrument_editor_move(Up);
-                    break;
-                  case K_Down:
-                    instrument_editor_move(Down);
-                    break;
-                  case K_PageDown:
-                    if (seq.instrs[seq.current_selected_channel].octave > 1) {
-                        seq.instrs[seq.current_selected_channel].octave--;
-                        dirty = true;
-                    }
-                    break;
-                  case K_PageUp:
-                    if (seq.instrs[seq.current_selected_channel].octave < 8) {
-                        seq.instrs[seq.current_selected_channel].octave++;
-                        dirty = true;
-                    }
-                    break;
-                }
-
-                for (int i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
-                    if (key == KEYBOARD_KEYS[i] || key == KEYBOARD_UPPER_KEYS[i]) {
-                        seq.instrs[seq.current_selected_channel].note = KEYBOARD_NOTES[i];
-                        if (!seq.playing) seq_play_channel(&seq, seq.current_selected_channel);
-                    }
-                }
-            } else { // pattern editor mode
+                ie_ctl_handle_keyboard(&ie_ctl, key);
+            } else {
                 pe_ctl_handle_keyboard(&pe_ctl, key);
             }
         }
@@ -453,11 +242,11 @@ int main(int argc, char* argv[])
 
         // TODO base_vw_render();
         // render everything if something changed (dirty flag is set)
-        if (seq.dirty || dirty) {
+        if (seq.dirty || pe_vw.dirty || ie_vw.dirty) {
             clear();
 
             if (instrument_editor_enabled) {
-                render_instrument_editor();
+                ie_vw_render(&ie_vw);
             } else {
                 pe_vw_render(&pe_vw);
             }
@@ -466,10 +255,9 @@ int main(int argc, char* argv[])
             //render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
             render_strf(&font, 6, 185, 7, "%u", seq.current_bpm);
 
-            update();
-
             seq.dirty = false;
-            dirty = false;
+
+            update();
         }
     }
 

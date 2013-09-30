@@ -38,10 +38,12 @@ pe_vw_t pe_vw_new(const seq_t* seq, const font_t* font)
     return (pe_vw_t) {
         .seq  = seq,
         .font = font,
+
+        .dirty = false,
     };
 };
 
-void pe_vw_render(const pe_vw_t* this)
+void pe_vw_render(pe_vw_t* this)
 {
     render_pattern_map(this);
     render_hits(this);
@@ -60,6 +62,8 @@ void pe_vw_render(const pe_vw_t* this)
     if (this->seq->apply_all_frames) {
         render_strf(this->font, 308, 185, 7, "*");
     }
+
+    this->dirty = false;
 }
 
 static void render_pattern_map(const pe_vw_t* this)

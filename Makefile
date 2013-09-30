@@ -4,7 +4,9 @@ SOURCES := \
 	src/seq.c \
 	src/base_ctl.c \
 	src/pe_ctl.c \
-	src/pe_view.c \
+	src/ie_ctl.c \
+	src/pe_vw.c \
+	src/ie_vw.c \
 	src/vga.c \
 	src/fm.c \
 	src/pbm.c \
