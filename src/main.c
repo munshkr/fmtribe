@@ -11,11 +11,14 @@
 #include "instr.h"
 #include "font.h"
 
+// models
 #include "seq.h"
 
+// views
 #include "pe_vw.h"
 #include "ie_vw.h"
 
+// controllers
 #include "base_ctl.h"
 #include "pe_ctl.h"
 #include "ie_ctl.h"
@@ -58,119 +61,11 @@ fm_instr_t tick1 = {
 };
 
 
-void load_font()
-{
-    if (read_pbm_file(FONT_FILE, &pbm)) {
-        printf("%s ~ %ix%i\n", FONT_FILE, pbm.width, pbm.height);
-
-        bool res = create_font_from_pbm(&pbm, 12, &font);
-        free_pbm(&pbm);
-
-        if (res) {
-            printf("Font loaded ~ %ix%i\n", font.width, font.height);
-        } else {
-            printf("Error loading font.\n");
-            free_font(&font);
-            exit(EXIT_FAILURE);
-        }
-    } else {
-        printf("Error reading %s\n", FONT_FILE);
-        free_pbm(&pbm);
-        exit(EXIT_FAILURE);
-    }
-}
-
-void load_instruments()
-{
-    FILE* f = fopen(INSTRS_FILE, "rb");
-    if (f) {
-        fread(seq.instrs, sizeof(instr_t), CHANNELS, f);
-        fclose(f);
-    } else {
-        fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
-        getch();
-
-        for (int c = 0; c < CHANNELS; c++) {
-            seq.instrs[c].note = A;
-            seq.instrs[c].octave = 2;
-            fm_instr_t* fi = &seq.instrs[c].fm_instr;
-            fi->c__am_vib_eg = 0x00;
-            fi->m__am_vib_eg = 0x00;
-            fi->c__ksl_volume = 0x00;
-            fi->m__ksl_volume = 0x0b;
-            fi->c__attack_decay = 0xd6;
-            fi->m__attack_decay = 0xa8;
-            fi->c__sustain_release = 0x4f;
-            fi->m__sustain_release = 0x4c;
-            fi->c__waveform = 0x00;
-            fi->m__waveform = 0x00;
-            fi->feedback_fm = 0x00;
-            fi->fine_tune = 0x00;
-            fi->panning = Center;
-            fi->voice_type = Melodic;
-        }
-    }
-
-    // Configure operators for all the instruments
-    for (int c = 0; c < CHANNELS; c++) {
-        fm_set_instrument(c, &seq.instrs[c].fm_instr);
-    }
-}
-
-bool save_instruments()
-{
-    FILE* f = fopen(INSTRS_FILE, "wb");
-    if (!f) {
-        fprintf(stderr, "Could not write instruments parameters to %s.\n", INSTRS_FILE);
-        return false;
-    }
-    fwrite(seq.instrs, sizeof(instr_t), CHANNELS, f);
-    fclose(f);
-    printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
-    return true;
-}
-
-void load_pattern()
-{
-    FILE* f = fopen(PATTERN_FILE, "rb");
-    if (f) {
-        unsigned int bpm = 0;
-        fread(&bpm, sizeof(unsigned int), 1, f);
-        if (bpm) {
-            seq_set_bpm(&seq, bpm);
-        } else {
-            fprintf(stderr, "Invalid BPM value in %s\n", PATTERN_FILE);
-        }
-
-        fread(seq.seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
-        fread(seq.mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
-        fread(seq.muted_channels, sizeof(bool), CHANNELS, f);
-        fclose(f);
-    } else {
-        fprintf(stderr, "Could not load %s.\n", PATTERN_FILE);
-    }
-}
-
-bool save_pattern()
-{
-    FILE* f = fopen(PATTERN_FILE, "wb");
-    if (!f) {
-        fprintf(stderr, "Could not write pattern to %s.\n", PATTERN_FILE);
-        return false;
-    }
-
-    fwrite(&(seq.current_bpm), sizeof(unsigned int), 1, f);
-    fwrite(seq.seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
-    fwrite(seq.mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
-    fwrite(seq.muted_channels, sizeof(bool), CHANNELS, f);
-
-    fclose(f);
-    printf("Pattern was written to %s.\n", PATTERN_FILE);
-    return true;
-}
-
-void switch_instrument_editor() {
-}
+static void load_font();
+static void load_instruments(seq_t*);
+static bool save_instruments(seq_t*);
+static void load_pattern(seq_t*);
+static bool save_pattern(seq_t*);
 
 
 int main(int argc, char* argv[])
@@ -183,7 +78,7 @@ int main(int argc, char* argv[])
     fm_set_instrument(METRONOME_CH, &tick1);
 
     // models
-    seq = seq_new();
+    seq_t seq = seq_new();
 
     // views
     pe_vw_t pe_vw = pe_vw_new(&seq, &font);
@@ -194,8 +89,8 @@ int main(int argc, char* argv[])
     pe_ctl_t   pe_ctl   = pe_ctl_new(&seq, &pe_vw);
     ie_ctl_t   ie_ctl   = ie_ctl_new(&seq, &ie_vw);
 
-    load_pattern();
-    load_instruments();
+    load_pattern(&seq);
+    load_instruments(&seq);
 
     if (argc == 2) {
         const unsigned int custom_bpm = atoi(argv[1]);
@@ -240,7 +135,6 @@ int main(int argc, char* argv[])
 
         seq_tick(&seq);
 
-        // TODO base_vw_render();
         // render everything if something changed (dirty flag is set)
         if (seq.dirty || pe_vw.dirty || ie_vw.dirty) {
             clear();
@@ -263,10 +157,122 @@ int main(int argc, char* argv[])
 
     set_mode(TEXT_MODE);
 
-    save_instruments();
-    save_pattern();
+    save_instruments(&seq);
+    save_pattern(&seq);
 
     fm_reset();
     free_font(&font);
     return EXIT_SUCCESS;
+}
+
+
+static void load_font()
+{
+    if (read_pbm_file(FONT_FILE, &pbm)) {
+        printf("%s ~ %ix%i\n", FONT_FILE, pbm.width, pbm.height);
+
+        bool res = create_font_from_pbm(&pbm, 12, &font);
+        free_pbm(&pbm);
+
+        if (res) {
+            printf("Font loaded ~ %ix%i\n", font.width, font.height);
+        } else {
+            printf("Error loading font.\n");
+            free_font(&font);
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        printf("Error reading %s\n", FONT_FILE);
+        free_pbm(&pbm);
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void load_instruments(seq_t* seq)
+{
+    FILE* f = fopen(INSTRS_FILE, "rb");
+    if (f) {
+        fread(seq->instrs, sizeof(instr_t), CHANNELS, f);
+        fclose(f);
+    } else {
+        fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
+        getch();
+
+        for (int c = 0; c < CHANNELS; c++) {
+            seq->instrs[c].note = A;
+            seq->instrs[c].octave = 2;
+            fm_instr_t* fi = &seq->instrs[c].fm_instr;
+            fi->c__am_vib_eg = 0x00;
+            fi->m__am_vib_eg = 0x00;
+            fi->c__ksl_volume = 0x00;
+            fi->m__ksl_volume = 0x0b;
+            fi->c__attack_decay = 0xd6;
+            fi->m__attack_decay = 0xa8;
+            fi->c__sustain_release = 0x4f;
+            fi->m__sustain_release = 0x4c;
+            fi->c__waveform = 0x00;
+            fi->m__waveform = 0x00;
+            fi->feedback_fm = 0x00;
+            fi->fine_tune = 0x00;
+            fi->panning = Center;
+            fi->voice_type = Melodic;
+        }
+    }
+
+    // Configure operators for all the instruments
+    for (int c = 0; c < CHANNELS; c++) {
+        fm_set_instrument(c, &seq->instrs[c].fm_instr);
+    }
+}
+
+static bool save_instruments(seq_t* seq)
+{
+    FILE* f = fopen(INSTRS_FILE, "wb");
+    if (!f) {
+        fprintf(stderr, "Could not write instruments parameters to %s.\n", INSTRS_FILE);
+        return false;
+    }
+    fwrite(seq->instrs, sizeof(instr_t), CHANNELS, f);
+    fclose(f);
+    printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
+    return true;
+}
+
+static void load_pattern(seq_t* seq)
+{
+    FILE* f = fopen(PATTERN_FILE, "rb");
+    if (f) {
+        unsigned int bpm = 0;
+        fread(&bpm, sizeof(unsigned int), 1, f);
+        if (bpm) {
+            seq_set_bpm(seq, bpm);
+        } else {
+            fprintf(stderr, "Invalid BPM value in %s\n", PATTERN_FILE);
+        }
+
+        fread(seq->seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
+        fread(seq->mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+        fread(seq->muted_channels, sizeof(bool), CHANNELS, f);
+        fclose(f);
+    } else {
+        fprintf(stderr, "Could not load %s.\n", PATTERN_FILE);
+    }
+}
+
+static bool save_pattern(seq_t* seq)
+{
+    FILE* f = fopen(PATTERN_FILE, "wb");
+    if (!f) {
+        fprintf(stderr, "Could not write pattern to %s.\n", PATTERN_FILE);
+        return false;
+    }
+
+    fwrite(&(seq->current_bpm), sizeof(unsigned int), 1, f);
+    fwrite(seq->seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
+    fwrite(seq->mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+    fwrite(seq->muted_channels, sizeof(bool), CHANNELS, f);
+
+    fclose(f);
+    printf("Pattern was written to %s.\n", PATTERN_FILE);
+    return true;
 }
