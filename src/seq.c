@@ -290,3 +290,7 @@ void seq_tap_tempo(seq_t* this)
     this->prev_tap = now;
 }
 
+void seq_set_instrument(seq_t* this, instr_t* instr, const int channel)
+{
+    fm_set_instrument(channel, &instr->fm_instr);
+}

@@ -72,4 +72,6 @@ void seq_toggle_recording(seq_t* this);
 
 void seq_tap_tempo(seq_t* this);
 
+void seq_set_instrument(seq_t* this, instr_t* instr, const int channel);
+
 #endif // __SEQ_H__

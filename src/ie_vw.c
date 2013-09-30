@@ -24,7 +24,7 @@ const unsigned int instr_fields_pos[12][2] = {
 };
 
 static unsigned int get_value_for_instrument(const instr_t* ins, const unsigned int field);
-static void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsigned int value);
+static void set_value_for_instrument(ie_vw_t* this, instr_t* ins, const unsigned int field, const unsigned int value);
 
 
 ie_vw_t ie_vw_new(const seq_t* seq, const font_t* font)
@@ -96,13 +96,11 @@ void ie_vw_change(ie_vw_t* this, const action_t action)
                 this->current_instr_field != 10 && this->current_instr_field != 11) && value < 15)) )
     {
         value++;
-        set_value_for_instrument(ins, this->current_instr_field, value);
-        fm_set_instrument(this->seq->current_selected_channel, &ins->fm_instr);
+        set_value_for_instrument(this, ins, this->current_instr_field, value);
         this->dirty = true;
     } else if (action == Decrease && value > 0) {
         value--;
-        set_value_for_instrument(ins, this->current_instr_field, value);
-        fm_set_instrument(this->seq->current_selected_channel, &ins->fm_instr);
+        set_value_for_instrument(this, ins, this->current_instr_field, value);
         this->dirty = true;
     }
 }
@@ -139,7 +137,7 @@ static unsigned int get_value_for_instrument(const instr_t* ins, const unsigned 
     return 0;
 }
 
-static void set_value_for_instrument(instr_t* ins, const unsigned int field, const unsigned int value)
+static void set_value_for_instrument(ie_vw_t* this, instr_t* ins, const unsigned int field, const unsigned int value)
 {
     fm_instr_t* fm = &ins->fm_instr;
     switch (field) {
@@ -156,4 +154,5 @@ static void set_value_for_instrument(instr_t* ins, const unsigned int field, con
       case 10: fm_set_modulator_waveform_type(fm, value); break;
       case 11: fm_set_modulator_level(fm, value); break;
     }
+    seq_set_instrument(this->seq, ins, this->seq->current_selected_channel);
 }
