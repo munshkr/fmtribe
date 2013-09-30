@@ -1,8 +1,6 @@
 #include "pe_ctl.h"
 #include <keys.h>
 
-#define MAX_MICROSTEPS 3
-
 const char STEP_KEYS[]       = "qwertyuiasdfghjk";
 const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
 
@@ -58,43 +56,15 @@ void pe_ctl_handle_keyboard(pe_ctl_t* this, const int key)
         break;
     }
 
-    // toggle steps based on key
     for (int i = 0; i < STEPS; i++) {
         if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-            this->seq->seq[this->seq->current_selected_channel][this->seq->current_selected_frame][i] =
-              Not(this->seq->seq[this->seq->current_selected_channel][this->seq->current_selected_frame][i]);
-
-            if (this->seq->apply_all_frames) {
-                for (int j = 0; j < FRAMES; j++) {
-                    if (j != this->seq->current_selected_frame) {
-                        this->seq->seq[this->seq->current_selected_channel][j][i] =
-                          this->seq->seq[this->seq->current_selected_channel][this->seq->current_selected_frame][i];
-                    }
-                }
-            }
-
-            this->seq->dirty = true;
+            seq_toggle_step(this->seq, this->seq->current_selected_channel, this->seq->current_selected_frame, i);
         }
     }
 
-    // toggle microsteps based on key
     for (int i = 0; i < STEPS; i++) {
         if (key == MICROSTEP_KEYS[i]) {
-            this->seq->seq[this->seq->current_selected_channel][this->seq->current_selected_frame][i] = true;
-            this->seq->mseq[this->seq->current_selected_channel][this->seq->current_selected_frame][i] =
-              (this->seq->mseq[this->seq->current_selected_channel][this->seq->current_selected_frame][i] + 1) % MAX_MICROSTEPS;
-
-            if (this->seq->apply_all_frames) {
-                for (int j = 0; j < FRAMES; j++) {
-                    if (j != this->seq->current_selected_frame) {
-                        this->seq->seq[this->seq->current_selected_channel][j][i] = true;
-                        this->seq->mseq[this->seq->current_selected_channel][j][i] =
-                          this->seq->mseq[this->seq->current_selected_channel][this->seq->current_selected_frame][i];
-                    }
-                }
-            }
-
-            this->seq->dirty = true;
+            seq_toggle_microstep(this->seq, this->seq->current_selected_channel, this->seq->current_selected_frame, i);
         }
     }
 }

@@ -61,6 +61,9 @@ void seq_select_next_channel(seq_t* this);
 void seq_select_prev_frame(seq_t* this);
 void seq_select_next_frame(seq_t* this);
 
+void seq_toggle_step(seq_t* this, const int channel, const int frame, const int step);
+void seq_toggle_microstep(seq_t* this, const int channel, const int frame, const int step);
+
 void seq_toggle_metronome(seq_t* this);
 void seq_toggle_follow(seq_t* this);
 void seq_toggle_apply_all_frames(seq_t* this);

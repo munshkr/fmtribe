@@ -2,6 +2,7 @@
 #include "string.h"
 #include "assert.h"
 
+#define MAX_MICROSTEPS  3
 #define METRONOME_CH    CHANNELS
 
 seq_t seq_new() {
@@ -215,6 +216,39 @@ void seq_select_next_frame(seq_t* this)
         this->current_selected_frame++;
     }
     this->follow = false;
+    this->dirty = true;
+}
+
+void seq_toggle_step(seq_t* this, const int channel, const int frame, const int step)
+{
+    this->seq[channel][frame][step] = Not(this->seq[channel][frame][step]);
+
+    if (this->apply_all_frames) {
+        for (int i = 0; i < FRAMES; i++) {
+            if (i != frame) {
+                this->seq[channel][i][step] = this->seq[channel][frame][step];
+            }
+        }
+    }
+
+    this->dirty = true;
+}
+
+void seq_toggle_microstep(seq_t* this, const int channel, const int frame, const int step)
+{
+    this->seq[channel][frame][step] = true;
+    this->mseq[channel][frame][step] =
+        (this->mseq[channel][frame][step] + 1) % MAX_MICROSTEPS;
+
+    if (this->apply_all_frames) {
+        for (int j = 0; j < FRAMES; j++) {
+            if (j != frame) {
+                this->seq[channel][j][step] = true;
+                this->mseq[channel][j][step] = this->mseq[channel][frame][step];
+            }
+        }
+    }
+
     this->dirty = true;
 }
 
