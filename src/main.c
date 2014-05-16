@@ -36,7 +36,7 @@ const unsigned int DEFAULT_BPM = 120;
 
 bool instrument_editor_enabled = false;
 
-pbm_file_t pbm;
+pbm_t pbm;
 font_t font;
 
 seq_t seq;
@@ -169,11 +169,11 @@ int main(int argc, char* argv[])
 
 static void load_font()
 {
-    if (read_pbm_file(FONT_FILE, &pbm)) {
+    if (pbm_read(FONT_FILE, &pbm)) {
         printf("%s ~ %ix%i\n", FONT_FILE, pbm.width, pbm.height);
 
         bool res = create_font_from_pbm(&pbm, 12, &font);
-        free_pbm(&pbm);
+        pbm_free(&pbm);
 
         if (res) {
             printf("Font loaded ~ %ix%i\n", font.width, font.height);
@@ -184,7 +184,7 @@ static void load_font()
         }
     } else {
         printf("Error reading %s\n", FONT_FILE);
-        free_pbm(&pbm);
+        pbm_free(&pbm);
         exit(EXIT_FAILURE);
     }
 }

@@ -4,7 +4,7 @@
 
 #define TOTAL_CHARS   96
 
-bool create_font_from_pbm(const pbm_file_t* pbm, const int chars_per_row, font_t* font)
+bool create_font_from_pbm(const pbm_t* pbm, const int chars_per_row, font_t* font)
 {
     unsigned int cols = chars_per_row;
     unsigned int rows = DivCeil(TOTAL_CHARS, chars_per_row);

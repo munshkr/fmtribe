@@ -4,13 +4,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct pbm_file_t {
+typedef struct pbm_t {
     unsigned int width;
     unsigned int height;
     uint8_t* buffer;
-} pbm_file_t;
+} pbm_t;
 
-bool read_pbm_file(const char* path, pbm_file_t* pbm);
-void free_pbm(pbm_file_t* pbm);
+bool pbm_read(const char* path, pbm_t* pbm);
+void pbm_free(pbm_t* pbm);
 
 #endif // __PBM_H__

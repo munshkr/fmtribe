@@ -7,7 +7,7 @@
 
 static void expand_raw_buffer(const uint8_t* raw_buf, const unsigned int raw_buf_size, const unsigned int pbm_width, uint8_t* buf);
 
-bool read_pbm_file(const char* path, pbm_file_t* pbm)
+bool pbm_read(const char* path, pbm_t* pbm)
 {
     FILE *f = fopen(path, "rb");
     if (!f) return false;
@@ -53,7 +53,7 @@ bool read_pbm_file(const char* path, pbm_file_t* pbm)
     return true;
 }
 
-void free_pbm(pbm_file_t* pbm)
+void pbm_free(pbm_t* pbm)
 {
     if (pbm->buffer) {
         free(pbm->buffer);
