@@ -27,7 +27,7 @@ static unsigned int get_value_for_instrument(const instr_t* ins, const unsigned 
 static void set_value_for_instrument(ie_vw_t* this, instr_t* ins, const unsigned int field, const unsigned int value);
 
 
-ie_vw_t ie_vw_new(const seq_t* seq, const font_t* font)
+ie_vw_t ie_vw_new(seq_t* seq, const font_t* font)
 {
     return (ie_vw_t) {
         .seq  = seq,
