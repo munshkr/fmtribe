@@ -33,3 +33,6 @@ $(BIN): $(OBJS)
 
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) -c $< -o $@
+
+dosemu:
+	dosemu -E 'd: | cd fmtribe'
