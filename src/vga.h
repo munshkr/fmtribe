@@ -12,24 +12,24 @@
 #define SCREEN_SIZE   (SCREEN_WIDTH * SCREEN_HEIGHT)
 #define NUM_COLORS    256
 
-void init_vga();
-void set_mode(uint8_t mode);
+void vga_init();
+void vga_set_mode(uint8_t mode);
 
-void update();
+void vga_update();
 
-void clear();
+void vga_clear();
 
-void putp(int x, int y, uint8_t color);
-void line(int x1, int y1, int x2, int y2, uint8_t color);
+void vga_putp(int x, int y, uint8_t color);
+void vga_line(int x1, int y1, int x2, int y2, uint8_t color);
 
-void rect(int left, int top, int right, int bottom, uint8_t color);
-void rect_fill(int left, int top, int right, int bottom, uint8_t color);
+void vga_rect(int left, int top, int right, int bottom, uint8_t color);
+void vga_rect_fill(int left, int top, int right, int bottom, uint8_t color);
 
-extern __inline__ void square(int left, int top, int size, uint8_t color) {
-    rect(left, top, left + size, top + size, color);
+extern __inline__ void vga_square(int left, int top, int size, uint8_t color) {
+    vga_rect(left, top, left + size, top + size, color);
 }
-extern __inline__ void square_fill(int left, int top, int size, uint8_t color) {
-    rect_fill(left, top, left + size, top + size, color);
+extern __inline__ void vga_square_fill(int left, int top, int size, uint8_t color) {
+    vga_rect_fill(left, top, left + size, top + size, color);
 }
 
 #endif // __VGA_H__

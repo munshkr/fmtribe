@@ -69,37 +69,37 @@ void pe_vw_render(pe_vw_t* this)
 static void render_pattern_map(const pe_vw_t* this)
 {
     // highlight current frame block
-    rect_fill(MAP__FRAME_WIDTH * this->seq->current_selected_frame, MAP__TOP,
+    vga_rect_fill(MAP__FRAME_WIDTH * this->seq->current_selected_frame, MAP__TOP,
               MAP__FRAME_WIDTH * (this->seq->current_selected_frame + 1) - 1, MAP__TOP + MAP__HEIGHT - 1,
               MAP__COLOR);
 
     // highlight current frame with an underscore
-    rect_fill(MAP__FRAME_WIDTH * this->seq->current_frame, MAP__TOP + MAP__HEIGHT + 5,
+    vga_rect_fill(MAP__FRAME_WIDTH * this->seq->current_frame, MAP__TOP + MAP__HEIGHT + 5,
               MAP__FRAME_WIDTH * (this->seq->current_frame + 1) - 1, MAP__TOP + MAP__HEIGHT + 7,
               MAP__COLOR);
 
     // step cursor
     unsigned int cursor_left = (this->seq->current_frame * MAP__FRAME_WIDTH) + (this->seq->current_step * MAP__STEP_SQUARE_SIZE);
-    rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE - 1, SCREEN_HEIGHT - 1, MAP__COLOR);
+    vga_rect_fill(cursor_left, 0, cursor_left + MAP__STEP_SQUARE_SIZE - 1, SCREEN_HEIGHT - 1, MAP__COLOR);
     // highlight frame block slice
     if (this->seq->current_selected_frame == this->seq->current_frame) {
-        rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__HI_COLOR);
+        vga_rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__HI_COLOR);
     } else {
-        rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__COLOR);
+        vga_rect_fill(cursor_left, MAP__TOP, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT - 1, MAP__COLOR);
     }
     // highlight frame underscore slice
-    rect_fill(cursor_left, MAP__TOP + MAP__HEIGHT + 5, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT + 7, MAP__HI_COLOR);
+    vga_rect_fill(cursor_left, MAP__TOP + MAP__HEIGHT + 5, cursor_left + MAP__STEP_SQUARE_SIZE - 1, MAP__TOP + MAP__HEIGHT + 7, MAP__HI_COLOR);
 
     // channel cursor
     unsigned int cursor_top = MAP__TOP + (this->seq->current_selected_channel * MAP__STEP_SQUARE_SIZE);
-    rect_fill(0, cursor_top, SCREEN_WIDTH - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1, MAP__COLOR);
+    vga_rect_fill(0, cursor_top, SCREEN_WIDTH - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1, MAP__COLOR);
     // highlight frame block slice
-    rect_fill(MAP__FRAME_WIDTH * this->seq->current_selected_frame, cursor_top,
+    vga_rect_fill(MAP__FRAME_WIDTH * this->seq->current_selected_frame, cursor_top,
               MAP__FRAME_WIDTH * (this->seq->current_selected_frame + 1) - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1,
               MAP__HI_COLOR);
 
     // highlight intersection of step cursor and channel cursor
-    rect_fill(cursor_left, cursor_top,
+    vga_rect_fill(cursor_left, cursor_top,
               cursor_left + MAP__STEP_SQUARE_SIZE - 1, cursor_top + MAP__STEP_SQUARE_SIZE - 1,
               MAP__HI_COLOR);
 
@@ -116,7 +116,7 @@ static void render_pattern_map(const pe_vw_t* this)
                         color = CHANNEL_COLORS_B[i];
                     }
 
-                    rect_fill(step_left,
+                    vga_rect_fill(step_left,
                               step_top,
                               step_left + MAP__STEP_SQUARE_SIZE - 1,
                               step_top + MAP__STEP_SQUARE_SIZE - 1,
@@ -158,9 +158,9 @@ static void render_board(const pe_vw_t* this)
                 unsigned int r_right = left + width * (k + 1) + 3 * k;
                 if (k == microsteps - 1 && microsteps % 2 == 0) r_right++;
                 if (this->seq->seq[this->seq->current_selected_channel][this->seq->current_selected_frame][cur_step]) {
-                    rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
+                    vga_rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 } else {
-                    rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
+                    vga_rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 }
             }
 
@@ -185,13 +185,13 @@ static void render_channel_selector(const pe_vw_t* this)
 
     for (int i = 0; i < CHANNELS; i++) {
         if (this->seq->muted_channels[i]) {
-            rect(left, top, right, bottom, CHANNEL_COLORS[i]);
+            vga_rect(left, top, right, bottom, CHANNEL_COLORS[i]);
         } else {
-            rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
+            vga_rect_fill(left, top, right, bottom, CHANNEL_COLORS[i]);
         }
 
         if (i == this->seq->current_selected_channel) {
-            rect(left, top, right, bottom, CHANNEL_COLORS_B[i]);
+            vga_rect(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
 
         left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
@@ -208,7 +208,7 @@ static void render_hits(const pe_vw_t* this)
 
     for (int i = 0; i < CHANNELS; i++) {
         if (!this->seq->muted_channels[i] && this->seq->seq[i][this->seq->current_frame][this->seq->current_step]) {
-            rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
+            vga_rect_fill(left, top, right, bottom, CHANNEL_COLORS_B[i]);
         }
         left += (CHANNEL_SELECTOR_WIDTH + BOARD_SQUARE_PADDING);
         right = left + CHANNEL_SELECTOR_WIDTH;

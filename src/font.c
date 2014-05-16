@@ -59,7 +59,7 @@ void render_chr(const font_t* f, const int x, const int y, const uint8_t color, 
     for (int j = 0; j < f->height; j++) {
         for (int i = 0; i < f->width; i++) {
             if (*buf_ptr) {
-                putp(x + i, y + j, color);
+                vga_putp(x + i, y + j, color);
             }
             buf_ptr++;
         }

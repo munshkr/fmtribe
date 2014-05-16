@@ -15,7 +15,7 @@ uint8_t *VGA = NULL;
 uint8_t buffer[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 
-void init_vga()
+void vga_init()
 {
     if (__djgpp_nearptr_enable() == 0) {
         printf("Could get access to first 640K of memory.\n");
@@ -25,7 +25,7 @@ void init_vga()
     VGA = (uint8_t*) 0xA0000 + __djgpp_conventional_base;
 }
 
-void set_mode(uint8_t mode)
+void vga_set_mode(uint8_t mode)
 {
     union REGS regs;
     regs.h.ah = 0;
@@ -33,24 +33,24 @@ void set_mode(uint8_t mode)
     int86(VIDEO_INT, &regs, &regs);
 }
 
-void update()
+void vga_update()
 {
     while ((inp(INPUT_STATUS_1) & VRETRACE));
     while (!(inp(INPUT_STATUS_1) & VRETRACE));
     memcpy(VGA, buffer, SCREEN_WIDTH * SCREEN_HEIGHT);
 }
 
-void clear()
+void vga_clear()
 {
     memset(buffer, 0, SCREEN_SIZE);
 }
 
-void putp(int x, int y, uint8_t color)
+void vga_putp(int x, int y, uint8_t color)
 {
     buffer[(y << 8) + (y << 6) + x] = color;
 }
 
-void line(int x1, int y1, int x2, int y2, uint8_t color)
+void vga_line(int x1, int y1, int x2, int y2, uint8_t color)
 {
     int i, dx, dy, sdx, sdy, dxabs, dyabs, x, y, px, py;
 
@@ -65,7 +65,7 @@ void line(int x1, int y1, int x2, int y2, uint8_t color)
     px = x1;
     py = y1;
 
-    putp(px, py, color);
+    vga_putp(px, py, color);
 
     // if the line is more horizontal than vertical
     if (dxabs >= dyabs) {
@@ -76,7 +76,7 @@ void line(int x1, int y1, int x2, int y2, uint8_t color)
                 py += sdy;
             }
             px += sdx;
-            putp(px, py, color);
+            vga_putp(px, py, color);
         }
     } else {
         for(i = 0; i < dyabs; i++) {
@@ -86,12 +86,12 @@ void line(int x1, int y1, int x2, int y2, uint8_t color)
                 px += sdx;
             }
             py += sdy;
-            putp(px, py, color);
+            vga_putp(px, py, color);
         }
     }
 }
 
-void rect(int left, int top, int right, int bottom, uint8_t color)
+void vga_rect(int left, int top, int right, int bottom, uint8_t color)
 {
     uint16_t top_offset, bottom_offset, temp;
 
@@ -120,7 +120,7 @@ void rect(int left, int top, int right, int bottom, uint8_t color)
     }
 }
 
-void rect_fill(int left, int top, int right, int bottom, uint8_t color)
+void vga_rect_fill(int left, int top, int right, int bottom, uint8_t color)
 {
     uint16_t top_offset, bottom_offset, temp, width;
 

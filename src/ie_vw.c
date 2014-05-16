@@ -75,7 +75,7 @@ void ie_vw_render(ie_vw_t* this)
     render_strf(this->font, instr_fields_pos[11][0], instr_fields_pos[11][1], 7, "%X", fm_get_modulator_level(fm));
 
     // draw "current field" rectangle
-    rect(instr_fields_pos[this->current_instr_field][0] - 4,
+    vga_rect(instr_fields_pos[this->current_instr_field][0] - 4,
          instr_fields_pos[this->current_instr_field][1] - 2,
          instr_fields_pos[this->current_instr_field][0] + 10,
          instr_fields_pos[this->current_instr_field][1] + 12,

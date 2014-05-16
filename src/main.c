@@ -105,8 +105,8 @@ int main(int argc, char* argv[])
         seq_set_bpm(&seq, DEFAULT_BPM);
     }
 
-    init_vga();
-    set_mode(VIDEO_MODE);
+    vga_init();
+    vga_set_mode(VIDEO_MODE);
 
     bool is_running = true;
 
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 
         // render everything if something changed (dirty flag is set)
         if (seq.dirty || pe_vw.dirty || ie_vw.dirty) {
-            clear();
+            vga_clear();
 
             if (instrument_editor_enabled) {
                 ie_vw_render(&ie_vw);
@@ -151,17 +151,18 @@ int main(int argc, char* argv[])
 
             seq.dirty = false;
 
-            update();
+            vga_update();
         }
     }
 
-    set_mode(TEXT_MODE);
+    vga_set_mode(TEXT_MODE);
 
     save_instruments(&seq);
     save_pattern(&seq);
 
     fm_reset();
     free_font(&font);
+
     return EXIT_SUCCESS;
 }
 
