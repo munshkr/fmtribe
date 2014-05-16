@@ -4,7 +4,7 @@
 
 #define TOTAL_CHARS   96
 
-bool create_font_from_pbm(const pbm_t* pbm, const int chars_per_row, font_t* font)
+bool font_create_from_pbm(const pbm_t* pbm, const int chars_per_row, font_t* font)
 {
     unsigned int cols = chars_per_row;
     unsigned int rows = DivCeil(TOTAL_CHARS, chars_per_row);
@@ -45,7 +45,7 @@ bool create_font_from_pbm(const pbm_t* pbm, const int chars_per_row, font_t* fon
     return true;
 }
 
-void render_chr(const font_t* f, const int x, const int y, const uint8_t color, const char c)
+void font_render_chr(const font_t* f, const int x, const int y, const uint8_t color, const char c)
 {
     int char_pos = ((int) c) - 32;
 
@@ -66,18 +66,18 @@ void render_chr(const font_t* f, const int x, const int y, const uint8_t color, 
     }
 }
 
-void render_str(const font_t* f, const int x, const int y, const uint8_t color, const char* str)
+void font_render_str(const font_t* f, const int x, const int y, const uint8_t color, const char* str)
 {
     char* str_p = (char*) str;
     int curx = x;
     while (*str_p) {
-        render_chr(f, curx, y, color, *str_p);
+        font_render_chr(f, curx, y, color, *str_p);
         curx += f->width;
         str_p++;
     }
 }
 
-void render_strf(const font_t* f, const int x, const int y, const uint8_t color, const char* format, ...)
+void font_render_strf(const font_t* f, const int x, const int y, const uint8_t color, const char* format, ...)
 {
     char buffer[80] = "";
     va_list args;
@@ -86,10 +86,10 @@ void render_strf(const font_t* f, const int x, const int y, const uint8_t color,
     vsprintf(buffer, format, args);
     va_end(args);
 
-    render_str(f, x, y, color, buffer);
+    font_render_str(f, x, y, color, buffer);
 }
 
-void free_font(font_t* f)
+void font_free(font_t* f)
 {
     if (f->buffer) {
         free(f->buffer);

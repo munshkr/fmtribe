@@ -145,9 +145,9 @@ int main(int argc, char* argv[])
                 pe_vw_render(&pe_vw);
             }
 
-            //render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
-            //render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
-            render_strf(&font, 6, 185, 7, "%u", seq.current_bpm);
+            //font_render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
+            //font_render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
+            font_render_strf(&font, 6, 185, 7, "%u", seq.current_bpm);
 
             seq.dirty = false;
 
@@ -161,7 +161,7 @@ int main(int argc, char* argv[])
     save_pattern(&seq);
 
     fm_reset();
-    free_font(&font);
+    font_free(&font);
 
     return EXIT_SUCCESS;
 }
@@ -172,14 +172,14 @@ static void load_font()
     if (pbm_read(FONT_FILE, &pbm)) {
         printf("%s ~ %ix%i\n", FONT_FILE, pbm.width, pbm.height);
 
-        bool res = create_font_from_pbm(&pbm, 12, &font);
+        bool res = font_create_from_pbm(&pbm, 12, &font);
         pbm_free(&pbm);
 
         if (res) {
             printf("Font loaded ~ %ix%i\n", font.width, font.height);
         } else {
             printf("Error loading font.\n");
-            free_font(&font);
+            font_free(&font);
             exit(EXIT_FAILURE);
         }
     } else {

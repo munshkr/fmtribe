@@ -44,35 +44,35 @@ void ie_vw_render(ie_vw_t* this)
     const fm_instr_t* fm = &ins->fm_instr;
 
     // Render labels
-    render_str(this->font, C_COL_LEFT, C_COL_TOP, 7, "Carrier");
-    render_str(this->font, C_COL_LEFT, C_COL_TOP + 20, 7, "Attack Rate:");
-    render_str(this->font, C_COL_LEFT, C_COL_TOP + 35, 7, "Decay Rate:");
-    render_str(this->font, C_COL_LEFT, C_COL_TOP + 50, 7, "Sustain Level");
-    render_str(this->font, C_COL_LEFT, C_COL_TOP + 65, 7, "Release Rate:");
-    render_str(this->font, C_COL_LEFT, C_COL_TOP + 80, 7, "Waveform:");
-    render_str(this->font, C_COL_LEFT, C_COL_TOP + 95, 7, "Volume:");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP, 7, "Modulator");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP + 20, 7, "Attack Rate:");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP + 35, 7, "Decay Rate:");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP + 50, 7, "Sustain Level:");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP + 65, 7, "Release Rate:");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP + 80, 7, "Waveform:");
-    render_str(this->font, M_COL_LEFT, M_COL_TOP + 95, 7, "Volume:");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP, 7, "Carrier");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP + 20, 7, "Attack Rate:");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP + 35, 7, "Decay Rate:");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP + 50, 7, "Sustain Level");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP + 65, 7, "Release Rate:");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP + 80, 7, "Waveform:");
+    font_render_str(this->font, C_COL_LEFT, C_COL_TOP + 95, 7, "Volume:");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP, 7, "Modulator");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP + 20, 7, "Attack Rate:");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP + 35, 7, "Decay Rate:");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP + 50, 7, "Sustain Level:");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP + 65, 7, "Release Rate:");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP + 80, 7, "Waveform:");
+    font_render_str(this->font, M_COL_LEFT, M_COL_TOP + 95, 7, "Volume:");
 
     // Render field values
-    render_strf(this->font, instr_fields_pos[0][0], instr_fields_pos[0][1], 7, "%X", (fm->c__attack_decay >> 4) & 0xf);
-    render_strf(this->font, instr_fields_pos[1][0], instr_fields_pos[1][1], 7, "%X", fm->c__attack_decay & 0xf);
-    render_strf(this->font, instr_fields_pos[2][0], instr_fields_pos[2][1], 7, "%X", (fm->c__sustain_release >> 4) & 0xf);
-    render_strf(this->font, instr_fields_pos[3][0], instr_fields_pos[3][1], 7, "%X", fm->c__sustain_release & 0xf);
-    render_strf(this->font, instr_fields_pos[4][0], instr_fields_pos[4][1], 7, "%X", fm_get_carrier_waveform_type(fm));
-    render_strf(this->font, instr_fields_pos[5][0], instr_fields_pos[5][1], 7, "%X", fm_get_carrier_level(fm));
+    font_render_strf(this->font, instr_fields_pos[0][0], instr_fields_pos[0][1], 7, "%X", (fm->c__attack_decay >> 4) & 0xf);
+    font_render_strf(this->font, instr_fields_pos[1][0], instr_fields_pos[1][1], 7, "%X", fm->c__attack_decay & 0xf);
+    font_render_strf(this->font, instr_fields_pos[2][0], instr_fields_pos[2][1], 7, "%X", (fm->c__sustain_release >> 4) & 0xf);
+    font_render_strf(this->font, instr_fields_pos[3][0], instr_fields_pos[3][1], 7, "%X", fm->c__sustain_release & 0xf);
+    font_render_strf(this->font, instr_fields_pos[4][0], instr_fields_pos[4][1], 7, "%X", fm_get_carrier_waveform_type(fm));
+    font_render_strf(this->font, instr_fields_pos[5][0], instr_fields_pos[5][1], 7, "%X", fm_get_carrier_level(fm));
 
-    render_strf(this->font, instr_fields_pos[6][0], instr_fields_pos[6][1], 7, "%X", (fm->m__attack_decay >> 4) & 0xf);
-    render_strf(this->font, instr_fields_pos[7][0], instr_fields_pos[7][1], 7, "%X", fm->m__attack_decay & 0xf);
-    render_strf(this->font, instr_fields_pos[8][0], instr_fields_pos[8][1], 7, "%X", (fm->m__sustain_release >> 4) & 0xf);
-    render_strf(this->font, instr_fields_pos[9][0], instr_fields_pos[9][1], 7, "%X", fm->m__sustain_release & 0xf);
-    render_strf(this->font, instr_fields_pos[10][0], instr_fields_pos[10][1], 7, "%X", fm_get_modulator_waveform_type(fm));
-    render_strf(this->font, instr_fields_pos[11][0], instr_fields_pos[11][1], 7, "%X", fm_get_modulator_level(fm));
+    font_render_strf(this->font, instr_fields_pos[6][0], instr_fields_pos[6][1], 7, "%X", (fm->m__attack_decay >> 4) & 0xf);
+    font_render_strf(this->font, instr_fields_pos[7][0], instr_fields_pos[7][1], 7, "%X", fm->m__attack_decay & 0xf);
+    font_render_strf(this->font, instr_fields_pos[8][0], instr_fields_pos[8][1], 7, "%X", (fm->m__sustain_release >> 4) & 0xf);
+    font_render_strf(this->font, instr_fields_pos[9][0], instr_fields_pos[9][1], 7, "%X", fm->m__sustain_release & 0xf);
+    font_render_strf(this->font, instr_fields_pos[10][0], instr_fields_pos[10][1], 7, "%X", fm_get_modulator_waveform_type(fm));
+    font_render_strf(this->font, instr_fields_pos[11][0], instr_fields_pos[11][1], 7, "%X", fm_get_modulator_level(fm));
 
     // draw "current field" rectangle
     vga_rect(instr_fields_pos[this->current_instr_field][0] - 4,

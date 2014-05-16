@@ -51,16 +51,16 @@ void pe_vw_render(pe_vw_t* this)
     render_board(this);
 
     if (this->seq->recording) {
-        render_strf(this->font, 284, 185, 7, "R");
+        font_render_strf(this->font, 284, 185, 7, "R");
     }
     if (this->seq->play_instruments) {
-        render_strf(this->font, 292, 185, 7, "p");
+        font_render_strf(this->font, 292, 185, 7, "p");
     }
     if (this->seq->follow) {
-        render_strf(this->font, 300, 185, 7, "f");
+        font_render_strf(this->font, 300, 185, 7, "f");
     }
     if (this->seq->apply_all_frames) {
-        render_strf(this->font, 308, 185, 7, "*");
+        font_render_strf(this->font, 308, 185, 7, "*");
     }
 
     this->dirty = false;
