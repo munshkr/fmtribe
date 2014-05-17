@@ -5,6 +5,9 @@
 #define MAX_MICROSTEPS  3
 #define METRONOME_CH    CHANNELS
 
+#define MIN_BPM 20
+#define MAX_BPM 300
+
 seq_t seq_new() {
     return (seq_t) {
         .instrs = {},
@@ -147,7 +150,13 @@ void seq_set_bpm(seq_t* this, const unsigned int value)
 void seq_set_bpm_from_uclocks_per_beat(seq_t* this, const uclock_t uclocks)
 {
     assert(uclocks > 0);
-    this->current_bpm = UCLOCKS_PER_MIN / uclocks;
+    unsigned int bpm = UCLOCKS_PER_MIN / uclocks;
+    if (bpm < MIN_BPM) {
+        bpm = MIN_BPM;
+    } else if (bpm > MAX_BPM) {
+        bpm = MAX_BPM;
+    }
+    this->current_bpm = bpm;
     this->current_uclocks_per_step = uclocks / 4;
 }
 
