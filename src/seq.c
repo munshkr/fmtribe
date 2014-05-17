@@ -70,7 +70,7 @@ void seq_tick(seq_t* this)
                 this->dirty = true;
             } else {
                 seq_advance_step(this);
-                seq_play_step(this);
+                if (this->playing) seq_play_step(this);
             }
             this->prev = now;
             for (int c = 0; c < CHANNELS; c++) this->mprev[c] = this->prev;
