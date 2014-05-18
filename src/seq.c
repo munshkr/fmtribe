@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "seq.h"
 #include "string.h"
 #include "assert.h"
@@ -9,6 +11,7 @@
 #define MAX_BPM 300
 
 static __inline__ unsigned int bpm_from_uclocks_per_beat(const uclock_t uclocks);
+static void move_to_nearest_beat_step(seq_t* this);
 
 seq_t seq_new() {
     return (seq_t) {
@@ -295,6 +298,7 @@ void seq_tap_tempo(seq_t* this)
 
             if (bpm != this->current_bpm) {
                 seq_set_bpm(this, bpm);
+                move_to_nearest_beat_step(this);
             }
         }
     }
@@ -311,4 +315,13 @@ static __inline__ unsigned int bpm_from_uclocks_per_beat(const uclock_t uclocks)
 {
     assert(uclocks > 0);
     return UCLOCKS_PER_MIN / uclocks;
+}
+
+static void move_to_nearest_beat_step(seq_t* this)
+{
+    int nearest_step = floor(this->current_step / 4.0 + 0.5) * 4;
+    this->current_step = fmod(nearest_step, STEPS);
+    if (nearest_step == STEPS) {
+        this->current_frame = (this->current_frame + 1) % FRAMES;
+    }
 }
