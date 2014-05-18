@@ -319,9 +319,20 @@ static __inline__ unsigned int bpm_from_uclocks_per_beat(const uclock_t uclocks)
 
 static void move_to_nearest_beat_step(seq_t* this)
 {
+    // FIXME should use seq_advance_step (for N steps)
+
     int nearest_step = floor(this->current_step / 4.0 + 0.5) * 4;
-    this->current_step = fmod(nearest_step, STEPS);
-    if (nearest_step == STEPS) {
-        this->current_frame = (this->current_frame + 1) % FRAMES;
+
+    if (nearest_step > this->current_step) {
+        this->current_step = fmod(nearest_step, STEPS);
+        if (nearest_step == STEPS) {
+            this->current_frame = (this->current_frame + 1) % FRAMES;
+        }
+
+        if (this->playing) seq_play_step(this);
+
+        // Reset prevs counters
+        this->prev = uclock();
+        for (int c = 0; c < CHANNELS; c++) this->mprev[c] = this->prev;
     }
 }
