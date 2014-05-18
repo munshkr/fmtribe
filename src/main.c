@@ -35,6 +35,7 @@ const char* FONT_FILE    = "FONTS/8x10.PBM";
 const unsigned int DEFAULT_BPM = 120;
 
 bool instrument_editor_enabled = false;
+bool quitting = false;
 
 pbm_t pbm;
 font_t font;
@@ -66,7 +67,6 @@ static void load_instruments(seq_t*);
 static bool save_instruments(seq_t*);
 static void load_pattern(seq_t*);
 static bool save_pattern(seq_t*);
-
 
 int main(int argc, char* argv[])
 {
@@ -116,12 +116,29 @@ int main(int argc, char* argv[])
 
             switch (key) {
               case K_Escape:
-                is_running = false;
+                // if seq is not playing, exit immediately
+                is_running = seq.playing;
+                // toggle quitting state (Esc cancels confirmation dialog)
+                quitting = !quitting;
                 break;
               case K_Tab:
+                quitting = false;
                 instrument_editor_enabled = Not(instrument_editor_enabled);
                 ie_vw.dirty = true;
                 break;
+            }
+
+            if (quitting) {
+                switch (key) {
+                  case 'y':
+                  case 'Y':
+                    is_running = false;
+                    break;
+                  case 'n':
+                  case 'N':
+                    quitting = false;
+                    break;
+                }
             }
 
             base_ctl_handle_keyboard(&base_ctl, key);
@@ -148,6 +165,10 @@ int main(int argc, char* argv[])
             //font_render_strf(&font, 6, 5, 7, "FMTribe v%i.%i", MAJOR_VERSION, MINOR_VERSION);
             //font_render_strf(&font, 6, 185, 7, "f: %i, sf: %i", current_frame, current_selected_frame);
             font_render_strf(&font, 6, 185, 7, "%u", seq.current_bpm);
+
+            if (quitting) {
+                font_render_strf(&font, 40, 185, 7, "exit? (y/n/esc)");
+            }
 
             seq.dirty = false;
 
