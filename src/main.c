@@ -63,10 +63,10 @@ fm_instr_t tick1 = {
 
 
 static void load_font();
-static void load_instruments(seq_t*);
-static bool save_instruments(seq_t*);
-static void load_pattern(seq_t*);
-static bool save_pattern(seq_t*);
+static void load_instruments(seq_t*, const char* filename);
+static bool save_instruments(seq_t*, const char* filename);
+static void load_pattern(seq_t*, const char* filename);
+static bool save_pattern(seq_t*, const char* filename);
 
 int main(int argc, char* argv[])
 {
@@ -89,8 +89,8 @@ int main(int argc, char* argv[])
     pe_ctl_t   pe_ctl   = pe_ctl_new(&seq, &pe_vw);
     ie_ctl_t   ie_ctl   = ie_ctl_new(&seq, &ie_vw);
 
-    load_pattern(&seq);
-    load_instruments(&seq);
+    load_pattern(&seq, PATTERN_FILE);
+    load_instruments(&seq, INSTRS_FILE);
 
     if (argc == 2) {
         const unsigned int custom_bpm = atoi(argv[1]);
@@ -178,8 +178,8 @@ int main(int argc, char* argv[])
 
     vga_set_mode(TEXT_MODE);
 
-    save_instruments(&seq);
-    save_pattern(&seq);
+    save_instruments(&seq, INSTRS_FILE);
+    save_pattern(&seq, PATTERN_FILE);
 
     fm_reset();
     font_free(&font);
@@ -210,14 +210,14 @@ static void load_font()
     }
 }
 
-static void load_instruments(seq_t* seq)
+static void load_instruments(seq_t* seq, const char* filename)
 {
-    FILE* f = fopen(INSTRS_FILE, "rb");
+    FILE* f = fopen(filename, "rb");
     if (f) {
         fread(seq->instrs, sizeof(instr_t), CHANNELS, f);
         fclose(f);
     } else {
-        fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", INSTRS_FILE);
+        fprintf(stderr, "Could not find %s. Resetting instrument parameters...\n", filename);
         getch();
 
         for (int c = 0; c < CHANNELS; c++) {
@@ -247,29 +247,29 @@ static void load_instruments(seq_t* seq)
     }
 }
 
-static bool save_instruments(seq_t* seq)
+static bool save_instruments(seq_t* seq, const char* filename)
 {
-    FILE* f = fopen(INSTRS_FILE, "wb");
+    FILE* f = fopen(filename, "wb");
     if (!f) {
-        fprintf(stderr, "Could not write instruments parameters to %s.\n", INSTRS_FILE);
+        fprintf(stderr, "Could not write instruments parameters to %s.\n", filename);
         return false;
     }
     fwrite(seq->instrs, sizeof(instr_t), CHANNELS, f);
     fclose(f);
-    printf("Instrument parameters were written to %s.\n", INSTRS_FILE);
+    printf("Instrument parameters were written to %s.\n", filename);
     return true;
 }
 
-static void load_pattern(seq_t* seq)
+static void load_pattern(seq_t* seq, const char* filename)
 {
-    FILE* f = fopen(PATTERN_FILE, "rb");
+    FILE* f = fopen(filename, "rb");
     if (f) {
         unsigned int bpm = 0;
         fread(&bpm, sizeof(unsigned int), 1, f);
         if (bpm) {
             seq_set_bpm(seq, bpm);
         } else {
-            fprintf(stderr, "Invalid BPM value in %s\n", PATTERN_FILE);
+            fprintf(stderr, "Invalid BPM value in %s\n", filename);
         }
 
         fread(seq->seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
@@ -277,15 +277,15 @@ static void load_pattern(seq_t* seq)
         fread(seq->muted_channels, sizeof(bool), CHANNELS, f);
         fclose(f);
     } else {
-        fprintf(stderr, "Could not load %s.\n", PATTERN_FILE);
+        fprintf(stderr, "Could not load %s.\n", filename);
     }
 }
 
-static bool save_pattern(seq_t* seq)
+static bool save_pattern(seq_t* seq, const char* filename)
 {
-    FILE* f = fopen(PATTERN_FILE, "wb");
+    FILE* f = fopen(filename, "wb");
     if (!f) {
-        fprintf(stderr, "Could not write pattern to %s.\n", PATTERN_FILE);
+        fprintf(stderr, "Could not write pattern to %s.\n", filename);
         return false;
     }
 
@@ -295,6 +295,6 @@ static bool save_pattern(seq_t* seq)
     fwrite(seq->muted_channels, sizeof(bool), CHANNELS, f);
 
     fclose(f);
-    printf("Pattern was written to %s.\n", PATTERN_FILE);
+    printf("Pattern was written to %s.\n", filename);
     return true;
 }
