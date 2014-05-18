@@ -51,7 +51,6 @@ void seq_play_channel(const seq_t* this, const unsigned int c);
 void seq_play_step(const seq_t* this);
 
 void seq_set_bpm(seq_t* this, const unsigned int value);
-void seq_set_bpm_from_uclocks_per_beat(seq_t* this, const uclock_t uclocks);
 
 void seq_clear_seq(seq_t* this, const int channel);
 void seq_clear_seq_all(seq_t* this);

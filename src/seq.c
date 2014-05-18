@@ -8,6 +8,8 @@
 #define MIN_BPM 20
 #define MAX_BPM 300
 
+static __inline__ unsigned int bpm_from_uclocks_per_beat(const uclock_t uclocks);
+
 seq_t seq_new() {
     return (seq_t) {
         .instrs = {},
@@ -145,25 +147,7 @@ void seq_set_bpm(seq_t* this, const unsigned int value)
     assert(value > 0);
     this->current_bpm = value;
     this->current_uclocks_per_step = (UCLOCKS_PER_MIN / value) / 4;
-}
-
-void seq_set_bpm_from_uclocks_per_beat(seq_t* this, const uclock_t uclocks)
-{
-    assert(uclocks > 0);
-    unsigned int bpm = UCLOCKS_PER_MIN / uclocks;
-
-    // If second tap took too long, this was a new first tap,
-    // so don't do anything yet.
-    if (bpm < MIN_BPM) return;
-
-    // Clamp BPM to a max value
-    if (bpm > MAX_BPM) bpm = MAX_BPM;
-
-    if (bpm != this->current_bpm) {
-        this->current_bpm = bpm;
-        this->current_uclocks_per_step = uclocks / 4;
-        this->dirty = true;
-    }
+    this->dirty = true;
 }
 
 void seq_clear_seq(seq_t* this, const int channel)
@@ -299,13 +283,32 @@ void seq_toggle_recording(seq_t* this)
 void seq_tap_tempo(seq_t* this)
 {
     uclock_t now = uclock();
+
     if (this->prev_tap) {
-        seq_set_bpm_from_uclocks_per_beat(this, now - this->prev_tap);
+        unsigned int bpm = bpm_from_uclocks_per_beat(now - this->prev_tap);
+
+        // If second tap took too long (bpm < MIN_BPM),
+        // this was a new first tap, so don't do anything yet...
+        if (bpm >= MIN_BPM) {
+            // Clamp BPM to a max value
+            if (bpm > MAX_BPM) bpm = MAX_BPM;
+
+            if (bpm != this->current_bpm) {
+                seq_set_bpm(this, bpm);
+            }
+        }
     }
+
     this->prev_tap = now;
 }
 
 void seq_set_instrument(seq_t* this, instr_t* instr, const int channel)
 {
     fm_set_instrument(channel, &instr->fm_instr);
+}
+
+static __inline__ unsigned int bpm_from_uclocks_per_beat(const uclock_t uclocks)
+{
+    assert(uclocks > 0);
+    return UCLOCKS_PER_MIN / uclocks;
 }
