@@ -8,6 +8,7 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 
 ## Download ##
 
+* Install a DPMI server if you don't have one. See [here](https://github.com/munshkr/fmtribe/wiki/Install-DPMI-server) for instructions.
 * Go to [releases](https://github.com/munshkr/fmtribe/releases) tab to download
   binaries.
 * Unzip and run FMTRIBE.EXE.
