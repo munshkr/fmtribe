@@ -68,5 +68,4 @@ as in a keyboard of one octave. To change the base octave, use `PageUp`/`PageDow
 ## Source ##
 
 To tinker with the source code, you need to install DJGPP and its C compiler.
-Go to the [zip picker](http://www.delorie.com/djgpp/zip-picker.html) and follow
-instructions.
+Follow the instructions [here](https://github.com/munshkr/fmtribe/wiki/Install-Djgpp-on-DOS).
