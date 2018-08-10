@@ -1,5 +1,4 @@
 # FMTribe #
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/munshkr/fmtribe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 OPL3 synth/drum machine/thingie focused on live jamming for DOS.
 
