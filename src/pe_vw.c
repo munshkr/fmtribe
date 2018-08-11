@@ -137,6 +137,7 @@ static void render_pattern_map(const pe_vw_t* this)
 static void render_board(const pe_vw_t* this)
 {
     int color = CHANNEL_COLORS[this->seq->current_selected_channel];
+    int sec_color = CHANNEL_COLORS_B[this->seq->current_selected_channel];
     int top = BOARD_TOP;
     int z = 0;
     for (int i = 0; i < BOARD_ROWS; i++) {
@@ -145,7 +146,7 @@ static void render_board(const pe_vw_t* this)
             // if it is about to render the square for the current step,
             // use a different color.
             if (this->seq->current_frame == this->seq->current_selected_frame && z == this->seq->current_step) {
-                color = CHANNEL_COLORS_B[this->seq->current_selected_channel];
+                swap(&color, &sec_color);
             }
 
             // render a filled square if the step is toggled
@@ -159,6 +160,10 @@ static void render_board(const pe_vw_t* this)
                 if (k == microsteps - 1 && microsteps % 2 == 0) r_right++;
                 if (this->seq->seq[this->seq->current_selected_channel][this->seq->current_selected_frame][cur_step]) {
                     vga_rect_fill(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
+                    if (this->seq->nseq[this->seq->current_selected_channel][this->seq->current_selected_frame][cur_step]) {
+                        // FIXME Render note number and octave (C4, A#5, etc)
+                        font_render_strf(this->font, r_left + 3, top + 3, sec_color, "o");
+                    }
                 } else {
                     vga_rect(r_left, top, r_right, top + BOARD_SQUARE_SIZE, color);
                 }
@@ -166,7 +171,7 @@ static void render_board(const pe_vw_t* this)
 
             // restore color
             if (this->seq->current_frame == this->seq->current_selected_frame && z == this->seq->current_step) {
-                color = CHANNEL_COLORS[this->seq->current_selected_channel];
+                swap(&color, &sec_color);
             }
 
             left += BOARD_SQUARE_SIZE + BOARD_SQUARE_PADDING;

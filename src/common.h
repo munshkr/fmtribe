@@ -22,6 +22,13 @@ typedef char* string;
 #define va_end(v)     __builtin_va_end(v)
 #define va_copy(d,s)  __builtin_va_copy(d,s)
 
+void swap(int* a, int* b)
+{
+    *a ^= *b;
+    *b ^= *a;
+    *a ^= *b;
+}
+
 typedef __builtin_va_list va_list;
 
 #endif // __COMMON_H__
