@@ -277,6 +277,7 @@ static void load_pattern(seq_t* seq, const char* filename)
 
         fread(seq->seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
         fread(seq->mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+        fread(seq->nseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
         fread(seq->muted_channels, sizeof(bool), CHANNELS, f);
         fclose(f);
     } else {
@@ -295,6 +296,7 @@ static bool save_pattern(seq_t* seq, const char* filename)
     fwrite(&(seq->current_bpm), sizeof(unsigned int), 1, f);
     fwrite(seq->seq, sizeof(bool), CHANNELS * FRAMES * STEPS, f);
     fwrite(seq->mseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
+    fwrite(seq->nseq, sizeof(unsigned int), CHANNELS * FRAMES * STEPS, f);
     fwrite(seq->muted_channels, sizeof(bool), CHANNELS, f);
 
     fclose(f);

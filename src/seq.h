@@ -12,8 +12,9 @@ typedef struct {
     instr_t   instrs[CHANNELS];
 
     // TODO mseq and seq should be merged (1 microstep == 1 step...)
-    bool         seq[CHANNELS][FRAMES][STEPS];
-    unsigned int mseq[CHANNELS][FRAMES][STEPS];
+    bool         seq[CHANNELS][FRAMES][STEPS];   // steps
+    unsigned int mseq[CHANNELS][FRAMES][STEPS];  // microsteps
+    unsigned int nseq[CHANNELS][FRAMES][STEPS];  // notes
     bool         muted_channels[CHANNELS];
 
     uclock_t     current_uclocks_per_step;
@@ -27,6 +28,8 @@ typedef struct {
 
     bool pause_after_current_step;
     bool record_step;
+    note_t record_note;
+    unsigned int record_octave;
     bool stop_after_pattern_ends;
     bool playing;
     bool metronome_on;

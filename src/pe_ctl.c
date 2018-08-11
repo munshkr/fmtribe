@@ -56,15 +56,20 @@ void pe_ctl_handle_keyboard(pe_ctl_t* this, const int key)
         break;
     }
 
-    for (int i = 0; i < STEPS; i++) {
-        if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
-            seq_toggle_step(this->seq, this->seq->current_selected_channel, this->seq->current_selected_frame, i);
+    if (this->seq->recording) {
+        // when recording, use keyboard mode
+    } else {
+        // when not recording, use step mode (default)
+        for (int i = 0; i < STEPS; i++) {
+            if (key == STEP_KEYS[i] || key == STEP_UPPER_KEYS[i]) {
+                seq_toggle_step(this->seq, this->seq->current_selected_channel, this->seq->current_selected_frame, i);
+            }
         }
-    }
 
-    for (int i = 0; i < STEPS; i++) {
-        if (key == MICROSTEP_KEYS[i]) {
-            seq_toggle_microstep(this->seq, this->seq->current_selected_channel, this->seq->current_selected_frame, i);
+        for (int i = 0; i < STEPS; i++) {
+            if (key == MICROSTEP_KEYS[i]) {
+                seq_toggle_microstep(this->seq, this->seq->current_selected_channel, this->seq->current_selected_frame, i);
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ seq_t seq_new() {
         .instrs = {},
         .seq = {},
         .mseq = {},
+        .nseq = {},
         .muted_channels = {},
 
         .current_uclocks_per_step = 0,
@@ -31,6 +32,8 @@ seq_t seq_new() {
 
         .pause_after_current_step = false,
         .record_step = false,
+        .record_note = A,
+        .record_octave = 2,
         .stop_after_pattern_ends = false,
         .playing = false,
         .metronome_on = false,
@@ -158,9 +161,11 @@ void seq_clear_seq(seq_t* this, const int channel)
     if (this->apply_all_frames) {
         memset(this->seq[channel], 0, FRAMES * STEPS * sizeof(bool));
         memset(this->mseq[channel], 0, FRAMES * STEPS * sizeof(unsigned int));
+        memset(this->nseq[channel], 0, FRAMES * STEPS * sizeof(unsigned int));
     } else {
         memset(this->seq[channel][this->current_selected_frame], 0, STEPS * sizeof(bool));
         memset(this->mseq[channel][this->current_selected_frame], 0, STEPS * sizeof(unsigned int));
+        memset(this->nseq[channel][this->current_selected_frame], 0, STEPS * sizeof(unsigned int));
     }
     this->dirty = true;
 }
@@ -170,10 +175,12 @@ void seq_clear_seq_all(seq_t* this)
     if (this->apply_all_frames) {
         memset(this->seq, 0, CHANNELS * FRAMES * STEPS * sizeof(bool));
         memset(this->mseq, 0, CHANNELS * FRAMES * STEPS * sizeof(unsigned int));
+        memset(this->nseq, 0, CHANNELS * FRAMES * STEPS * sizeof(unsigned int));
     } else {
         for (int c = 0; c < CHANNELS; c++) {
             memset(this->seq[c][this->current_selected_frame], 0, STEPS * sizeof(bool));
             memset(this->mseq[c][this->current_selected_frame], 0, STEPS * sizeof(unsigned int));
+            memset(this->nseq[c][this->current_selected_frame], 0, STEPS * sizeof(unsigned int));
         }
     }
     this->dirty = true;
