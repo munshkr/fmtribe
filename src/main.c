@@ -34,6 +34,9 @@ const char* FONT_FILE    = "FONTS/8x10.PBM";
 
 const unsigned int DEFAULT_BPM = 120;
 
+const note_t DEFAULT_NOTE = A;
+const unsigned int DEFAULT_OCTAVE = 2;
+
 bool instrument_editor_enabled = false;
 bool quitting = false;
 
@@ -221,8 +224,8 @@ static void load_instruments(seq_t* seq, const char* filename)
         getch();
 
         for (int c = 0; c < CHANNELS; c++) {
-            seq->instrs[c].note = A;
-            seq->instrs[c].octave = 2;
+            seq->instrs[c].note = DEFAULT_NOTE;
+            seq->instrs[c].octave = DEFAULT_OCTAVE;
             fm_instr_t* fi = &seq->instrs[c].fm_instr;
             fi->c__am_vib_eg = 0x00;
             fi->m__am_vib_eg = 0x00;
