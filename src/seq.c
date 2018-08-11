@@ -33,7 +33,7 @@ seq_t seq_new() {
 
         .pause_after_current_step = false,
         .record_step = false,
-        .record_note = A,
+        .record_note = 0,
         .record_octave = 2,
         .stop_after_pattern_ends = false,
         .playing = false,
@@ -68,6 +68,8 @@ void seq_tick(seq_t* this)
             if (this->apply_all_frames) {
                 for (int j = 0; j < FRAMES; j++) {
                     this->seq[this->current_selected_channel][j][step] = true;
+                    this->nseq[this->current_selected_channel][j][step] = \
+                        this->record_note + 1;  // (+1) because 0 means "use default note"
                 }
             } else {
                 this->seq[this->current_selected_channel][this->current_selected_frame][step] = true;
@@ -126,8 +128,20 @@ void seq_advance_step(seq_t* this)
 
 void seq_play_channel(const seq_t* this, const unsigned int c)
 {
+    unsigned int octave;
+    note_t note;
+
+    const unsigned int note_number = this->nseq[c][this->current_frame][this->current_step];
+    if (note_number) {
+        octave = (note_number - 1) / 12;
+        note = KEYBOARD_NOTES[(note_number - 1) % 12];
+    } else {
+        octave = this->instrs[c].octave;
+        note = this->instrs[c].note;
+    }
+
     fm_key_off(c);
-    fm_key_on(c, this->instrs[c].octave, this->instrs[c].note);
+    fm_key_on(c, octave, note);
 }
 
 void seq_play_step(const seq_t* this)

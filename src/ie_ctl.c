@@ -1,9 +1,7 @@
 #include "ie_ctl.h"
 #include "ie_vw.h"
 #include "keys.h"
-
-
-const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
+#include "fm.h"
 
 
 ie_ctl_t ie_ctl_new(seq_t* seq, ie_vw_t* ie_vw)

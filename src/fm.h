@@ -27,6 +27,8 @@ typedef struct {
     fm_voice_type_t voice_type;
 } fm_instr_t;
 
+extern const note_t KEYBOARD_NOTES[];
+
 void fm_reset();
 void fm_init();
 void fm_set_instrument(const unsigned int channel, const fm_instr_t* instr);

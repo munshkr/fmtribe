@@ -37,6 +37,7 @@
 #define FREQ_HIGH_KEYON_OCTAVE(c)           (0xB0 + c)
 #define FEEDBACK_STRENGTH_CONN_TYPE(c)      (0xC0 + c)
 
+const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 
 typedef struct {
     note_t note;

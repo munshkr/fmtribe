@@ -54,7 +54,7 @@ void pe_ctl_handle_keyboard(pe_ctl_t* this, const int key)
             for (int i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
                 if (key == KEYBOARD_KEYS[i] || key == KEYBOARD_UPPER_KEYS[i]) {
                     this->seq->record_step = true;
-                    this->seq->record_note = i;
+                    this->seq->record_note = (2 * 12) + i;
                 }
             }
         }

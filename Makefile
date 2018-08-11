@@ -13,7 +13,7 @@ SOURCES := \
 	src/keys.c \
 	src/font.c
 OBJS := $(SOURCES:.c=.o)
-CFLAGS := -g -Wall -Wextra -std=gnu99 -fgnu89-inline
+CFLAGS := -g -Wall -std=gnu99 -fgnu89-inline
 
 ZIP_FILES := fonts/8x10.pbm INSTRS.DAT README.md $(BIN)
 TAG := 08
