@@ -1,10 +1,5 @@
 #include "base_ctl.h"
-#include <keys.h>
-
-const char CHANNEL_KEYS[] = "12345678";
-const unsigned int CHANNEL_MUTE_KEYS[] = {
-    K_Alt_1, K_Alt_2, K_Alt_3, K_Alt_4, K_Alt_5, K_Alt_6, K_Alt_7, K_Alt_8
-};
+#include "keys.h"
 
 
 base_ctl_t base_ctl_new(seq_t* seq)
@@ -57,10 +52,6 @@ void base_ctl_handle_keyboard(base_ctl_t* this, const int key)
             this->seq->current_selected_channel = i;
             if (this->seq->play_instruments) {
                 seq_play_channel(this->seq, i);
-            }
-            // on recording, record current step
-            if (this->seq->playing && this->seq->recording) {
-                this->seq->record_step = true;
             }
             this->seq->dirty = true;
             break;

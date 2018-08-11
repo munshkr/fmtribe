@@ -10,6 +10,7 @@
 #define MIN_BPM 20
 #define MAX_BPM 300
 
+
 static __inline__ unsigned int bpm_from_uclocks_per_beat(const uclock_t uclocks);
 static void move_to_nearest_beat_step(seq_t* this);
 
@@ -57,9 +58,9 @@ void seq_tick(seq_t* this)
         if (this->record_step) {
             this->record_step = false;
 
+            unsigned int step = this->current_step;
             // if it is nearer the next step than the current, record step
             // on the next step (quantization)
-            unsigned int step = this->current_step;
             if (now - this->prev > this->current_uclocks_per_step / 2.0) {
                 step++;
             }

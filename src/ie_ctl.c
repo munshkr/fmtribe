@@ -1,11 +1,7 @@
 #include "ie_ctl.h"
 #include "ie_vw.h"
-#include <keys.h>
+#include "keys.h"
 
-#define KEYBOARD_KEYS_COUNT 12
-
-const char KEYBOARD_KEYS[]       = "awsedftgyhuj";
-const char KEYBOARD_UPPER_KEYS[] = "AWSEDFTGYHUJ";
 
 const note_t KEYBOARD_NOTES[] = { C, Db, D, Eb, E, F, Gb, G, Ab, A, Bb, B };
 

@@ -1,13 +1,5 @@
 #include "pe_ctl.h"
-#include <keys.h>
-
-const char STEP_KEYS[]       = "qwertyuiasdfghjk";
-const char STEP_UPPER_KEYS[] = "QWERTYUIASDFGHJK";
-
-const unsigned int MICROSTEP_KEYS[] = {
-    K_Alt_Q, K_Alt_W, K_Alt_E, K_Alt_R, K_Alt_T, K_Alt_Y, K_Alt_U, K_Alt_I,
-    K_Alt_A, K_Alt_S, K_Alt_D, K_Alt_F, K_Alt_G, K_Alt_H, K_Alt_J, K_Alt_K
-};
+#include "keys.h"
 
 
 pe_ctl_t pe_ctl_new(seq_t* seq, pe_vw_t* pe_vw)
@@ -57,7 +49,15 @@ void pe_ctl_handle_keyboard(pe_ctl_t* this, const int key)
     }
 
     if (this->seq->recording) {
-        // when recording, use keyboard mode
+        // on recording, record current note
+        if (this->seq->playing) {
+            for (int i = 0; i < KEYBOARD_KEYS_COUNT; i++) {
+                if (key == KEYBOARD_KEYS[i] || key == KEYBOARD_UPPER_KEYS[i]) {
+                    this->seq->record_step = true;
+                    this->seq->record_note = i;
+                }
+            }
+        }
     } else {
         // when not recording, use step mode (default)
         for (int i = 0; i < STEPS; i++) {
