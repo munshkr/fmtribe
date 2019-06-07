@@ -9,9 +9,7 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 ## Web version ##
 
 [Diego Dorado](https://diegodorado.github.io/) kindly ported this to the web
-using dos.js.
-
-Check it out [here](https://diegodorado.github.io/labs/fmtribe/)!
+using JS-DOS.  Check it out [here](https://diegodorado.github.io/labs/fmtribe/)!
 
 ## Download ##
 
