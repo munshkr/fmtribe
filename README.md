@@ -6,6 +6,13 @@ Tested only with DJGPP and a PC with a Sound Blaster-compatible soundcard.
 
 ![Step Sequencer](https://i.imgur.com/4EfKrE2.gif)&nbsp;![Instrument Editor](http://i.imgur.com/fkLsV9T.png)
 
+## Web version ##
+
+[Diego Dorado](https://diegodorado.github.io/) kindly ported this to the web
+using dos.js.
+
+Check it out [here](https://diegodorado.github.io/labs/fmtribe/)!
+
 ## Download ##
 
 * Install a DPMI server if you don't have one. See [here](https://github.com/munshkr/fmtribe/wiki/Install-DPMI-server) for instructions.
